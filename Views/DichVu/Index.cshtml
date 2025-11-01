@@ -1,0 +1,186 @@
+﻿@{
+    ViewData["Title"] = "Dịch vụ ký gửi - PetShop";
+    var isLoggedIn = Context.Session.GetInt32("MaNguoiDung") != null;
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<div class="container py-5">
+
+    <!-- 🐶 Giới thiệu -->
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6">
+            <img src="~/ImagesWWeb/bannerkg.jpg" class="img-fluid rounded-4 shadow-sm" alt="Ký gửi thú cưng">
+        </div>
+        <div class="col-md-6">
+            <p class="fs-5">
+                <b>PetShop</b> cung cấp dịch vụ ký gửi thú cưng an toàn – tiện nghi – chu đáo như “<b>khách sạn 5★</b> cho thú cưng”.
+                Bạn có thể yên tâm đi công tác, du lịch hay bận rộn công việc mà không lo lắng cho các bé cưng ở nhà.
+            </p>
+            <ul class="list-unstyled">
+                <li>🏠 <b>Phòng riêng</b> sạch sẽ, có điều hòa và ánh sáng tự nhiên.</li>
+                <li>🍖 <b>Chế độ ăn</b> theo yêu cầu hoặc theo tư vấn dinh dưỡng.</li>
+                <li>🎥 <b>Camera 24/7</b> giúp bạn theo dõi thú cưng từ xa.</li>
+                <li>💉 <b>Nhân viên chăm sóc & thú y</b> túc trực mỗi ngày.</li>
+            </ul>
+            <div class="mt-4">
+                <a href="/DichVu/DatKyGui" class="btn btn-danger rounded-pill px-4 me-2">
+                    <i class="fa-solid fa-paw me-1"></i> Đặt dịch vụ ngay
+                </a>
+                @if (isLoggedIn)
+                {
+                    <a href="/DichVu/LichSuKyGui" class="btn btn-outline-primary rounded-pill px-4">
+                        <i class="fa-solid fa-clock-rotate-left me-1"></i> Xem lịch sử ký gửi
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5" />
+
+    <!-- 🧩 Quy trình ký gửi -->
+    <section class="mb-5">
+        <h4 class="fw-bold text-danger text-center mb-4">
+            🚀 Quy trình ký gửi tại PetShop
+        </h4>
+        <div class="row text-center">
+            <div class="col-md-3">
+                <div class="p-3 border rounded-4 shadow-sm h-100">
+                    <i class="fa-solid fa-clipboard-list fa-2x text-primary mb-3"></i>
+                    <h6>1️⃣ Đăng ký dịch vụ</h6>
+                    <p>Điền thông tin thú cưng và ngày gửi - nhận.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 border rounded-4 shadow-sm h-100">
+                    <i class="fa-solid fa-paw fa-2x text-success mb-3"></i>
+                    <h6>2️⃣ Tiếp nhận & kiểm tra</h6>
+                    <p>PetShop kiểm tra sức khỏe và xác nhận lịch gửi.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 border rounded-4 shadow-sm h-100">
+                    <i class="fa-solid fa-bowl-food fa-2x text-warning mb-3"></i>
+                    <h6>3️⃣ Chăm sóc & giám sát</h6>
+                    <p>Ăn uống, tắm rửa, chơi đùa mỗi ngày – có camera theo dõi.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 border rounded-4 shadow-sm h-100">
+                    <i class="fa-solid fa-hand-holding-heart fa-2x text-danger mb-3"></i>
+                    <h6>4️⃣ Trả thú cưng</h6>
+                    <p>Bé được tắm sạch, chải lông và giao tận tay chủ.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="my-5" />
+
+    <!-- 💰 Bảng giá -->
+    <section class="mb-5">
+        <h4 class="fw-bold text-danger text-center mb-4">
+            💰 Bảng giá tham khảo
+        </h4>
+        <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle shadow-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Loại thú cưng</th>
+                        <th>Giá/ngày (VNĐ)</th>
+                        <th>Dịch vụ đi kèm</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>🐶 Chó nhỏ (dưới 10kg)</td>
+                        <td>80.000</td>
+                        <td>Tắm rửa, ăn uống 2 bữa, dạo chơi</td>
+                    </tr>
+                    <tr>
+                        <td>🐕 Chó lớn (trên 10kg)</td>
+                        <td>120.000</td>
+                        <td>Ăn uống 3 bữa, chăm sóc đặc biệt</td>
+                    </tr>
+                    <tr>
+                        <td>🐱 Mèo</td>
+                        <td>90.000</td>
+                        <td>Chải lông, ăn uống theo yêu cầu</td>
+                    </tr>
+                    <tr>
+                        <td>🐰 Thú nhỏ khác</td>
+                        <td>60.000</td>
+                        <td>Vệ sinh chuồng & cho ăn</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="text-center text-muted small fst-italic">
+            * Giá có thể thay đổi theo yêu cầu đặc biệt hoặc số ngày ký gửi.
+        </p>
+    </section>
+
+    <!-- ❤️ Cam kết -->
+    <section class="text-center mb-5">
+        <h4 class="fw-bold text-danger mb-3">❤️ Cam kết từ PetShop</h4>
+        <p>
+            Chúng tôi coi thú cưng của bạn như <b>thành viên trong gia đình</b>.<br />
+            PetShop cam kết mang lại môi trường thân thiện, sạch sẽ và an toàn nhất cho các bé cưng.
+        </p>
+    </section>
+
+    <!-- 🔹 Form đăng ký đơn giản -->
+    <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 700px;">
+        <div class="card-body p-4 text-center">
+            <h4 class="fw-bold text-danger mb-4">
+                <i class="fa-solid fa-paw me-2"></i> Đặt lịch ký gửi ngay
+            </h4>
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger text-center">@TempData["Error"]</div>
+            }
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success text-center">@TempData["Success"]</div>
+            }
+
+            <a href="/DichVu/DatKyGui" class="btn btn-danger rounded-pill px-4 py-2 fw-bold">
+                <i class="fa-solid fa-paw me-1"></i> Đặt dịch vụ ngay
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    ul li {
+        margin-bottom: 6px;
+    }
+
+    .card {
+        background-color: #fffefb;
+    }
+
+    .btn-danger {
+        background: linear-gradient(to right, #ff7675, #d63031);
+        border: none;
+        transition: all 0.2s ease;
+    }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 0, 0, 0.3);
+        }
+
+    .form-control {
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+    }
+
+        .form-control:focus {
+            border-color: #ff4757;
+            box-shadow: 0 0 0 0.2rem rgba(255,71,87,0.25);
+        }
+</style>

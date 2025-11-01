@@ -1,0 +1,62 @@
+﻿@model WebPetShop.Models.SanPham
+@{
+    ViewData["Title"] = Model.TenSp;
+}
+
+<div class="container py-4">
+    <div class="row gx-5">
+
+        <!-- ✅ ẢNH SẢN PHẨM BÊN TRÁI -->
+        <div class="col-lg-5 text-center">
+            <img src="/ImagesWWeb/@Model.HinhAnh"
+                 class="img-fluid rounded shadow"
+                 style="max-height: 400px; object-fit: cover;">
+        </div>
+
+        <!-- ✅ THÔNG TIN SẢN PHẨM -->
+        <div class="col-lg-7">
+            <h2>@Model.TenSp</h2>
+
+            <h3 class="text-danger fw-bold my-3">
+                @String.Format("{0:N0} đ", Model.Gia)
+            </h3>
+
+            <p class="text-secondary">
+                👉 Mô tả sản phẩm đang cập nhật... (Bạn có thể bổ sung mô tả thực tế sau)
+            </p>
+
+            <form method="get" asp-controller="GioHang" asp-action="Them">
+                <input type="hidden" name="id" value="@Model.MaSp" />
+
+                <label class="fw-bold me-2">Số lượng:</label>
+                <input type="number" name="soLuong" value="1" min="1"
+                       class="form-control d-inline-block"
+                       style="width:80px; display:inline-block" />
+
+                <div class="mt-4 d-flex gap-3">
+                    <!-- ✅ THÊM GIỎ HÀNG -->
+                    <button type="submit"
+                            class="btn btn-warning text-dark fw-bold px-4 py-2 rounded-pill">
+                        🛒 Thêm giỏ hàng
+                    </button>
+
+                    <!-- ✅ MUA NGAY -->
+                    <a href="/ThanhToan/MuaNgay?id=@Model.MaSp&soLuong=1"
+                       class="btn btn-danger fw-bold px-4 py-2 rounded-pill">
+                        ⚡ Mua ngay
+                    </a>
+                </div>
+            </form>
+
+
+        </div>
+
+    </div>
+</div>
+
+<style>
+    h2 {
+        color: #1e3e62;
+        font-weight: 700;
+    }
+</style>

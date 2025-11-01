@@ -1,0 +1,52 @@
+﻿@model WebPetShop.Models.DonHang
+@{
+    ViewData["Title"] = "Thanh toán thành công";
+}
+
+<div class="container py-5 text-center">
+    <div class="alert alert-success p-4 rounded-4 shadow-sm">
+        <h2 class="fw-bold text-success mb-3">🎉 Thanh toán thành công!</h2>
+        <p>Cảm ơn bạn <b>@Model.MaNguoiDungNavigation.HoTen</b> đã đặt hàng tại <b>PetShop</b>.</p>
+        <p>Mã đơn hàng của bạn: <b>#@Model.MaDh</b></p>
+        <p>Ngày đặt: @Model.NgayDat?.ToString("dd/MM/yyyy HH:mm")</p>
+        <hr>
+        <h5 class="text-start text-danger">Sản phẩm bạn đã đặt:</h5>
+
+        <table class="table table-bordered align-middle mt-3">
+            <thead class="table-success">
+                <tr>
+                    <th>Ảnh</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Số lượng</th>
+                    <th>Đơn giá</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.ChiTietDonHangs)
+                {
+                    <tr>
+                        <td><img src="~/ImagesWWeb/@item.MaSpNavigation.HinhAnh" width="70" /></td>
+                        <td>@item.MaSpNavigation.TenSp</td>
+                        <td>@item.SoLuong</td>
+                        <td>@item.DonGia.ToString("N0") ₫</td>
+                        <td>@(item.SoLuong* item.DonGia).ToString("N0") ₫</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="text-end fw-bold fs-5 mt-3">
+            Tổng cộng: <span class="text-danger">
+                @Model.ChiTietDonHangs.Sum(c => c.SoLuong * c.DonGia).ToString("N0") ₫
+            </span>
+        </div>
+
+        <a href="/DonHang/LichSu" class="btn btn-outline-primary rounded-pill mt-4">
+            <i class="fa fa-clock me-1"></i> Xem lịch sử đơn hàng
+        </a>
+        <a href="/SanPham" class="btn btn-success rounded-pill mt-4">
+            🏪 Tiếp tục mua sắm
+        </a>
+    </div>
+</div>

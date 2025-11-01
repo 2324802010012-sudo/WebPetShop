@@ -1,0 +1,773 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ - PetShop";
+}
+
+<!-- 🖼️ BANNER SLIDER (PetShop Style Chuẩn) -->
+<div id="mainSlider" class="carousel slide shadow-sm" data-bs-ride="carousel" data-bs-interval="4000">
+    <!-- 🔸 Thanh chấm chỉ báo (DOTS) -->
+    <div class="carousel-indicators mb-3">
+        <button type="button" data-bs-target="#mainSlider" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#mainSlider" data-bs-slide-to="1" aria-label="Slide 2"></button>
+        <button type="button" data-bs-target="#mainSlider" data-bs-slide-to="2" aria-label="Slide 3"></button>
+    </div>
+
+
+    <!-- 🔹 DANH SÁCH SLIDE -->
+    <div class="carousel-inner rounded-4 overflow-hidden">
+
+        <div class="carousel-item active">
+            <div class="banner-slide" style="background-image:url('/ImagesWWeb/banner.jpg');">
+                <div class="carousel-caption d-none d-md-block banner-caption">
+                    <h2>🐾 PetShop – Yêu thương thú cưng của bạn</h2>
+                    <p>Đồ dùng, thức ăn, phụ kiện chính hãng cho chó mèo</p>
+                    <a href="/SanPham" class="btn btn-warning fw-bold px-4 mt-2">Mua ngay</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="carousel-item">
+            <div class="banner-slide" style="background-image:url('/ImagesWWeb/banner30.jpg');">
+                <div class="carousel-caption d-none d-md-block banner-caption">
+                    <h2>🛍️ Ưu đãi tháng này</h2>
+                    <p>Giảm đến 30% cho khách hàng mới</p>
+                    <a href="/FlashSale" class="btn btn-warning fw-bold px-4 mt-2">Xem ngay</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="carousel-item">
+            <div class="banner-slide" style="background-image:url('/ImagesWWeb/bannership.png');">
+                <div class="carousel-caption d-none d-md-block banner-caption">
+                    <h2>🚚 Giao hàng siêu tốc</h2>
+                    <p>Miễn phí vận chuyển cho đơn hàng trên 299K</p>
+                    <a href="/LienHe" class="btn btn-warning fw-bold px-4 mt-2">Liên hệ ngay</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔸 Nút điều hướng -->
+    <button class="carousel-control-prev" type="button" data-bs-target="#mainSlider" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#mainSlider" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+    </button>
+</div>
+
+<!-- 💅 CSS CHO BANNER PETSHOP -->
+<style>
+    /* ===============================
+           🖼️ 1. PHẦN ẢNH BANNER CHÍNH
+           =============================== */
+    .banner-slide {
+        height: 500px;
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+        filter: brightness(0.93);
+        transition: transform 2.0s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Hiệu ứng zoom nhẹ khi đang active */
+    .carousel-item.active .banner-slide {
+        transform: scale(1.05);
+    }
+
+    /* Giữ khoảng trống cho navbar */
+    body {
+        padding-top: 110px; /* Điều chỉnh theo chiều cao menu */
+    }
+
+    /* ===============================
+           🎯 2. CHỮ TRÊN BANNER
+           =============================== */
+    .banner-caption {
+        background: rgba(0, 0, 0, 0.45);
+        border-radius: 14px;
+        padding: 20px 25px;
+        max-width: 600px;
+        margin: auto;
+        animation: fadeInUp 1s ease forwards;
+        opacity: 0;
+    }
+
+    /* Khi slide active thì chữ hiện ra */
+    .carousel-item.active .banner-caption {
+        opacity: 1;
+    }
+
+    .banner-caption h2 {
+        color: #fff;
+        font-weight: 700;
+        text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+    }
+
+    .banner-caption p {
+        color: #FFD700;
+        font-weight: 500;
+    }
+
+    /* Hiệu ứng chữ bay lên nhẹ */
+    @@keyframes fadeInUp {
+        from
+
+    {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    }
+
+    /* ===============================
+           ⚪ 3. CHẤM DOT INDICATORS
+           =============================== */
+    /* ⚪ DOT INDICATORS NÂNG CẤP */
+    .carousel-indicators {
+        bottom: 15px; /* dịch lên khỏi mép dưới 1 chút */
+        gap: 8px;
+    }
+
+        .carousel-indicators [data-bs-target] {
+            background-color: rgba(255, 215, 0, 0.8); /* vàng trong suốt */
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            opacity: 0.6;
+            border: 2px solid #fff;
+            transition: all 0.3s ease;
+        }
+
+            .carousel-indicators [data-bs-target]:hover {
+                transform: scale(1.3);
+                opacity: 1;
+                background-color: #FFD700;
+            }
+
+        .carousel-indicators .active {
+            background-color: #fff;
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+
+    /* ===============================
+           🟡 4. THANH TIẾN TRÌNH DƯỚI BANNER
+           =============================== */
+    .carousel-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0%;
+        height: 4px;
+        background-color: #FFD700;
+        animation: progressBar 4s linear infinite;
+    }
+
+    @@keyframes progressBar {
+        from
+
+    {
+        width: 0%;
+    }
+
+    to {
+        width: 100%;
+    }
+
+    }
+
+    /* ===============================
+           📱 5. RESPONSIVE CHO MOBILE
+           =============================== */
+    @@media (max-width: 768px) {
+        .banner-slide
+
+    {
+        height: 260px;
+    }
+
+    .banner-caption {
+        padding: 12px 18px;
+    }
+
+        .banner-caption h2 {
+            font-size: 18px;
+        }
+
+        .banner-caption p {
+            font-size: 14px;
+        }
+
+    }
+</style>
+
+
+
+<!-- ⚡ FLASH SALE -->
+<section class="container py-5 text-center">
+    <h2 class="fw-bold text-danger mb-4">⚡ Flash Sale Hôm Nay</h2>
+    <div class="row justify-content-center g-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <img src="~/ImagesWWeb/Thucanchopedigree.jpg" class="card-img-top" />
+                <div class="card-body">
+                    <h6 class="card-title">Thức ăn cho chó Pedigree</h6>
+                    <p class="text-danger fw-bold">150.000đ <span class="text-decoration-line-through text-secondary fs-6">180.000đ</span></p>
+                    <a href="/SanPham/Detail/1" class="btn btn-danger btn-sm rounded-pill px-3">Mua ngay</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <img src="~/ImagesWWeb/vongcokemchuong_.jpg" class="card-img-top" />
+                <div class="card-body">
+                    <h6 class="card-title">Vòng cổ thú cưng kèm chuông</h6>
+                    <p class="text-danger fw-bold">80.000đ <span class="text-decoration-line-through text-secondary fs-6">100.000đ</span></p>
+                    <a href="/SanPham/Detail/2" class="btn btn-danger btn-sm rounded-pill px-3">Mua ngay</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <img src="~/ImagesWWeb/ongu.jpg" class="card-img-top" />
+                <div class="card-body">
+                    <h6 class="card-title">Ổ ngủ thú cưng dễ thương</h6>
+                    <p class="text-danger fw-bold">350.000đ <span class="text-decoration-line-through text-secondary fs-6">390.000đ</span></p>
+                    <a href="/SanPham/Detail/3" class="btn btn-danger btn-sm rounded-pill px-3">Mua ngay</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+<section class="container py-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-danger">🎁 Ưu đãi đặc biệt</h2>
+        <p class="text-muted">Sản phẩm được yêu thích và giảm giá nhiều nhất</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+
+        <!-- 🧴 Sản phẩm 1 -->
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden position-relative">
+                <div class="countdown-timer" data-endtime="2025-11-03T23:59:59"></div>
+                <img src="~/ImagesWWeb/sp-hot1.jpg" class="card-img-top" />
+                <div class="card-body text-center">
+                    <h6 class="fw-semibold">Sữa tắm cho chó lông mượt</h6>
+                    <p class="text-danger fw-bold">
+                        120.000đ <span class="text-secondary text-decoration-line-through fs-6">150.000đ</span>
+                    </p>
+                    <a href="/SanPham/Detail/7" class="btn btn-outline-danger btn-sm rounded-pill">Xem ngay</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🦴 Sản phẩm 2 -->
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden position-relative">
+                <div class="countdown-timer" data-endtime="2025-11-04T20:00:00"></div>
+                <img src="~/ImagesWWeb/sp-hot2.jpg" class="card-img-top" />
+                <div class="card-body text-center">
+                    <h6 class="fw-semibold">Bánh thưởng cho mèo vị cá ngừ</h6>
+                    <p class="text-danger fw-bold">
+                        60.000đ <span class="text-secondary text-decoration-line-through fs-6">80.000đ</span>
+                    </p>
+                    <a href="/SanPham/Detail/8" class="btn btn-outline-danger btn-sm rounded-pill">Xem ngay</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🧸 Sản phẩm 3 -->
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden position-relative">
+                <div class="countdown-timer" data-endtime="2025-11-02T21:30:00"></div>
+                <img src="~/ImagesWWeb/sp-hot3.png" class="card-img-top" />
+                <div class="card-body text-center">
+                    <h6 class="fw-semibold">Đồ chơi dây kéo cho chó</h6>
+                    <p class="text-danger fw-bold">
+                        90.000đ <span class="text-secondary text-decoration-line-through fs-6">120.000đ</span>
+                    </p>
+                    <a href="/SanPham/Detail/9" class="btn btn-outline-danger btn-sm rounded-pill">Xem ngay</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🛏️ Sản phẩm 4 -->
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden position-relative">
+                <div class="countdown-timer" data-endtime="2025-11-05T18:00:00"></div>
+                <img src="~/ImagesWWeb/sp-hot4.jpg" class="card-img-top" />
+                <div class="card-body text-center">
+                    <h6 class="fw-semibold">Ổ nằm êm ái cho thú cưng</h6>
+                    <p class="text-danger fw-bold">
+                        280.000đ <span class="text-secondary text-decoration-line-through fs-6">320.000đ</span>
+                    </p>
+                    <a href="/SanPham/Detail/10" class="btn btn-outline-danger btn-sm rounded-pill">Xem ngay</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- 🎨 CSS -->
+<style>
+    .card {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 18px rgba(217, 54, 54, 0.25);
+        }
+
+        .card img {
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover img {
+            transform: scale(1.05);
+        }
+
+    /* ⏰ Countdown */
+    .countdown-timer {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(217, 54, 54, 0.95);
+        color: #fff;
+        padding: 4px 10px;
+        font-size: 13px;
+        border-radius: 20px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 5px rgba(217, 54, 54, 0.3);
+    }
+</style>
+
+<!-- ⏱️ JavaScript đếm ngược -->
+<script>
+    document.querySelectorAll(".countdown-timer").forEach(timer => {
+        const endTime = new Date(timer.dataset.endtime).getTime();
+        const updateTimer = () => {
+            const now = new Date().getTime();
+            const distance = endTime - now;
+
+            if (distance < 0) {
+                timer.textContent = "⏳ Hết hạn";
+                timer.style.background = "gray";
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            timer.textContent = `⚡ ${days}d ${hours}h ${minutes}m`;
+        };
+
+        updateTimer();
+        setInterval(updateTimer, 60000); // cập nhật mỗi phút
+    });
+</script>
+
+
+
+<!-- 🐾 DANH MỤC SẢN PHẨM -->
+<section class="container py-5">
+    <!-- 🔸 Banner đôi khuyến mãi -->
+    <div class="row mb-4 g-3">
+        <div class="col-12 col-md-6">
+            <a href="/ThuongHieu/RoyalCanin" class="promo-banner d-block">
+                <img src="~/ImagesWWeb/banner-small1.png" alt="Royal Canin" class="img-fluid rounded-4 shadow-sm">
+            </a>
+        </div>
+        <div class="col-12 col-md-6">
+            <a href="/KhuyenMai" class="promo-banner d-block">
+                <img src="~/ImagesWWeb/banner-small2.jpg" alt="Mua là giảm" class="img-fluid rounded-4 shadow-sm">
+            </a>
+        </div>
+    </div>
+
+    <!-- 🔹 Tiêu đề -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-danger mb-3">
+            🛍️ Danh mục sản phẩm
+        </h2>
+        <p class="text-muted mb-4">
+            Lựa chọn danh mục để tìm sản phẩm yêu thích cho thú cưng của bạn 💕
+        </p>
+    </div>
+
+    <!-- 🔹 Danh mục -->
+    <div class="row text-center g-4 justify-content-center">
+
+        <!-- 🦴 Thức ăn -->
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 category-card">
+                <a href="/SanPham/DanhMuc/1" class="text-decoration-none">
+                    <img src="~/ImagesWWeb/bannerthucan.jpg" class="card-img-top category-img" alt="Thức ăn cho thú cưng" />
+                    <div class="card-body">
+                        <h6 class="fw-semibold text-dark">🍖 Thức ăn</h6>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 🧸 Phụ kiện -->
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 category-card">
+                <a href="/SanPham/DanhMuc/2" class="text-decoration-none">
+                    <img src="~/ImagesWWeb/bannerphukien.jpg" class="card-img-top category-img" alt="Phụ kiện thú cưng" />
+                    <div class="card-body">
+                        <h6 class="fw-semibold text-dark">🎀 Phụ kiện</h6>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 🏠 Chuồng & Ổ ngủ -->
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 category-card">
+                <a href="/SanPham/DanhMuc/3" class="text-decoration-none">
+                    <img src="~/ImagesWWeb/bannerchuong.jpg" class="card-img-top category-img" alt="Chuồng và ổ ngủ" />
+                    <div class="card-body">
+                        <h6 class="fw-semibold text-dark">🏠 Chuồng & Ổ ngủ</h6>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ⚽ Đồ chơi -->
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 category-card">
+                <a href="/SanPham/DanhMuc/4" class="text-decoration-none">
+                    <img src="~/ImagesWWeb/bannerdochoi.jpg" class="card-img-top category-img" alt="Đồ chơi thú cưng" />
+                    <div class="card-body">
+                        <h6 class="fw-semibold text-dark">🎾 Đồ chơi</h6>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 🔘 Nút xem tất cả -->
+    <div class="text-center mt-5">
+        <a href="/SanPham" class="btn btn-outline-danger rounded-pill px-4 fw-semibold btn-viewall">
+            Xem tất cả <i class="fa-solid fa-arrow-right ms-1"></i>
+        </a>
+    </div>
+</section>
+<style>
+.promo-banner img {
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.promo-banner:hover img {
+    transform: scale(1.03);
+    box-shadow: 0 8px 20px rgba(217, 54, 54, 0.25);
+}
+
+/* 🐾 Danh mục sản phẩm */
+.category-img {
+    height: 180px;
+    object-fit: cover;
+    border-radius: 12px 12px 0 0;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.category-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(217, 54, 54, 0.25);
+}
+
+.category-card:hover .category-img {
+    transform: scale(1.05);
+}
+
+.category-card h6 {
+    margin-top: 8px;
+    font-size: 1rem;
+}
+
+.category-card a:hover h6 {
+    color: #D93636;
+}
+
+/* 🔘 Nút xem tất cả */
+.btn-viewall {
+    border: 2px solid #D93636;
+    color: #D93636;
+    background: #fff;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(217, 54, 54, 0.1);
+}
+
+.btn-viewall:hover {
+    background: #D93636;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(217, 54, 54, 0.3);
+}
+</style>
+<!-- 🏡 DỊCH VỤ KÝ GỬI THÚ CƯNG -->
+<section class="container py-5">
+    <div class="row align-items-center g-4">
+        <!-- Ảnh minh họa -->
+        <div class="col-md-6">
+            <img src="~/ImagesWWeb/bannerkg.jpg" alt="Dịch vụ ký gửi thú cưng" class="img-fluid rounded-4 shadow-sm">
+        </div>
+
+        <!-- Nội dung -->
+        <div class="col-md-6">
+            <h2 class="fw-bold text-danger mb-3">🏠 Dịch vụ Ký gửi thú cưng</h2>
+            <p class="text-muted mb-4">
+                Bạn bận công việc hoặc đi du lịch dài ngày?
+                <b>PetShop</b> cung cấp dịch vụ ký gửi an toàn – tiện nghi như “khách sạn thú cưng 5⭐”.
+                Chúng tôi đảm bảo thú cưng của bạn được chăm sóc chu đáo, ăn uống và vui chơi mỗi ngày!
+            </p>
+
+            <!-- Ưu điểm -->
+            <ul class="list-unstyled mb-4">
+                <li><i class="fa-solid fa-paw text-danger me-2"></i> Phòng riêng sạch sẽ, có camera theo dõi 24/7</li>
+                <li><i class="fa-solid fa-bone text-danger me-2"></i> Chế độ ăn uống khoa học, theo yêu cầu</li>
+                <li><i class="fa-solid fa-heart text-danger me-2"></i> Nhân viên chăm sóc có kinh nghiệm & tận tâm</li>
+            </ul>
+
+            <!-- Nút hành động -->
+            <button onclick="window.location.href='/DichVu'"
+                    class="btn btn-danger px-4 fw-bold rounded-pill">
+                Đặt lịch ký gửi ngay <i class="fa-solid fa-arrow-right ms-1"></i>
+            </button>
+
+        </div>
+    </div>
+</section>
+
+<style>
+    section .list-unstyled li {
+        margin-bottom: 8px;
+        font-size: 15px;
+    }
+
+    section img {
+        transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+        section img:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 18px rgba(217, 54, 54, 0.25);
+        }
+
+    .btn-danger {
+        background-color: #D93636;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+        .btn-danger:hover {
+            background-color: #c42f2f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(217, 54, 54, 0.3);
+        }
+        </style>
+
+
+
+<!-- 💎 ĐỐI TÁC & THÀNH TỰU PETSHOP -->
+<section id="partners-stats" class="partners-stats-section text-center py-5">
+    <div class="container">
+        <!-- 🌟 Tiêu đề -->
+        <h2 class="fw-bold text-danger mb-3">💎 Đối tác & Thành tựu PetShop</h2>
+        <p class="text-muted mb-5">
+            Chúng tôi tự hào đồng hành cùng các thương hiệu chăm sóc thú cưng hàng đầu và đạt được những con số ấn tượng 💖
+        </p>
+
+        <!-- 🤝 Thương hiệu nổi bật -->
+        <div class="row justify-content-center align-items-center g-4 mb-5">
+            <div class="col-6 col-md-2">
+                <div class="brand-card fade-up shadow-sm">
+                    <img src="~/ImagesWWeb/royal-canin.png" alt="Royal Canin" class="img-fluid brand-logo" />
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <div class="brand-card fade-up shadow-sm">
+                    <img src="~/ImagesWWeb/pedigree-logo.jpg" alt="Pedigree" class="img-fluid brand-logo" />
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <div class="brand-card fade-up shadow-sm">
+                    <img src="~/ImagesWWeb/whiskas.png" alt="Whiskas" class="img-fluid brand-logo" />
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <div class="brand-card fade-up shadow-sm">
+                    <img src="~/ImagesWWeb/Petkit.jpg" alt="Petkit" class="img-fluid brand-logo" />
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <div class="brand-card fade-up shadow-sm">
+                    <img src="~/ImagesWWeb/logocatsan.jpg" alt="Catsan" class="img-fluid brand-logo" />
+                </div>
+            </div>
+        </div>
+
+        <!-- 📈 Thành tựu & Doanh số -->
+        <div class="row g-4 justify-content-center">
+            <div class="col-6 col-md-3">
+                <div class="stat-card fade-up p-4 rounded-4 shadow-sm">
+                    <i class="fa-solid fa-paw fa-2x text-danger mb-3"></i>
+                    <h3 class="fw-bold text-danger counter" data-target="50000">0</h3>
+                    <p class="text-muted">Khách hàng hài lòng</p>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="stat-card fade-up p-4 rounded-4 shadow-sm">
+                    <i class="fa-solid fa-box fa-2x text-danger mb-3"></i>
+                    <h3 class="fw-bold text-danger counter" data-target="1200">0</h3>
+                    <p class="text-muted">Sản phẩm được bán</p>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="stat-card fade-up p-4 rounded-4 shadow-sm">
+                    <i class="fa-solid fa-store fa-2x text-danger mb-3"></i>
+                    <h3 class="fw-bold text-danger counter" data-target="35">0</h3>
+                    <p class="text-muted">Chi nhánh toàn quốc</p>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="stat-card fade-up p-4 rounded-4 shadow-sm">
+                    <i class="fa-solid fa-heart fa-2x text-danger mb-3"></i>
+                    <h3 class="fw-bold text-danger counter" data-target="99">0</h3>
+                    <p class="text-muted">Đánh giá tích cực (%)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<style>
+.partners-stats-section {
+    background: linear-gradient(180deg, #fff, #fff8f8);
+}
+
+/* 🤝 Thương hiệu */
+.brand-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    transition: all 0.4s ease;
+    border: 1px solid rgba(217, 54, 54, 0.05);
+}
+
+.brand-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgba(217, 54, 54, 0.25);
+}
+
+.brand-logo {
+    max-height: 70px;
+    object-fit: contain;
+    filter: grayscale(60%);
+    opacity: 0.8;
+    transition: all 0.4s ease;
+}
+
+.brand-card:hover .brand-logo {
+    filter: grayscale(0%);
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+/* 📊 Doanh số */
+.stat-card {
+    background: #fff;
+    transition: all 0.4s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgba(217, 54, 54, 0.25);
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    transition: color 0.3s;
+}
+
+.stat-card:hover h3 {
+    color: #b72020;
+}
+
+/* ✨ Hiệu ứng fade-up */
+.fade-up {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.8s ease;
+}
+
+.fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const fadeUps = document.querySelectorAll('.fade-up');
+        const counters = document.querySelectorAll('.counter');
+        let started = false;
+
+        const startCounter = (counter) => {
+            const target = +counter.getAttribute('data-target');
+            const speed = 30;
+            let count = 0;
+            const update = () => {
+                count += Math.ceil(target / 80);
+                if (count < target) {
+                    counter.innerText = count.toLocaleString();
+                    setTimeout(update, speed);
+                } else {
+                    counter.innerText = target.toLocaleString();
+                }
+            };
+            update();
+        };
+
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    if (!started) {
+                        counters.forEach(counter => startCounter(counter));
+                        started = true;
+                    }
+                }
+            });
+        }, { threshold: 0.3 });
+
+        fadeUps.forEach(el => observer.observe(el));
+    });
+</script>
+

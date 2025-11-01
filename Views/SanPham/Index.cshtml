@@ -1,0 +1,177 @@
+﻿@model IEnumerable<WebPetShop.Models.SanPham>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Sản phẩm";
+}
+
+@if (Model == null || !Model.Any())
+{
+    <p class="text-center text-danger fw-bold">🐾 Không có sản phẩm nào!</p>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                <div class="card product-card shadow-sm text-center">
+
+                    <!-- 🖼️ Ảnh sản phẩm -->
+                    <img src="/ImagesWWeb/@item.HinhAnh"
+                         class="card-img-top"
+                         alt="@item.TenSp"
+                         style="height:180px; object-fit:cover; border-radius:10px" />
+
+                    <!-- 💬 Thông tin sản phẩm -->
+                    <div class="card-body px-2">
+                        <p class="fw-semibold text-dark text-truncate mb-1">@item.TenSp</p>
+                        <p class="text-danger fw-bold mb-2">@String.Format("{0:N0} đ", item.Gia)</p>
+
+                        <!-- 🛍️ Nút Mua ngay -->
+                        <button class="btn btn-sm btn-danger rounded-pill px-3 fw-semibold shadow-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#buyNowModal"
+                                data-id="@item.MaSp"
+                                data-name="@item.TenSp"
+                                data-price="@item.Gia"
+                                data-image="/ImagesWWeb/@item.HinhAnh">
+                            🛍️ Mua ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- 🧾 MODAL CHI TIẾT MUA HÀNG -->
+<div class="modal fade" id="buyNowModal" tabindex="-1" aria-labelledby="buyNowModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold" id="buyNowModalLabel">🛍️ Thông tin sản phẩm</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="d-flex align-items-center">
+                    <img id="modalImage" src="" alt="Ảnh sản phẩm"
+                         class="rounded-3 me-3"
+                         style="width: 120px; height: 120px; object-fit: cover;">
+                    <div>
+                        <h6 id="modalName" class="fw-bold mb-2"></h6>
+                        <p id="modalPrice" class="text-danger fw-semibold mb-2"></p>
+
+                        <div class="d-flex align-items-center">
+                            <label for="quantity" class="me-2 fw-semibold">Số lượng:</label>
+                            <input type="number" id="modalQuantity" class="form-control form-control-sm w-25" min="1" value="1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer d-flex justify-content-between">
+                <a id="btnAddToCart" href="#" class="btn btn-outline-danger rounded-pill fw-semibold">
+                    🛒 Thêm vào giỏ hàng
+                </a>
+                <a id="btnBuyNow" href="#" class="btn btn-danger rounded-pill fw-semibold">
+                    💳 Mua ngay
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 💅 CSS -->
+ <style>
+    /* 🐾 CARD SẢN PHẨM */
+    .product-card {
+        border-radius: 16px;
+        padding: 10px;
+        background: #FDFDFE;
+        transition: all 0.3s ease;
+    }
+
+        .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 18px rgba(217, 54, 54, 0.2);
+        }
+
+        .product-card img {
+            transition: transform 0.4s ease;
+        }
+
+        .product-card:hover img {
+            transform: scale(1.05);
+        }
+
+    /* 🔴 Nút Mua ngay */
+    .btn-danger {
+        background-color: #D93636;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+        .btn-danger:hover {
+            background-color: #c22f2f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(217, 54, 54, 0.3);
+        }
+
+    /* 🧾 Modal */
+    #buyNowModal .modal-content {
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    #buyNowModal .modal-header {
+        border-bottom: none;
+    }
+
+    #buyNowModal .modal-footer {
+        border-top: none;
+    }
+
+    #buyNowModal .btn {
+        min-width: 130px;
+    }
+
+    /* 🧭 Khoảng trống khi có navbar cố định */
+    body {
+        padding-top: 140px;
+    }
+</style>
+
+<!-- ⚙️ SCRIPT XỬ LÝ MODAL -->
+ <script>
+    const buyNowModal = document.getElementById('buyNowModal');
+    buyNowModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget;
+        const id = button.getAttribute('data-id');
+        const name = button.getAttribute('data-name');
+        const price = button.getAttribute('data-price');
+        const image = button.getAttribute('data-image');
+
+        // Gán dữ liệu vào modal
+        document.getElementById('modalName').textContent = name;
+        document.getElementById('modalPrice').textContent = new Intl.NumberFormat().format(price) + ' đ';
+        document.getElementById('modalImage').src = image;
+
+        const quantityInput = document.getElementById('modalQuantity');
+        const btnAddToCart = document.getElementById('btnAddToCart');
+        const btnBuyNow = document.getElementById('btnBuyNow');
+
+        // Hàm cập nhật link động
+        const updateLinks = () => {
+            const qty = quantityInput.value || 1;
+            btnAddToCart.href = `/GioHang/Them/${id}?soLuong=${qty}`;
+            btnBuyNow.href = `/ThanhToan/MuaNgay/${id}?soLuong=${qty}`;
+        };
+
+        // Cập nhật lần đầu
+        updateLinks();
+
+        // Khi thay đổi số lượng thì cập nhật lại link
+        quantityInput.addEventListener('input', updateLinks);
+    });
+</script>

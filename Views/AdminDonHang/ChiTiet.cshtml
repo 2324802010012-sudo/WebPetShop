@@ -1,0 +1,35 @@
+﻿@model WebPetShop.Models.DonHang
+
+<h2 style="color:#3A5C97;text-align:center;font-weight:bold;margin-bottom:20px;">📑 Chi tiết đơn #@Model.MaDh</h2>
+
+<table class="table table-bordered bg-white shadow-sm">
+    <thead class="table-info">
+        <tr>
+            <th>Sản phẩm</th>
+            <th>Số lượng</th>
+            <th>Đơn giá</th>
+            <th>Thành tiền</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sp in Model.ChiTietDonHangs)
+        {
+            <tr>
+                <td>@sp.MaSpNavigation.TenSp</td>
+                <td>@sp.SoLuong</td>
+                <td>@sp.DonGia.ToString("N0") đ</td>
+                <td>@(sp.SoLuong* sp.DonGia).ToString("N0") đ</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p style="margin-top:20px;font-size:18px;font-weight:bold;color:#2d4974;">
+    Tổng tiền:
+    <span style="color:#e67e22;">
+        @Model.TongTien.GetValueOrDefault().ToString("N0") đ
+    </span>
+
+</p>
+
+<a href="/AdminDonHang" class="btn btn-secondary">⬅ Quay lại</a>

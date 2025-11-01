@@ -1,0 +1,50 @@
+﻿@model IEnumerable<WebPetShop.Models.KyGuiThuCung>
+@{
+    ViewData["Title"] = "Danh sách ký gửi";
+}
+
+<div class="container py-4">
+    <h3 class="fw-bold text-danger mb-3"><i class="fa-solid fa-paw me-2"></i>Danh sách thú đang ký gửi</h3>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">Chưa có thú nào đang ký gửi.</div>
+    }
+    else
+    {
+        <table class="table table-bordered align-middle shadow-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Tên thú cưng</th>
+                    <th>Chủ sở hữu</th>
+                    <th>Ngày gửi</th>
+                    <th>Ngày nhận</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.MaKyGui</td>
+                        <td>@item.TenThuCung</td>
+                        <td>@item.MaKhNavigation?.HoTen</td>
+                        <td>@item.NgayGui?.ToString("dd/MM/yyyy")</td>
+                        <td>@item.NgayHetHan?.ToString("dd/MM/yyyy")</td>
+                        <td><span class="badge bg-warning text-dark">@item.TrangThai</span></td>
+                        <td>
+                            <a class="btn btn-outline-primary btn-sm" href="/KyGui/TheoDoi/@item.MaKyGui">
+                                <i class="fa-solid fa-eye"></i> Xem
+                            </a>
+                            <a class="btn btn-outline-success btn-sm" href="/KyGui/TraThu/@item.MaKyGui">
+                                <i class="fa-solid fa-hand-holding-heart"></i> Trả thú
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

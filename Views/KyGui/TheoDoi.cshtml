@@ -1,0 +1,40 @@
+﻿@model WebPetShop.Models.KyGuiThuCung
+@{
+    ViewData["Title"] = "Theo dõi ký gửi";
+}
+
+<div class="container py-4">
+    <h3 class="fw-bold text-danger"><i class="fa-solid fa-dog me-2"></i>Thông tin ký gửi</h3>
+
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <p><b>Tên thú cưng:</b> @Model.TenThuCung</p>
+            <p><b>Giống:</b> @Model.GiongLoai</p>
+            <p><b>Tuổi:</b> @Model.Tuoi</p>
+            <p><b>Ngày gửi:</b> @Model.NgayGui?.ToString("dd/MM/yyyy")</p>
+            <p><b>Ngày nhận dự kiến:</b> @Model.NgayHetHan?.ToString("dd/MM/yyyy")</p>
+            <p><b>Trạng thái:</b> <span class="badge bg-warning text-dark">@Model.TrangThai</span></p>
+        </div>
+    </div>
+
+    <h4 class="fw-bold text-primary mb-2">📋 Nhật ký chăm sóc</h4>
+    @if (Model.ChiTietChamSocs == null || !Model.ChiTietChamSocs.Any())
+    {
+        <div class="alert alert-info">Chưa có nhật ký chăm sóc nào.</div>
+    }
+    else
+    {
+        <ul class="list-group mb-3">
+            @foreach (var log in Model.ChiTietChamSocs.OrderByDescending(x => x.NgayCapNhat))
+            {
+                <li class="list-group-item">
+                    <b>@log.NgayCapNhat?.ToString("dd/MM/yyyy HH:mm")</b> - @log.GhiChu
+                </li>
+            }
+        </ul>
+
+
+    }
+
+    <a class="btn btn-outline-secondary" href="/KyGui/NhatKy/@Model.MaKyGui">🩺 Thêm nhật ký</a>
+</div>

@@ -1,0 +1,407 @@
+﻿@{
+    var role = Context.Session.GetString("Role");
+    var hoTen = Context.Session.GetString("HoTen");
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - PetMall</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+    <style>
+        /* 🌈 CẤU HÌNH CHUNG */
+        body {
+            background-color: #fff;
+            font-family: 'Poppins', sans-serif;
+            padding-top: 105px; /* Chừa 2 tầng navbar */
+        }
+
+        /* 🔴 TẦNG 1: NAVBAR CHÍNH */
+        .top-navbar {
+            background-color: #D93636;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: 0.3s;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 22px;
+            color: #fff !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .navbar-brand img {
+                height: 36px;
+                border-radius: 6px;
+            }
+
+        .nav-link {
+            color: #fff !important;
+            font-weight: 500;
+            transition: 0.25s;
+        }
+
+            .nav-link:hover {
+                color: #FFE4E4 !important;
+            }
+
+        /* 🔍 THANH TÌM KIẾM */
+        .search-box {
+            flex-grow: 1;
+            max-width: 550px;
+        }
+
+            .search-box input {
+                width: 100%;
+                border-radius: 50px 0 0 50px;
+                border: none;
+                padding-left: 15px;
+            }
+
+            .search-box button {
+                border-radius: 0 50px 50px 0;
+                background: #fff;
+                color: #D93636;
+                border: none;
+                font-weight: bold;
+                padding: 0 18px;
+            }
+
+            .search-box input:focus {
+                outline: none;
+                box-shadow: 0 0 8px rgba(217, 54, 54, 0.4);
+            }
+
+        /* 🛒 GIỎ HÀNG */
+        .cart-icon {
+            position: relative;
+            color: #fff;
+            font-size: 20px;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -6px;
+            right: -10px;
+            background: #fff;
+            color: #D93636;
+            border-radius: 50%;
+            font-size: 11px;
+            padding: 2px 6px;
+            font-weight: bold;
+        }
+
+        /* 🟡 TẦNG 2: DANH MỤC NHANH */
+        .category-bar {
+            background: linear-gradient(180deg, #FCE4E4, #FFEAEA);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-bottom: 1px solid #EBC4C4;
+            box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+        }
+
+            .category-bar .nav-link {
+                color: #B12F2F !important;
+                font-weight: 600;
+                padding: 8px 18px;
+                border-radius: 10px;
+                transition: all 0.25s;
+            }
+
+                .category-bar .nav-link:hover {
+                    background-color: rgba(217, 54, 54, 0.1);
+                    color: #D93636 !important;
+                    transform: translateY(-1px);
+                }
+
+        /* 🦶 FOOTER */
+        /* 🌸 FOOTER PETSHOP PASTEL STYLE */
+        .footer {
+            background: linear-gradient(180deg, #f15b5b, #e94c4c);
+            color: #fff;
+            font-size: 15px;
+        }
+
+        .footer-top h5 {
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        .footer p {
+            color: rgba(255, 255, 255, 0.92);
+            line-height: 1.6;
+        }
+
+        .footer-link {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 6px;
+            transition: all 0.3s;
+        }
+
+            .footer-link:hover {
+                color: #FFD700;
+                transform: translateX(4px);
+            }
+
+        /* Email form */
+        .footer input.form-control {
+            border: none;
+            outline: none;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .footer .btn-warning {
+            background: #FFD54F;
+            border: none;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+            color: #333;
+        }
+
+            .footer .btn-warning:hover {
+                background: #FFC107;
+            }
+
+        /* Icon mạng xã hội */
+        .social-icons a {
+            color: #fff;
+            font-size: 20px;
+            margin-right: 15px;
+            transition: all 0.3s ease;
+        }
+
+            .social-icons a:hover {
+                color: #FFD54F;
+                transform: scale(1.2);
+            }
+
+        /* Phần bản quyền */
+        .footer-bottom {
+            background: #d23232;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        /* 📱 Responsive */
+        @@media (max-width: 768px) {
+            .footer form
+
+        {
+            flex-direction: column;
+        }
+
+        .footer input {
+            border-radius: 8px 8px 0 0 !important;
+            margin-bottom: 8px;
+        }
+
+        .footer .btn-warning {
+            border-radius: 0 0 8px 8px !important;
+        }
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 🟥 HEADER GỒM 2 TẦNG -->
+    <header class="position-fixed top-0 w-100 shadow-sm" style="z-index:1030;">
+        <!-- 🔴 TẦNG 1: NAVBAR CHÍNH -->
+        <nav class="navbar navbar-expand-lg top-navbar py-2">
+            <div class="container d-flex align-items-center justify-content-between">
+                <!-- Logo -->
+                <a class="navbar-brand fw-bold d-flex align-items-center pe-3" href="/">
+                    <i class="fa-solid fa-paw me-2 text-warning"></i>
+                    <span style="color: #fff;">Pet</span><span style="color: #FFD700;">Shop</span>
+                </a>
+
+
+                <!-- Nút mobile -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Nội dung -->
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <!-- Thanh tìm kiếm -->
+                    <form asp-controller="SanPham" asp-action="Index" method="get" class="d-flex search-box mx-auto">
+                        <input type="text" name="searchString" placeholder="Tìm sản phẩm, phụ kiện..." class="form-control" />
+                        <button type="submit"><i class="fa fa-search"></i></button>
+                    </form>
+
+                    <!-- Menu phải -->
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        <li><a class="nav-link" href="/">Trang chủ</a></li>
+                        <li><a class="nav-link" href="/SanPham">Sản phẩm</a></li>
+                        <li><a class="nav-link" href="/DichVu">Dịch vụ</a></li>
+
+                        @if (role == "Admin")
+                        {
+                            <li><a class="nav-link" href="/SanPham/QuanLy">Quản lý</a></li>
+                        }
+
+                        @if (hoTen != null)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    👤 @hoTen
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+                                    <li>
+                                        <a class="dropdown-item" href="/DonHang/LichSu">
+                                            <i class="fa-solid fa-clock-rotate-left me-2 text-danger"></i> Lịch sử đơn hàng
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger fw-semibold" href="/Auth/Logout">
+                                            <i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+
+                        else
+                        {
+                            <li><a class="nav-link" href="/Auth/Login">Đăng nhập</a></li>
+                        }
+
+                        <li>
+                            <a href="/GioHang" class="cart-icon nav-link position-relative">
+                                <i class="fa-solid fa-cart-shopping"></i>
+                                <span class="cart-badge">3</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 🩷 TẦNG 2: DANH MỤC NHANH -->
+        <div class="category-bar">
+            <div class="container">
+                <nav class="nav justify-content-center">
+                    <a class="nav-link" href="/SanPham/Meo"><i class="fa-solid fa-cat me-1"></i> Mèo</a>
+                    <a class="nav-link" href="/SanPham/Cho"><i class="fa-solid fa-dog me-1"></i> Chó</a>
+                    <a class="nav-link fw-bold text-warning" href="/FlashSale"><i class="fa-solid fa-bolt me-1"></i> Flash Sale</a>
+                    <a class="nav-link" href="/KyGui"><i class="fa-solid fa-box-open me-1"></i> Ký gửi</a>
+                </nav>
+            </div>
+            <!-- 🏃‍♂️ THANH CHỮ CHẠY THÔNG BÁO -->
+            <div class="scrolling-bar">
+                <div class="scrolling-text">
+                    🚚 Giao hàng hoả tốc trong 30 phút tại TP. Hồ Chí Minh &nbsp; • &nbsp;
+                    🏅 Sản phẩm chính hãng - Xuất VAT đầy đủ &nbsp; • &nbsp;
+                    🇻🇳 Giao hàng toàn quốc 2-3 ngày &nbsp; • &nbsp;
+                    💝 Ưu đãi thành viên lên đến 10% &nbsp; • &nbsp;
+                    🐶 Yêu thương thú cưng của bạn cùng PetShop!
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <style> .scrolling-bar {
+    background: #FFD9D9;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    border-top: 1px solid #FAD4D4;
+    border-bottom: 1px solid #FAD4D4;
+    }
+
+    .scrolling-text {
+    display: inline-block;
+    white-space: nowrap;
+    padding-left: 100%;
+    animation: scrollText 25s linear infinite;
+    color: #B22222;
+    font-weight: 600;
+    font-size: 15px;
+    }
+
+    @@keyframes scrollText {
+    0% {
+    transform: translateX(0);
+    }
+    100% {
+    transform: translateX(-100%);
+    }
+    }
+    </style>
+    <!-- 📦 NỘI DUNG TRANG -->
+    <main class="container-fluid px-0 mt-2">
+        @RenderBody()
+    </main>
+    <!-- 🦶 FOOTER PETSHOP PREMIUM -->
+    <footer class="footer text-white mt-5">
+        <div class="footer-top py-5">
+            <div class="container">
+                <div class="row gy-4">
+                    <!-- 🏪 Thông tin cửa hàng -->
+                    <div class="col-md-4">
+                        <h5 class="fw-bold mb-3 text-uppercase">🐾 PetShop</h5>
+                        <p>
+                            Nơi bạn tìm thấy mọi thứ cho thú cưng yêu quý – từ thức ăn, phụ kiện
+                            đến dịch vụ chăm sóc tận tâm.
+                        </p>
+                        <p><i class="fa-solid fa-location-dot me-2"></i> 123 Đường Thú Cưng, TP. Thủ Dầu Một</p>
+                        <p><i class="fa-solid fa-phone me-2"></i> 0901 234 567</p>
+                        <p><i class="fa-solid fa-envelope me-2"></i> support@petshop.vn</p>
+                    </div>
+
+                    <!-- 🔗 Liên kết nhanh -->
+                    <div class="col-md-4">
+                        <h5 class="fw-bold mb-3 text-uppercase">Liên kết nhanh</h5>
+                        <ul class="list-unstyled">
+                            <li><a href="/" class="footer-link">Trang chủ</a></li>
+                            <li><a href="/SanPham" class="footer-link">Sản phẩm</a></li>
+                            <li><a href="/GioHang" class="footer-link">Giỏ hàng</a></li>
+                            <li><a href="/LienHe" class="footer-link">Liên hệ</a></li>
+                            <li><a href="/ChinhSachBaoMat" class="footer-link">Chính sách bảo mật</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- 💌 Đăng ký nhận tin -->
+                    <div class="col-md-4">
+                        <h5 class="fw-bold mb-3 text-uppercase">Đăng ký nhận tin</h5>
+                        <p>Nhận ưu đãi và cập nhật sản phẩm mới nhất mỗi tuần 💌</p>
+                        <form class="d-flex">
+                            <input type="email" class="form-control rounded-start" placeholder="Nhập email của bạn" required>
+                            <button class="btn btn-warning text-white fw-bold rounded-end">Gửi</button>
+                        </form>
+
+                        <div class="social-icons mt-4">
+                            <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                            <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+                            <a href="#"><i class="fa-brands fa-youtube"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🔻 Bản quyền -->
+        <div class="footer-bottom text-center py-3">
+            <p class="mb-0">© 2025 <b>PetShop</b> – Giao hàng nhanh, chính hãng, yêu thương thú cưng 🐶🐱</p>
+        </div>
+    </footer>
+
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

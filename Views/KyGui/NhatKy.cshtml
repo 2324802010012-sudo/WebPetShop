@@ -1,0 +1,14 @@
+﻿@model WebPetShop.Models.ChiTietChamSoc
+
+<h2 class="section-title">📝 Nhật ký chăm sóc</h2>
+
+<form method="post">
+    <input type="hidden" name="MaKyGui" value="@Model.MaKyGui" />
+    <textarea name="TinhTrang" placeholder="Tình trạng thú cưng" required></textarea>
+    <button class="btn-small" type="submit">Lưu nhật ký</button>
+</form>
+
+@if (TempData["msg"] != null)
+{
+    <p style="color:green;font-weight:bold;">@TempData["msg"]</p>
+}

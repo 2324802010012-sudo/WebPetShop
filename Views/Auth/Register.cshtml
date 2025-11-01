@@ -1,0 +1,86 @@
+﻿@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<div class="register-page d-flex justify-content-center align-items-center">
+    <div class="register-card shadow-lg p-5 bg-white rounded-4" style="width: 500px;">
+        <div class="text-center mb-4">
+            <img src="/ImagesWWeb/logo_petshop.png" width="80" class="mb-2" alt="PetShop logo" />
+            <h3 class="fw-bold text-success">🐕 Đăng ký tài khoản mới</h3>
+            <p class="text-muted small">Gia nhập cộng đồng yêu thú cưng cùng PetShop 🌿</p>
+        </div>
+
+        <form asp-action="Register" asp-controller="Auth" method="post">
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Họ tên</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fa fa-user text-success"></i></span>
+                    <input type="text" name="HoTen" class="form-control" placeholder="Nhập họ tên..." required />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Tên đăng nhập</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fa fa-id-card text-success"></i></span>
+                    <input type="text" name="TenDangNhap" class="form-control" placeholder="Tên đăng nhập..." required />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Email</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fa fa-envelope text-success"></i></span>
+                    <input type="email" name="Email" class="form-control" placeholder="example@gmail.com" required />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Mật khẩu</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fa fa-lock text-success"></i></span>
+                    <input type="password" name="MatKhau" class="form-control" placeholder="••••••" required />
+                </div>
+            </div>
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger text-center"><i class="fa fa-triangle-exclamation me-2"></i>@TempData["Error"]</div>
+            }
+
+            <button type="submit" class="btn btn-success w-100 fw-bold rounded-pill py-2 mt-3">
+                <i class="fa fa-user-plus me-1"></i> Đăng ký
+            </button>
+
+            <div class="text-center mt-4">
+                <a href="/Auth/Login" class="text-decoration-none fw-semibold text-danger">
+                    🔑 Đã có tài khoản? Đăng nhập ngay
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    body {
+        background: linear-gradient(135deg, #e8fff1, #f9fff9);
+    }
+
+    .register-card {
+        animation: fadeIn 0.6s ease;
+    }
+    @@keyframes fadeIn {
+        from
+
+    {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    }
+</style>

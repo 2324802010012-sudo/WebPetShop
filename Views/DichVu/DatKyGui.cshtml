@@ -1,0 +1,90 @@
+﻿@model WebPetShop.Models.KyGuiThuCung
+@{
+    ViewData["Title"] = "Đặt dịch vụ ký gửi";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<div class="container py-5" style="max-width: 600px;">
+    <h2 class="fw-bold text-center text-danger mb-4">
+        🐶 ĐĂNG KÝ DỊCH VỤ KÝ GỬI
+    </h2>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger text-center">@TempData["Error"]</div>
+    }
+
+    <form asp-controller="DichVu" asp-action="DatKyGui" method="post" class="card shadow-sm p-4 rounded-4 border-0 bg-light">
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Tên thú cưng *</label>
+            <input asp-for="TenThuCung" class="form-control" placeholder="VD: Miu Miu" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Giống loại</label>
+            <input asp-for="GiongLoai" class="form-control" placeholder="VD: Poodle, Mèo Anh lông ngắn..." />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Tuổi *</label>
+            <input asp-for="Tuoi" type="number" class="form-control" placeholder="Số tuổi" required />
+        </div>
+
+        <!-- 🗓️ Ngày bắt đầu ký gửi -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Ngày bắt đầu gửi *</label>
+            <input asp-for="NgayGui" type="date" class="form-control" required />
+        </div>
+
+        <!-- 🗓️ Ngày kết thúc ký gửi -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Ngày nhận thú (kết thúc) *</label>
+            <input asp-for="NgayHetHan" type="date" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Ghi chú thêm</label>
+            <textarea asp-for="GhiChu" class="form-control" rows="2" placeholder="VD: Bé kén ăn, cần chải lông mỗi ngày..."></textarea>
+        </div>
+
+        <div class="text-center mt-3">
+            <button type="submit" class="btn btn-danger px-4 rounded-pill fw-bold">
+                <i class="fa-solid fa-check me-1"></i> Xác nhận đặt dịch vụ
+            </button>
+            <a href="/DichVu/KyGui" class="btn btn-outline-secondary rounded-pill ms-2">Quay lại</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .form-control {
+        border-radius: 8px;
+    }
+
+    .card {
+        transition: all 0.2s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+        }
+</style>
+<script>
+    // 🔒 Tự động kiểm tra ngày hợp lệ
+    document.addEventListener("DOMContentLoaded", () => {
+        const startInput = document.querySelector('[name="NgayGui"]');
+        const endInput = document.querySelector('[name="NgayHetHan"]');
+
+        const today = new Date().toISOString().split("T")[0];
+        startInput.min = today;
+        endInput.min = today;
+
+        startInput.addEventListener("change", () => {
+            endInput.min = startInput.value;
+        });
+    });
+</script>

@@ -1,0 +1,25 @@
+﻿@model IEnumerable<WebPetShop.Models.DonHang>
+
+<h2 class="section-title">📄 Lịch sử đơn hàng</h2>
+
+<table class="table pastel-table">
+    <thead>
+        <tr>
+            <th>Mã DH</th>
+            <th>Ngày đặt</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.MaDh</td>
+                <td>@item.NgayDat?.ToString("dd/MM/yyyy")</td>
+                <td>@String.Format("{0:N0}đ", item.TongTien)</td>
+                <td>@item.TrangThai</td>
+            </tr>
+        }
+    </tbody>
+</table>

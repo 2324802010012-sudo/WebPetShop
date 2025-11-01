@@ -1,0 +1,122 @@
+﻿@model IEnumerable<WebPetShop.Models.DonHang>
+@{
+    ViewData["Title"] = "Lịch sử đơn hàng";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<div class="container py-5">
+    <h2 class="fw-bold text-danger text-center mb-4">
+        <i class="fa-solid fa-box-archive me-2"></i> Lịch sử đơn hàng của bạn
+    </h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center shadow-sm">
+            🐾 Bạn chưa có đơn hàng nào!
+            <a href="/SanPham" class="btn btn-danger btn-sm ms-2">
+                <i class="fa-solid fa-shopping-bag me-1"></i> Mua sắm ngay
+            </a>
+        </div>
+    }
+    else
+    {
+        foreach (var dh in Model)
+        {
+            var tong = dh.ChiTietDonHangs.Sum(c => c.SoLuong * c.DonGia);
+
+            <div class="card mb-4 shadow-sm border-0 rounded-4">
+                <!-- Header -->
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <div>
+                        <b>Mã đơn:</b> #@dh.MaDh
+                        <span class="text-muted ms-3">
+                            <i class="fa-regular fa-clock me-1"></i>
+                            @dh.NgayDat?.ToString("dd/MM/yyyy HH:mm")
+                        </span>
+                    </div>
+
+                    @{
+                        string badgeClass = dh.TrangThai switch
+                        {
+                            "Hoàn tất" => "bg-success",
+                            "Đang giao" => "bg-primary",
+                            "Đã hủy" => "bg-danger",
+                            _ => "bg-warning text-dark"
+                        };
+                    }
+
+                    <span class="badge rounded-pill px-3 py-2 @badgeClass">
+                        @dh.TrangThai
+                    </span>
+                </div>
+
+                <!-- Body -->
+                <div class="card-body">
+                    @foreach (var ct in dh.ChiTietDonHangs)
+                    {
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="~/ImagesWWeb/@ct.MaSpNavigation.HinhAnh"
+                                 width="70" height="70"
+                                 class="rounded me-3 shadow-sm"
+                                 style="object-fit:cover;">
+                            <div class="flex-fill">
+                                <div class="fw-semibold">@ct.MaSpNavigation.TenSp</div>
+                                <div class="small text-muted">Số lượng: @ct.SoLuong</div>
+                            </div>
+                            <div class="fw-bold text-danger">
+                                @((ct.SoLuong * ct.DonGia).ToString("N0")) ₫
+                            </div>
+                        </div>
+                    }
+
+                    <hr />
+
+                    <div class="text-end fw-bold fs-5">
+                        Tổng: <span class="text-danger">@tong.ToString("N0") ₫</span>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="card-footer text-end bg-white">
+                    <a href="/DonHang/ChiTiet/@dh.MaDh" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                        <i class="fa-solid fa-eye me-1"></i> Xem chi tiết
+                    </a>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+ <style>
+    .card {
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+        }
+
+    .badge {
+        font-size: 0.9rem;
+    }
+
+    .card-header {
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .card-body {
+        background-color: #fffefb;
+    }
+
+    .text-danger {
+        color: #d63031 !important;
+    }
+
+    hr {
+        border-top: 1px solid #eee;
+    }
+</style>

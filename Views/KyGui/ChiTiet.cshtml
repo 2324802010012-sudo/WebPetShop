@@ -1,0 +1,30 @@
+﻿@model WebPetShop.Models.KyGuiThuCung
+@{
+    ViewData["Title"] = "Chi tiết ký gửi";
+}
+
+<div class="container py-5" style="max-width:700px;">
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0"><i class="fa-solid fa-paw me-2"></i> Chi tiết ký gửi thú cưng</h4>
+        </div>
+        <div class="card-body">
+            <p><b>Tên thú cưng:</b> @Model.TenThuCung</p>
+            <p><b>Giống loại:</b> @Model.GiongLoai</p>
+            <p><b>Tuổi:</b> @Model.Tuoi</p>
+            <p><b>Ngày gửi:</b> @Model.NgayGui?.ToString("dd/MM/yyyy")</p>
+            <p><b>Ngày nhận dự kiến:</b> @Model.NgayHetHan?.ToString("dd/MM/yyyy")</p>
+            <p><b>Phí ký gửi:</b> @((Model.PhiKyGui ?? 0).ToString("N0")) ₫</p>
+            <p><b>Trạng thái:</b> @Model.TrangThai</p>
+            @if (!string.IsNullOrEmpty(Model.GhiChu))
+            {
+                <p><b>Ghi chú:</b> @Model.GhiChu</p>
+            }
+        </div>
+        <div class="card-footer text-end bg-white">
+            <a href="/DichVu/LichSuKyGui" class="btn btn-outline-danger rounded-pill">
+                <i class="fa-solid fa-arrow-left me-1"></i> Quay lại
+            </a>
+        </div>
+    </div>
+</div>

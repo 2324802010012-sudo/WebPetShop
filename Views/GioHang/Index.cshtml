@@ -1,0 +1,81 @@
+﻿@model IEnumerable<WebPetShop.Models.ChiTietGioHang>
+
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<div class="container py-5">
+    <h2 class="fw-bold text-center text-primary mb-4">
+        <i class="fa-solid fa-cart-shopping me-2"></i> Giỏ hàng của bạn
+    </h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">
+            Giỏ hàng của bạn đang trống!
+            <a href="/SanPham" class="btn btn-primary btn-sm ms-2">Mua sắm ngay</a>
+        </div>
+    }
+    else
+    {
+        <table class="table table-hover align-middle shadow-sm">
+            <thead class="table-primary">
+                <tr class="text-center">
+                    <th>Hình ảnh</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Giá</th>
+                    <th width="130px">SL</th>
+                    <th>Tổng</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var total = (item.SoLuong ?? 1) * item.MaSpNavigation.Gia;
+                    <tr class="text-center">
+                        <td>
+                            <img src="~/ImagesWWeb/@item.MaSpNavigation.HinhAnh"
+                                 class="rounded" style="width:70px;height:70px;object-fit:cover" />
+                        </td>
+                        <td>@item.MaSpNavigation.TenSp</td>
+                        <td class="text-danger fw-bold">@item.MaSpNavigation.Gia.ToString("N0") ₫</td>
+                        <td>
+                            <form method="post" action="/GioHang/Update" class="d-flex justify-content-center">
+                                <input type="hidden" name="maCtgh" value="@item.MaCtgh" />
+                                <input type="number" min="1" name="soLuong" value="@(item.SoLuong ?? 1)"
+                                       class="form-control form-control-sm text-center"
+                                       style="width:60px" />
+                                <button class="btn btn-sm btn-outline-success ms-2">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                            </form>
+                        </td>
+                        <td class="fw-bold text-success">@total.ToString("N0") ₫</td>
+                        <td>
+                            <a href="/GioHang/Remove/@item.MaCtgh"
+                               class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('Xóa sản phẩm này?');">
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="text-end mt-3">
+            <a href="/SanPham" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Tiếp tục mua sắm
+            </a>
+
+            <a href="/GioHang/Checkout" class="btn btn-warning fw-bold">
+                <i class="fa-solid fa-credit-card"></i> Thanh toán
+            </a>
+        </div>
+    }
+</div>
+
+

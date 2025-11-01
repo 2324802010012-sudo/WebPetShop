@@ -1,0 +1,102 @@
+﻿@model IEnumerable<WebPetShop.Models.DonHang>
+
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+}
+
+<style>
+    h2 {
+        color: #3A5C97;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+    }
+
+    th {
+        background: #8EB8E8;
+        padding: 12px;
+        color: #fff;
+        text-transform: uppercase;
+        font-size: 14px;
+    }
+
+    td {
+        padding: 10px;
+        border-bottom: 1px solid #d0d8ef;
+    }
+
+    .btn {
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: 13px;
+    }
+
+    .btn-duyet {
+        background: #69c57d;
+        color: #fff;
+    }
+
+        .btn-duyet:hover {
+            background: #4ea462;
+        }
+
+    .btn-huy {
+        background: #e66;
+        color: #fff;
+    }
+
+        .btn-huy:hover {
+            background: #c33;
+        }
+
+    .btn-detail {
+        background: #6FA4E3;
+        color: #fff;
+    }
+
+        .btn-detail:hover {
+            background: #467cc3;
+        }
+</style>
+
+<h2>📦 Quản lý đơn hàng</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Mã đơn</th>
+            <th>Khách hàng</th>
+            <th>Ngày đặt</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var dh in Model)
+        {
+            <tr>
+                <td>@dh.MaDh</td>
+                <td>@dh.MaNguoiDungNavigation?.HoTen</td>
+                <td>@dh.NgayDat?.ToString("dd/MM/yyyy")</td>
+                <td>@dh.TongTien.GetValueOrDefault().ToString("N0") đ</td>
+                <td>@dh.TrangThai</td>
+                <td>
+                    <a class="btn btn-detail" href="/AdminDonHang/ChiTiet/@dh.MaDh">Chi tiết</a>
+
+                    @if (dh.TrangThai == "Chờ duyệt")
+                    {
+                        <a class="btn btn-duyet" href="/AdminDonHang/Duyet/@dh.MaDh">Duyệt</a>
+                        <a class="btn btn-huy" href="/AdminDonHang/Huy/@dh.MaDh">Hủy</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

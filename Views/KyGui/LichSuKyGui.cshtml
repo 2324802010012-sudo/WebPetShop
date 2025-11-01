@@ -1,0 +1,90 @@
+﻿@model IEnumerable<WebPetShop.Models.KyGuiThuCung>
+@{
+    ViewData["Title"] = "Lịch sử ký gửi";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<div class="container py-5">
+    <h2 class="fw-bold text-danger text-center mb-4">
+        🐾 LỊCH SỬ KÝ GỬI CỦA BẠN
+    </h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success text-center">@TempData["Success"]</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger text-center">@TempData["Error"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">
+            🐶 Bạn chưa có lịch sử ký gửi nào.
+            <a href="/DichVu/KyGui" class="btn btn-danger btn-sm ms-2">
+                <i class="fa-solid fa-plus me-1"></i> Đặt ngay
+            </a>
+        </div>
+    }
+    else
+    {
+        foreach (var item in Model)
+        {
+            <div class="card mb-4 border-0 shadow-sm rounded-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <div>
+                        <b>🐕 @item.TenThuCung</b> — <span class="text-muted">@item.GiongLoai</span>
+                    </div>
+                    @{
+                        string badge = item.TrangThai switch
+                        {
+                            "Hoàn tất" => "bg-success",
+                            "Đang ký gửi" => "bg-warning text-dark",
+                            "Đã hủy" => "bg-danger",
+                            _ => "bg-secondary"
+                        };
+                    }
+                    <span class="badge rounded-pill @badge px-3 py-2">@item.TrangThai</span>
+                </div>
+
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <i class="fa-regular fa-calendar me-1"></i>
+                            <b>Ngày gửi:</b> @item.NgayGui?.ToString("dd/MM/yyyy")
+                        </div>
+                        <div class="col-md-6">
+                            <i class="fa-regular fa-clock me-1"></i>
+                            <b>Ngày nhận dự kiến:</b> @item.NgayHetHan?.ToString("dd/MM/yyyy")
+                        </div>
+                    </div>
+                    <div>
+                        <b>Phí ký gửi:</b> <span class="text-danger fw-bold">@((item.PhiKyGui ?? 0).ToString("N0")) ₫</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(item.GhiChu))
+                    {
+                        <div class="mt-2"><b>Ghi chú:</b> @item.GhiChu</div>
+                    }
+                </div>
+
+                <div class="card-footer text-end bg-white">
+                    <a href="/DichVu/ChiTiet/@item.MaKyGui" class="btn btn-outline-danger btn-sm rounded-pill px-3 me-2">
+                        <i class="fa-solid fa-eye me-1"></i> Chi tiết
+                    </a>
+
+                    @if (item.TrangThai == "Đang ký gửi")
+                    {
+                        <form method="post" asp-action="HuyKyGui" asp-route-id="@item.MaKyGui" class="d-inline">
+                            <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill">
+                                <i class="fa-solid fa-xmark me-1"></i> Hủy
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
