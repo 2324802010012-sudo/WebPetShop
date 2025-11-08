@@ -33,7 +33,11 @@ public partial class NguoiDung
 
     public virtual ICollection<DanhGium> DanhGia { get; set; } = new List<DanhGium>();
 
+    public virtual ICollection<DeXuatNhanNuoi> DeXuatNhanNuois { get; set; } = new List<DeXuatNhanNuoi>();
+
     public virtual ICollection<DonHang> DonHangs { get; set; } = new List<DonHang>();
+
+    public virtual ICollection<GiaoHang> GiaoHangs { get; set; } = new List<GiaoHang>();
 
     public virtual ICollection<GioHang> GioHangs { get; set; } = new List<GioHang>();
 
@@ -48,6 +52,8 @@ public partial class NguoiDung
     public virtual ICollection<LichSuHeThong> LichSuHeThongs { get; set; } = new List<LichSuHeThong>();
 
     public virtual ICollection<LichSuTrangThaiDonHang> LichSuTrangThaiDonHangs { get; set; } = new List<LichSuTrangThaiDonHang>();
+
+    public virtual ICollection<PhieuNhap> PhieuNhaps { get; set; } = new List<PhieuNhap>();
 
     public virtual ICollection<YeuThich> YeuThiches { get; set; } = new List<YeuThich>();
 }

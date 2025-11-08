@@ -25,8 +25,9 @@ public partial class KyGuiThuCung
 
     public string? GhiChu { get; set; }
 
-
     public virtual ICollection<ChiTietChamSoc> ChiTietChamSocs { get; set; } = new List<ChiTietChamSoc>();
+
+    public virtual ICollection<DeXuatNhanNuoi> DeXuatNhanNuois { get; set; } = new List<DeXuatNhanNuoi>();
 
     public virtual ICollection<HoaDon> HoaDons { get; set; } = new List<HoaDon>();
 

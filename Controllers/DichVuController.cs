@@ -26,7 +26,15 @@ namespace WebPetShop.Controllers
         {
             return View(); // <-- nếu là View() thì đang gọi DatKyGui.cshtml
         }
+        [HttpGet]
+        public async Task<IActionResult> NhanNuoi()
+        {
+            var danhSachThuCung = await _context.DanhSachThuCungNhanNuoi
+                .OrderByDescending(x => x.NgayDang)
+                .ToListAsync();
 
+            return View(danhSachThuCung); // View: Views/DichVu/NhanNuoi.cshtml
+        }
 
         // 🐾 POST: Xử lý form đặt ký gửi
         [HttpPost]

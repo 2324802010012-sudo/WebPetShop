@@ -19,21 +19,25 @@ public partial class DonHang
 
     public string? TenDonViGiao { get; set; }
 
-    // 🧾 Thông tin người nhận hàng
-    public string? HoTenNguoiNhan { get; set; }
+    public string? HoTenNhan { get; set; }
 
-    public string? SoDienThoai { get; set; }
+    public string? DiaChiGiao { get; set; }
 
-    public string? DiaChiGiaoHang { get; set; }
-
-    public string? GhiChu { get; set; }
+    public string? PhuongThucThanhToan { get; set; }
 
     public int? MaKm { get; set; }
 
     public int? MaPhi { get; set; }
 
-    // 🔗 Liên kết navigation
+    public int? MaTttt { get; set; }
+
+    public string? SoDienThoai { get; set; }
+
+    public string? GhiChu { get; set; }
+
     public virtual ICollection<ChiTietDonHang> ChiTietDonHangs { get; set; } = new List<ChiTietDonHang>();
+
+    public virtual ICollection<GiaoHang> GiaoHangs { get; set; } = new List<GiaoHang>();
 
     public virtual ICollection<HoaDon> HoaDons { get; set; } = new List<HoaDon>();
 
@@ -44,6 +48,8 @@ public partial class DonHang
     public virtual NguoiDung MaNguoiDungNavigation { get; set; } = null!;
 
     public virtual PhiGiaoHang? MaPhiNavigation { get; set; }
+
+    public virtual ThanhToanTrucTuyen? MaTtttNavigation { get; set; }
 
     public virtual ICollection<ThanhToanTrucTuyen> ThanhToanTrucTuyens { get; set; } = new List<ThanhToanTrucTuyen>();
 }

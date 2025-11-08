@@ -13,6 +13,8 @@ public partial class LichLamViec
 
     public string? CaLam { get; set; }
 
+    public string? TrangThai { get; set; }
+
     public string? GhiChu { get; set; }
 
     public virtual NguoiDung MaNhanVienNavigation { get; set; } = null!;

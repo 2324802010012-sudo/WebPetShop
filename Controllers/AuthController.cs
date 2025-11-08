@@ -72,10 +72,14 @@ namespace WebPetShop.Controllers
             HttpContext.Session.SetString("HoTen", user.HoTen ?? user.TenDangNhap);
 
             // Điều hướng theo vai trò
+            // ✅ Điều hướng theo vai trò
             if ((user.VaiTro ?? "").Equals("Admin", StringComparison.OrdinalIgnoreCase))
-                return RedirectToAction("Index", "SanPham");
+            {
+                return RedirectToAction("Index", "Admin");
+            }
 
             return RedirectToAction("Index", "Home");
+
         }
 
         // ========== REGISTER ==========

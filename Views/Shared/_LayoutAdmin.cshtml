@@ -1,0 +1,153 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - PetShop Admin</title>
+
+    <!-- ✅ CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/admin.css" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* ✅ SIDEBAR */
+        .sidebar {
+            width: 260px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background: #dc3545;
+            color: white;
+            padding-top: 1rem;
+            transition: all 0.3s;
+        }
+
+            .sidebar .brand {
+                font-size: 1.5rem;
+                font-weight: 700;
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+
+            .sidebar a {
+                display: block;
+                color: white;
+                text-decoration: none;
+                padding: 10px 20px;
+                font-weight: 500;
+                border-left: 4px solid transparent;
+            }
+
+                .sidebar a:hover,
+                .sidebar a.active {
+                    background: rgba(255, 255, 255, 0.2);
+                    border-left-color: #fff;
+                }
+
+        /* ✅ MAIN CONTENT */
+        .main {
+            margin-left: 260px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        /* ✅ NAVBAR TOP */
+        .admin-topbar {
+            background: white;
+            padding: 10px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .admin-topbar h5 {
+                margin: 0;
+                font-weight: 600;
+                color: #dc3545;
+            }
+
+        .admin-user {
+            font-weight: 500;
+        }
+
+            .admin-user i {
+                margin-right: 6px;
+            }
+
+        /* ✅ RESPONSIVE */
+        @@media (max-width: 992px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 🧭 SIDEBAR -->
+    <div class="sidebar">
+        <div class="brand">
+            🐾 PetShop Admin
+        </div>
+        <a href="/Admin/Index" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+            <i class="fa-solid fa-gauge me-2"></i> Bảng điều khiển
+        </a>
+        <a href="/Admin/QuanLyNguoiDung" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "QuanLyNguoiDung" ? "active" : "")">
+            <i class="fa-solid fa-users me-2"></i> Quản lý người dùng
+        </a>
+        <a href="/Admin/DuyetBaiDang" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "DuyetBaiDang" ? "active" : "")">
+            <i class="fa-solid fa-paw me-2"></i> Duyệt bài đăng
+        </a>
+        <a href="/Admin/DanhMucSanPham" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "DanhMucSanPham" ? "active" : "")">
+            <i class="fa-solid fa-list me-2"></i> Danh mục sản phẩm
+        </a>
+        <a href="/Admin/GiamSatHeThong" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "GiamSatHeThong" ? "active" : "")">
+            <i class="fa-solid fa-chart-line me-2"></i> Giám sát hệ thống
+        </a>
+        <hr class="text-white opacity-50" />
+        <a href="/Auth/Logout">
+            <i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất
+        </a>
+    </div>
+
+    <!-- 🧾 MAIN CONTENT -->
+    <div class="main">
+        <div class="admin-topbar mb-4">
+            <h5>@ViewData["Title"]</h5>
+            <div class="admin-user">
+                <i class="fa-solid fa-user-shield"></i> Admin
+            </div>
+        </div>
+
+        <div class="container-fluid">
+            @RenderBody()
+        </div>
+    </div>
+
+    <!-- ✅ JAVASCRIPT -->
+    <!-- ⚠️ PHẢI THÊM jQuery TRƯỚC Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- ✅ Khu vực script riêng của từng View -->
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

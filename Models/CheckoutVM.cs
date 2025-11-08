@@ -9,6 +9,8 @@ namespace WebPetShop.ViewModels
         public string HoTenNhan { get; set; }
         public string DiaChiGiao { get; set; }
         public string SDTNhan { get; set; }
+        public SanPham? SanPhamMuaNgay { get; set; }
+        public int SoLuong { get; set; }
 
         // vận chuyển
         public int MaPhi { get; set; }
@@ -26,5 +28,6 @@ namespace WebPetShop.ViewModels
         public decimal PhiVanChuyen { get; set; }
         public decimal TongTien { get; set; }
         public List<ChiTietGioHang> GioHang { get; set; } = new();
+
     }
 }

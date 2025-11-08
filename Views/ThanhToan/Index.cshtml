@@ -1,6 +1,10 @@
-﻿@model WebPetShop.Models.GioHang
+﻿@using WebPetShop.Models
+@model dynamic
 @{
     ViewData["Title"] = "Thanh toán đơn hàng";
+    GioHang? gioHang = Model is GioHang ? Model : null;
+    SanPham? spMuaNgay = Model is SanPham ? Model : null;
+    int soLuong = ViewBag.SoLuong ?? 1;
 }
 
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -10,17 +14,18 @@
         <i class="fa-solid fa-credit-card me-2"></i> Thanh toán đơn hàng
     </h2>
 
-    @if (Model?.ChiTietGioHangs == null || !Model.ChiTietGioHangs.Any())
+    <!-- ⚠️ Nếu giỏ hàng trống -->
+    @if (gioHang == null && spMuaNgay == null)
     {
         <div class="alert alert-info text-center">
-            🛒 Giỏ hàng trống — vui lòng chọn sản phẩm để thanh toán!
+            🛒 Không có sản phẩm nào để thanh toán!
             <a href="/SanPham" class="btn btn-primary btn-sm ms-2">Mua sắm ngay</a>
         </div>
     }
     else
     {
         <div class="row g-4">
-            <!-- 🧾 Bên trái: thông tin người nhận -->
+            <!-- 🧾 Bên trái: Thông tin giao hàng -->
             <div class="col-lg-7">
                 <div class="card shadow-sm border-0 rounded-4 p-4">
                     <h5 class="fw-bold mb-3">📦 Thông tin giao hàng</h5>
@@ -38,9 +43,67 @@
                             <textarea name="DiaChi" rows="2" class="form-control" placeholder="Nhập địa chỉ nhận hàng" required></textarea>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label fw-semibold">Phương thức thanh toán</label>
+                            <div class="payment-options p-3 border rounded-3">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="PhuongThuc" id="cod" value="COD" checked>
+                                    <label class="form-check-label" for="cod">
+                                        💵 Thanh toán khi nhận hàng (COD)
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="PhuongThuc" id="bank" value="ChuyenKhoan">
+                                    <label class="form-check-label" for="bank">
+                                        🏦 Chuyển khoản ngân hàng
+                                    </label>
+                                    <div class="mt-2 ms-4 text-muted small bank-info d-none">
+                                        <p class="mb-1"><b>Ngân hàng:</b> Vietcombank – CN Thủ Dầu Một</p>
+                                        <p class="mb-1"><b>Số tài khoản:</b> 0123456789</p>
+                                        <p class="mb-0"><b>Chủ TK:</b> CÔNG TY PETSHOP</p>
+                                    </div>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="PhuongThuc" id="online" value="Online">
+                                    <label class="form-check-label" for="online">
+                                        💳 Thanh toán Online (VNPay, Momo, ZaloPay)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <style>
+                            .payment-options {
+                                background: #fafafa;
+                                transition: all 0.3s ease;
+                            }
+
+                            .form-check-label {
+                                cursor: pointer;
+                            }
+
+                            .bank-info {
+                                font-size: 14px;
+                                color: #555;
+                                background: #f8f9fa;
+                                border-left: 3px solid #198754;
+                                padding: 6px 12px;
+                                border-radius: 8px;
+                            }
+                        </style>
+
+                        <div class="mb-3">
                             <label class="form-label">Ghi chú</label>
                             <textarea name="GhiChu" rows="2" class="form-control" placeholder="Ghi chú cho cửa hàng (nếu có)"></textarea>
                         </div>
+
+                        <!-- 🧩 Nếu là mua ngay thì gửi mã sản phẩm -->
+                        @if (spMuaNgay != null)
+                        {
+                            <input type="hidden" name="MaSp" value="@spMuaNgay.MaSp" />
+                            <input type="hidden" name="SoLuong" value="@soLuong" />
+                        }
+
                         <div class="text-end">
                             <a href="/GioHang" class="btn btn-outline-secondary me-2">
                                 <i class="fa-solid fa-arrow-left"></i> Quay lại giỏ hàng
@@ -53,38 +116,61 @@
                 </div>
             </div>
 
-            <!-- 🛍️ Bên phải: danh sách sản phẩm -->
+            <!-- 🛍️ Bên phải: sản phẩm -->
             <div class="col-lg-5">
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-header bg-danger text-white fw-bold">
                         🛍️ Đơn hàng của bạn
                     </div>
-                    <ul class="list-group list-group-flush">
-                        @{
-                            decimal tongTien = 0;
-                            foreach (var sp in Model.ChiTietGioHangs)
-                            {
-                                var thanhTien = (sp.SoLuong ?? 1) * sp.MaSpNavigation.Gia;
-                                tongTien += thanhTien;
-                            }
-                        }
-                        @foreach (var sp in Model.ChiTietGioHangs)
-                        {
+
+                    <!-- 💰 Nếu là mua ngay -->
+                    @if (spMuaNgay != null)
+                    {
+                        var tongTien = spMuaNgay.Gia * soLuong;
+                        <ul class="list-group list-group-flush">
                             <li class="list-group-item d-flex align-items-center">
-                                <img src="~/ImagesWWeb/@sp.MaSpNavigation.HinhAnh" class="rounded me-3" width="60" height="60" style="object-fit:cover;">
+                                <img src="~/ImagesWWeb/@spMuaNgay.HinhAnh" class="rounded me-3" width="60" height="60" style="object-fit:cover;">
                                 <div class="flex-fill">
-                                    <div class="fw-semibold">@sp.MaSpNavigation.TenSp</div>
-                                    <small>Số lượng: @sp.SoLuong</small>
+                                    <div class="fw-semibold">@spMuaNgay.TenSp</div>
+                                    <small>Số lượng: @soLuong</small>
                                 </div>
                                 <div class="text-danger fw-bold">
-                                    @String.Format("{0:N0} ₫", (sp.SoLuong ?? 1) * sp.MaSpNavigation.Gia)
+                                    @String.Format("{0:N0} ₫", tongTien)
                                 </div>
                             </li>
+                        </ul>
+                        <div class="card-footer bg-light text-end fw-bold fs-5">
+                            Tổng cộng: <span class="text-danger">@tongTien.ToString("N0") ₫</span>
+                        </div>
+                    }
+                    else if (gioHang != null && gioHang.ChiTietGioHangs.Any())
+                    {
+                        decimal tongTien = 0;
+                        foreach (var sp in gioHang.ChiTietGioHangs)
+                        {
+                            tongTien += (sp.SoLuong ?? 1) * sp.MaSpNavigation.Gia;
                         }
-                    </ul>
-                    <div class="card-footer bg-light text-end fw-bold fs-5">
-                        Tổng cộng: <span class="text-danger">@tongTien.ToString("N0") ₫</span>
-                    </div>
+
+                        <ul class="list-group list-group-flush">
+                            @foreach (var sp in gioHang.ChiTietGioHangs)
+                            {
+                                <li class="list-group-item d-flex align-items-center">
+                                    <img src="~/ImagesWWeb/@sp.MaSpNavigation.HinhAnh" class="rounded me-3" width="60" height="60" style="object-fit:cover;">
+                                    <div class="flex-fill">
+                                        <div class="fw-semibold">@sp.MaSpNavigation.TenSp</div>
+                                        <small>Số lượng: @sp.SoLuong</small>
+                                    </div>
+                                    <div class="text-danger fw-bold">
+                                        @String.Format("{0:N0} ₫", (sp.SoLuong ?? 1) * sp.MaSpNavigation.Gia)
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+
+                        <div class="card-footer bg-light text-end fw-bold fs-5">
+                            Tổng cộng: <span class="text-danger">@tongTien.ToString("N0") ₫</span>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -104,3 +190,14 @@
         background-color: #c22f2f;
     }
 </style>
+ <script>
+    const bankOption = document.getElementById("bank");
+    const bankInfo = document.querySelector(".bank-info");
+
+    // Ẩn/hiện thông tin tài khoản ngân hàng
+    document.querySelectorAll("input[name='PhuongThuc']").forEach(el => {
+        el.addEventListener("change", function () {
+            bankInfo.classList.toggle("d-none", !bankOption.checked);
+        });
+    });
+</script>

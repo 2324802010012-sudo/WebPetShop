@@ -1,0 +1,233 @@
+﻿@{
+    ViewData["Title"] = "Bảng điều khiển - PetShop Admin";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container-fluid py-4">
+
+    <!-- 🧭 TIÊU ĐỀ -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-danger">
+            <i class="fa-solid fa-gauge me-2"></i> Bảng điều khiển quản trị
+        </h2>
+        <span class="text-muted small">Cập nhật ngày @DateTime.Now.ToString("dd/MM/yyyy")</span>
+    </div>
+
+    <!-- 🧮 THỐNG KÊ -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card shadow border-0 hover-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-circle bg-danger-subtle text-danger me-3">
+                        <i class="fa-solid fa-users fs-3"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Người dùng</p>
+                        <h4 class="fw-bold mb-0">@ViewBag.TongNguoiDung</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card shadow border-0 hover-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-circle bg-primary-subtle text-primary me-3">
+                        <i class="fa-solid fa-box fs-3"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Sản phẩm</p>
+                        <h4 class="fw-bold mb-0">@ViewBag.TongSanPham</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card shadow border-0 hover-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-circle bg-success-subtle text-success me-3">
+                        <i class="fa-solid fa-paw fs-3"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Bài đăng nhận nuôi</p>
+                        <h4 class="fw-bold mb-0">@ViewBag.TongBaiDang</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card shadow border-0 hover-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-circle bg-warning-subtle text-warning me-3">
+                        <i class="fa-solid fa-list fs-3"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Danh mục</p>
+                        <h4 class="fw-bold mb-0">@ViewBag.TongDanhMuc</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📊 BIỂU ĐỒ -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white fw-semibold">
+                    <i class="fa-solid fa-chart-column me-2 text-primary"></i> Doanh thu 7 ngày gần nhất
+                </div>
+                <div class="card-body">
+                    <canvas id="chartDoanhThu" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white fw-semibold">
+                    <i class="fa-solid fa-chart-pie me-2 text-success"></i> Tỉ lệ trạng thái đơn hàng
+                </div>
+                <div class="card-body">
+                    <canvas id="chartTrangThai" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🧾 ĐƠN HÀNG GẦN ĐÂY -->
+    <!-- 🧾 ĐƠN HÀNG GẦN ĐÂY -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-danger text-white fw-semibold">
+            <i class="fa-solid fa-clock-rotate-left me-2"></i> Đơn hàng gần đây
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã ĐH</th>
+                        <th>Khách hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.DonHangGanDay != null && ((IEnumerable<dynamic>)ViewBag.DonHangGanDay).Any())
+                    {
+                        foreach (var dh in ViewBag.DonHangGanDay)
+                        {
+                            <tr>
+                                <td><strong>#@dh.MaDh</strong></td>
+                                <td>@(dh.MaNguoiDungNavigation?.HoTen ?? "Không rõ")</td>
+                                <td>@(dh.NgayDat?.ToString("dd/MM/yyyy") ?? "-")</td>
+                                <td>@((dh.TongTien ?? 0).ToString("N0")) đ</td>
+                                <td>
+                                    @if (dh.TrangThai == "Chờ xác nhận")
+                                    {
+                                        <span class="badge bg-warning text-dark">@dh.TrangThai</span>
+                                    }
+                                    else if (dh.TrangThai == "Đã giao")
+                                    {
+                                        <span class="badge bg-success">@dh.TrangThai</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@dh.TrangThai</span>
+                                    }
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="xemChiTiet(@dh.MaDh)">
+                                        <i class="fa-solid fa-eye me-1"></i> Xem
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="6" class="text-center text-muted py-3">Không có đơn hàng nào gần đây.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 🪄 Modal chi tiết đơn hàng -->
+    <div class="modal fade" id="modalChiTiet" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="fa-solid fa-file-invoice me-2"></i> Chi tiết đơn hàng</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="loadingSpinner" class="text-center py-5">
+                        <div class="spinner-border text-danger" role="status"></div>
+                        <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
+                    </div>
+                    <div id="modalContent" style="display:none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const labels = @Html.Raw(Json.Serialize(ViewBag.NgayDoanhThu ?? new List<string>()));
+        const doanhThu = @Html.Raw(Json.Serialize(ViewBag.GiaTriDoanhThu ?? new List<decimal>()));
+        const trangThai = @Html.Raw(Json.Serialize(ViewBag.TrangThaiDonHang ?? new List<string>()));
+        const soLuongTrangThai = @Html.Raw(Json.Serialize(ViewBag.SoLuongTrangThai ?? new List<int>()));
+
+        new Chart(document.getElementById('chartDoanhThu'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: doanhThu,
+                    backgroundColor: '#ff4d4d',
+                    borderRadius: 6
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+
+        new Chart(document.getElementById('chartTrangThai'), {
+            type: 'doughnut',
+            data: {
+                labels: trangThai,
+                datasets: [{
+                    data: soLuongTrangThai,
+                    backgroundColor: ['#facc15', '#4ade80', '#60a5fa', '#a78bfa', '#94a3b8']
+                }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } } }
+        });
+    </script>
+
+    <style>
+        .hover-card:hover {
+            transform: translateY(-4px);
+            transition: 0.3s;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+}

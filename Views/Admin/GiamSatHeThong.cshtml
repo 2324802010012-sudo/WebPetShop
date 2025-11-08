@@ -1,0 +1,187 @@
+﻿@model IEnumerable<WebPetShop.Models.LichSuHeThong>
+@{
+    ViewData["Title"] = "Giám sát hệ thống";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var thongKeLoai = ViewBag.ThongKeLoai as List<dynamic> ?? new();
+    var thongKeNgay = ViewBag.ThongKeNgay as List<dynamic> ?? new();
+}
+
+<div class="container-fluid py-4">
+
+    <!-- 🧭 TIÊU ĐỀ -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-danger mb-0">
+                <i class="fa-solid fa-chart-line me-2"></i> Giám sát hệ thống
+            </h2>
+            <p class="text-muted small">Theo dõi hoạt động và thống kê thao tác người dùng 🔍</p>
+        </div>
+        <div class="d-flex gap-2">
+            <select id="filterHanhDong" class="form-select shadow-sm" style="width:200px;">
+                <option value="tatca">Tất cả hành động</option>
+                <option value="Cập nhật thông tin người dùng">Cập nhật thông tin người dùng</option>
+                <option value="Cập nhật trạng thái">Cập nhật trạng thái</option>
+                <option value="Xóa người dùng">Xóa người dùng</option>
+                <option value="Duyệt bài đăng">Duyệt bài đăng</option>
+                <option value="Cập nhật đơn hàng">Cập nhật đơn hàng</option>
+            </select>
+            <input id="searchLog" type="text" class="form-control shadow-sm"
+                   placeholder="🔍 Tìm theo tên, hành động hoặc ghi chú..." style="width:280px;">
+        </div>
+    </div>
+
+    <!-- 📊 BIỂU ĐỒ -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-danger text-white fw-bold">
+                    <i class="fa-solid fa-calendar-week me-2"></i> Thống kê hoạt động 7 ngày gần nhất
+                </div>
+                <div class="card-body">
+                    <canvas id="chartTheoNgay" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-danger text-white fw-bold">
+                    <i class="fa-solid fa-chart-pie me-2"></i> Tỷ lệ loại hành động
+                </div>
+                <div class="card-body">
+                    <canvas id="chartLoai" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🧾 BẢNG GIÁM SÁT -->
+    <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+        <table class="table table-hover align-middle text-center mb-0" id="tblLichSu">
+            <thead>
+                <tr>
+                    <th class="text-aqua bg-danger">Thời gian</th>
+                    <th class="text-aqua bg-danger">Người thực hiện</th>
+                    <th class="text-aqua bg-danger">Hành động</th>
+                    <th class="text-aqua bg-danger">Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        string icon = item.HanhDong switch
+                        {
+                            "Cập nhật thông tin người dùng" => "fa-user-pen text-info",
+                            "Cập nhật trạng thái" => "fa-toggle-on text-warning",
+                            "Xóa người dùng" => "fa-trash text-danger",
+                            "Duyệt bài đăng" => "fa-circle-check text-success",
+                            "Cập nhật đơn hàng" => "fa-truck-fast text-primary",
+                            _ => "fa-circle-info text-secondary"
+                        };
+
+                        <tr>
+                            <td>@item.NgayThucHien!.Value.ToString("dd/MM/yyyy HH:mm")</td>
+
+                            <td>
+                                <i class="fa-solid fa-user text-danger me-1"></i>
+                                @(item.MaNguoiDungNavigation?.HoTen ?? "Không xác định")
+                            </td>
+                            <td>
+                                <span class="badge bg-light border px-3 py-2 shadow-sm">
+                                    <i class="fa-solid @icon me-1"></i>@item.HanhDong
+                                </span>
+                            </td>
+                            <td class="text-start">@item.GhiChu</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="4" class="text-muted py-3">Không có hoạt động nào được ghi nhận.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // 🔸 Dữ liệu từ server (razor -> js)
+        const ngayLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(thongKeNgay.Select(n => n.Ngay)));
+        const soLuongNgay = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(thongKeNgay.Select(n => n.SoLuong)));
+
+        const loaiLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(thongKeLoai.Select(l => l.Ten)));
+        const soLuongLoai = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(thongKeLoai.Select(l => l.SoLuong)));
+
+        // 📊 Biểu đồ cột theo ngày
+        new Chart(document.getElementById('chartTheoNgay'), {
+            type: 'bar',
+            data: {
+                labels: ngayLabels,
+                datasets: [{
+                    label: 'Số hành động',
+                    data: soLuongNgay,
+                    backgroundColor: 'rgba(220,53,69,0.7)',
+                    borderColor: '#dc3545',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // 📊 Biểu đồ tròn theo loại
+        new Chart(document.getElementById('chartLoai'), {
+            type: 'pie',
+            data: {
+                labels: loaiLabels,
+                datasets: [{
+                    data: soLuongLoai,
+                    backgroundColor: [
+                        '#dc3545', '#0d6efd', '#ffc107', '#198754', '#6c757d'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+
+        // 🔎 Lọc theo hành động
+        document.getElementById("filterHanhDong").addEventListener("change", function () {
+            const action = this.value.toLowerCase();
+            document.querySelectorAll("#tblLichSu tbody tr").forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = action === "tatca" || text.includes(action) ? "" : "none";
+            });
+        });
+
+        // 🔍 Tìm kiếm
+        document.getElementById("searchLog").addEventListener("keyup", function () {
+            const keyword = this.value.toLowerCase();
+            document.querySelectorAll("#tblLichSu tbody tr").forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(keyword) ? "" : "none";
+            });
+        });
+    </script>
+
+     <style>
+        #tblLichSu tbody tr:hover {
+            background-color: aqua;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .badge {
+            font-size: 0.9rem;
+        }
+    </style>
+}

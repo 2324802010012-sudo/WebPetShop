@@ -4,14 +4,24 @@
 }
 
 <div class="container py-5 text-center">
-    <div class="alert alert-success p-4 rounded-4 shadow-sm">
-        <h2 class="fw-bold text-success mb-3">🎉 Thanh toán thành công!</h2>
-        <p>Cảm ơn bạn <b>@Model.MaNguoiDungNavigation.HoTen</b> đã đặt hàng tại <b>PetShop</b>.</p>
-        <p>Mã đơn hàng của bạn: <b>#@Model.MaDh</b></p>
-        <p>Ngày đặt: @Model.NgayDat?.ToString("dd/MM/yyyy HH:mm")</p>
-        <hr>
-        <h5 class="text-start text-danger">Sản phẩm bạn đã đặt:</h5>
+    <div class="success-box p-5 shadow-lg position-relative overflow-hidden">
+        <i class="fa-solid fa-circle-check success-icon mb-3"></i>
+        <h2 class="fw-bold text-success mb-2">🎉 Đặt hàng thành công!</h2>
+        <p>Cảm ơn bạn <b>@Model.MaNguoiDungNavigation?.HoTen</b> đã tin tưởng <b>PetShop</b> 💚</p>
+        <p>Mã đơn hàng của bạn: <b class="text-primary">#@Model.MaDh</b></p>
+        <p class="text-muted">Ngày đặt: @Model.NgayDat?.ToString("dd/MM/yyyy HH:mm")</p>
+        <p>
+            <b>Phương thức thanh toán:</b>
+            <span class="text-primary">
+                @(!string.IsNullOrEmpty(Model.PhuongThucThanhToan)
+                                ? Model.PhuongThucThanhToan
+                                : "Không xác định")
+            </span>
+        </p>
 
+        <hr>
+
+        <h5 class="text-start text-danger mt-4">📦 Sản phẩm bạn đã đặt:</h5>
         <table class="table table-bordered align-middle mt-3">
             <thead class="table-success">
                 <tr>
@@ -26,7 +36,7 @@
                 @foreach (var item in Model.ChiTietDonHangs)
                 {
                     <tr>
-                        <td><img src="~/ImagesWWeb/@item.MaSpNavigation.HinhAnh" width="70" /></td>
+                        <td><img src="~/ImagesWWeb/@item.MaSpNavigation.HinhAnh" width="70" class="rounded shadow-sm" /></td>
                         <td>@item.MaSpNavigation.TenSp</td>
                         <td>@item.SoLuong</td>
                         <td>@item.DonGia.ToString("N0") ₫</td>
@@ -37,12 +47,13 @@
         </table>
 
         <div class="text-end fw-bold fs-5 mt-3">
-            Tổng cộng: <span class="text-danger">
+            Tổng cộng:
+            <span class="text-danger">
                 @Model.ChiTietDonHangs.Sum(c => c.SoLuong * c.DonGia).ToString("N0") ₫
             </span>
         </div>
 
-        <a href="/DonHang/LichSu" class="btn btn-outline-primary rounded-pill mt-4">
+        <a href="/DonHang/LichSu" class="btn btn-outline-primary rounded-pill mt-4 me-2">
             <i class="fa fa-clock me-1"></i> Xem lịch sử đơn hàng
         </a>
         <a href="/SanPham" class="btn btn-success rounded-pill mt-4">
@@ -50,3 +61,89 @@
         </a>
     </div>
 </div>
+
+<!-- 🎊 Hiệu ứng CONFETTI -->
+     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+    // 🌟 Hiệu ứng confetti khi load trang
+    window.onload = () => {
+        const duration = 4 * 1000; // 4 giây
+        const end = Date.now() + duration;
+
+        (function frame() {
+            // Hai phía bắn confetti
+            confetti({
+                particleCount: 5,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 }
+            });
+            confetti({
+                particleCount: 5,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 }
+            });
+
+            // Tiếp tục cho đến khi hết thời gian
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+    };
+</script>
+
+<style>
+    .success-box {
+        background: linear-gradient(135deg, #e8f8f5, #ffffff);
+        border: 2px solid #d4efdf;
+        max-width: 900px;
+        margin: auto;
+        border-radius: 25px;
+    }
+
+    .success-icon {
+        font-size: 60px;
+        color: #28a745;
+        animation: pop 0.6s ease;
+    }
+
+    @@keyframes pop {
+        0%
+
+    {
+        transform: scale(0.6);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    }
+
+    .btn {
+        padding: 10px 24px;
+        font-weight: 600;
+        border-radius: 50px;
+    }
+
+    .table-success th {
+        background-color: #d4edda;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border: none;
+    }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+</style>

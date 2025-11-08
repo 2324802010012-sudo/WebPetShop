@@ -591,8 +591,181 @@
             box-shadow: 0 6px 15px rgba(217, 54, 54, 0.3);
         }
         </style>
+<!-- 🏡 DỊCH VỤ NHẬN NUÔI THÚ CƯNG (NỀN TRẮNG HIỆN ĐẠI) -->
+<section class="adopt-section py-5 bg-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <!-- 🔹 Cột hình ảnh -->
+            <div class="col-lg-6 mb-4 mb-lg-0 text-center position-relative">
+                <div class="adopt-img-wrapper shadow-sm rounded-4 overflow-hidden">
+                    <img src="~/ImagesWWeb/bannerNhannuoi.jpeg"
+                         alt="Nhận nuôi thú cưng"
+                         class="img-fluid adopt-img" />
+                    <div class="floating-icons">
+                        <i class="fa-solid fa-heart text-danger"></i>
+                        <i class="fa-solid fa-paw text-warning"></i>
+                        <i class="fa-solid fa-dog text-danger"></i>
+                    </div>
+                </div>
+            </div>
 
+            <!-- 🔹 Cột nội dung -->
+            <div class="col-lg-6">
+                <h2 class="fw-bold text-danger mb-3 d-flex align-items-center">
+                    <i class="fa-solid fa-house-chimney-heart me-2"></i>
+                    Dịch vụ Nhận nuôi thú cưng
+                </h2>
+                <p class="text-muted mb-4 fs-5">
+                    <b>PetShop</b> kết nối những bé thú cưng đáng yêu đang cần mái ấm 💖.<br>
+                    Cùng nhau trao đi yêu thương và mang đến một khởi đầu hạnh phúc hơn cho các bé!
+                </p>
 
+                <div class="row gy-3 mb-4">
+                    <div class="col-12 col-md-6">
+                        <div class="feature-item">
+                            <i class="fa-solid fa-paw feature-icon"></i>
+                            <span>Danh sách thú cưng đang chờ nhận nuôi</span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="feature-item">
+                            <i class="fa-solid fa-shield-dog feature-icon"></i>
+                            <span>Nhận nuôi an toàn, xác minh rõ ràng</span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="feature-item">
+                            <i class="fa-solid fa-laptop feature-icon"></i>
+                            <span>Đăng ký nhận nuôi trực tuyến</span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="feature-item">
+                            <i class="fa-solid fa-hand-holding-heart feature-icon"></i>
+                            <span>Hỗ trợ tư vấn sau nhận nuôi</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="/DichVu#nhannuoi" class="btn btn-danger rounded-pill px-4 py-2 fw-bold">
+                    <i class="fa-solid fa-heart me-1"></i> Khám phá ngay
+                </a>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ✨ CSS PHONG CÁCH NỀN TRẮNG -->
+<style>
+    .adopt-section {
+        background-color: #fff;
+        border-top: 1px solid rgba(217, 54, 54, 0.1);
+        border-bottom: 1px solid rgba(217, 54, 54, 0.1);
+    }
+
+    .adopt-img-wrapper {
+        position: relative;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.5s ease;
+    }
+
+    .adopt-img {
+        border-radius: 20px;
+        transition: all 0.5s ease;
+    }
+
+        .adopt-img:hover {
+            transform: scale(1.04);
+            box-shadow: 0 10px 20px rgba(217, 54, 54, 0.2);
+        }
+
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #fafafa;
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-size: 16px;
+        color: #444;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+        .feature-item:hover {
+            background: #fff4f4;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(217, 54, 54, 0.15);
+        }
+
+    .feature-icon {
+        color: #d93636;
+        font-size: 20px;
+        min-width: 22px;
+    }
+
+    /* Hiệu ứng bong bóng nhẹ */
+    .floating-icons {
+        position: absolute;
+        bottom: 10%;
+        right: 10%;
+        display: flex;
+        gap: 8px;
+        animation: floatIcons 4s infinite ease-in-out;
+    }
+
+        .floating-icons i {
+            font-size: 22px;
+            opacity: 0.8;
+            animation: heartbeat 2s infinite ease-in-out;
+        }
+
+    @@keyframes floatIcons {
+        0%
+
+    {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+
+    }
+
+    @@keyframes heartbeat {
+        0%, 100%
+
+    {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+
+    }
+
+    @@media (max-width: 768px) {
+        .adopt-section
+
+    {
+        text-align: center;
+    }
+
+    .feature-item {
+        justify-content: center;
+    }
+
+    }
+</style>
 
 <!-- 💎 ĐỐI TÁC & THÀNH TỰU PETSHOP -->
 <section id="partners-stats" class="partners-stats-section text-center py-5">

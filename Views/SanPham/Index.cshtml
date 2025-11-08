@@ -165,7 +165,8 @@ else
         const updateLinks = () => {
             const qty = quantityInput.value || 1;
             btnAddToCart.href = `/GioHang/Them/${id}?soLuong=${qty}`;
-            btnBuyNow.href = `/ThanhToan/MuaNgay/${id}?soLuong=${qty}`;
+    btnBuyNow.href = `/GioHang/MuaNgay/${id}?soLuong=${qty}`;
+
         };
 
         // Cập nhật lần đầu

@@ -13,7 +13,7 @@ public partial class LichSuTrangThaiDonHang
 
     public string? TrangThaiMoi { get; set; }
 
-    public DateTime? NgayCapNhat { get; set; }
+    public DateTime NgayCapNhat { get; set; } = DateTime.Now;
 
     public int? NguoiThucHien { get; set; }
 

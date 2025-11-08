@@ -1,0 +1,306 @@
+﻿@model IEnumerable<WebPetShop.Models.NguoiDung>
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container-fluid py-4">
+
+    <!-- 🧮 THỐNG KÊ NHANH -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-danger-subtle">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-danger fw-bold mb-1">Admin</h6>
+                        <h4>@Model.Count(u => u.VaiTro == "Admin")</h4>
+                    </div>
+                    <i class="fa-solid fa-user-shield fa-2x text-danger"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-info-subtle">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-info fw-bold mb-1">Nhân viên</h6>
+                        <h4>@Model.Count(u => u.VaiTro != "Admin" && u.VaiTro != "KhachHang")</h4>
+                    </div>
+                    <i class="fa-solid fa-users-gear fa-2x text-info"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-success-subtle">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-success fw-bold mb-1">Khách hàng</h6>
+                        <h4>@Model.Count(u => u.VaiTro == "KhachHang")</h4>
+                    </div>
+                    <i class="fa-solid fa-user fa-2x text-success"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🧭 THANH CÔNG CỤ -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h2 class="fw-bold text-danger mb-0">
+                <i class="fa-solid fa-users me-2"></i> Quản lý người dùng
+                <span class="badge bg-light text-danger shadow-sm ms-2">Tổng: @Model.Count()</span>
+            </h2>
+            <p class="text-muted small mt-1">Phân loại và quản lý tài khoản nhân viên & khách hàng 🧩</p>
+        </div>
+        <div class="d-flex gap-2">
+            <select id="filterLoai" class="form-select shadow-sm" style="width:180px;">
+                <option value="tatca">Tất cả</option>
+                <option value="nhanvien">Nhân viên</option>
+                <option value="khachhang">Khách hàng</option>
+            </select>
+            <input id="searchBox" type="text" class="form-control shadow-sm"
+                   placeholder="🔍 Tìm theo tên, vai trò hoặc email..." style="width:260px;">
+            <a href="#" class="btn btn-success shadow-sm" data-bs-toggle="tooltip" title="Thêm người dùng mới">
+                <i class="fa-solid fa-user-plus me-1"></i> Thêm
+            </a>
+        </div>
+    </div>
+
+    <!-- 🧾 BẢNG NGƯỜI DÙNG -->
+    <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+        <table class="table table-hover align-middle text-center mb-0" id="tblNguoiDung">
+            <thead>
+                <tr>
+                    <th class="text-white bg-danger">Mã</th>
+                    <th class="text-white bg-danger">Họ tên</th>
+                    <th class="text-white bg-danger">Email</th>
+                    <th class="text-white bg-danger">SĐT</th>
+                    <th class="text-white bg-danger">Vai trò</th>
+                    <th class="text-white bg-danger">Trạng thái</th>
+                    <th class="text-white bg-danger">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var u in Model)
+                    {
+                        string loaiNguoiDung = (u.VaiTro == "KhachHang") ? "khachhang" :
+                        (u.VaiTro == "Admin") ? "admin" : "nhanvien";
+
+                        string roleColor = u.VaiTro switch
+                        {
+                            "Admin" => "bg-danger text-white",
+                            "LeTan" => "bg-info text-dark",
+                            "KeToan" => "bg-warning text-dark",
+                            "Kho" => "bg-secondary text-white",
+                            "ChamSoc" => "bg-success text-white",
+                            "GiaoHang" => "bg-primary text-white",
+                            "KhachHang" => "bg-light text-dark",
+                            _ => "bg-light text-dark"
+                        };
+
+                        <tr data-loai="@loaiNguoiDung">
+                            <td>@u.MaNguoiDung</td>
+                            <td class="fw-semibold">@u.HoTen</td>
+                            <td>@u.Email</td>
+                            <td>@u.SoDienThoai</td>
+                            <td>
+                                <span class="badge @roleColor px-3 py-2 shadow-sm">
+                                    <i class="fa-solid fa-user-tag me-1"></i>@u.VaiTro
+                                </span>
+                            </td>
+                            <td>
+                                @if (u.TrangThai == true)
+                                {
+                                    <span class="badge bg-success px-3 py-2 shadow-sm">
+                                        <i class="fa-solid fa-circle-check me-1"></i>Hoạt động
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary px-3 py-2 shadow-sm">
+                                        <i class="fa-solid fa-lock me-1"></i>Khóa
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-outline-primary btn-sm me-1" onclick="suaNguoiDung(@u.MaNguoiDung)">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-outline-warning btn-sm me-1" onclick="khoaNguoiDung(@u.MaNguoiDung)">
+                                    <i class="fa-solid fa-lock"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="xoaNguoiDung(@u.MaNguoiDung)">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="7" class="text-muted py-3">Không có người dùng nào.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 🧩 MODAL SỬA -->
+<div class="modal fade" id="modalEditUser" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fa-solid fa-pen-to-square me-2"></i>Sửa người dùng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editMaNguoiDung" />
+                <div class="mb-3">
+                    <label class="form-label">Họ tên</label>
+                    <input id="editHoTen" class="form-control shadow-sm" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input id="editEmail" class="form-control shadow-sm" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Số điện thoại</label>
+                    <input id="editSoDienThoai" class="form-control shadow-sm" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Vai trò</label>
+                    <select id="editVaiTro" class="form-select shadow-sm">
+                        <option>Admin</option>
+                        <option>LeTan</option>
+                        <option>KeToan</option>
+                        <option>Kho</option>
+                        <option>ChamSoc</option>
+                        <option>GiaoHang</option>
+                        <option>KhachHang</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button class="btn btn-danger" onclick="luuNguoiDung()">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🧭 TOAST -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+    <div id="toastMsg" class="toast align-items-center text-white border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastBody"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 🔍 Tìm kiếm
+        document.getElementById("searchBox").addEventListener("keyup", function () {
+            const keyword = this.value.toLowerCase();
+            document.querySelectorAll("#tblNguoiDung tbody tr").forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(keyword) ? "" : "none";
+            });
+        });
+
+        // 🔎 Lọc theo phân loại
+        document.getElementById("filterLoai").addEventListener("change", function () {
+            const loai = this.value;
+            document.querySelectorAll("#tblNguoiDung tbody tr").forEach(row => {
+                const userType = row.getAttribute("data-loai");
+                row.style.display = (loai === "tatca" || userType === loai) ? "" : "none";
+            });
+        });
+
+        // ✏️ Sửa người dùng
+        function suaNguoiDung(id) {
+            $.get(`/Admin/LayNguoiDung?id=${id}`, function (res) {
+                if (res.success) {
+                    $('#editMaNguoiDung').val(res.data.maNguoiDung);
+                    $('#editHoTen').val(res.data.hoTen);
+                    $('#editEmail').val(res.data.email);
+                    $('#editSoDienThoai').val(res.data.soDienThoai);
+                    $('#editVaiTro').val(res.data.vaiTro);
+                    $('#modalEditUser').modal('show');
+                } else {
+                    showToast(res.message, false);
+                }
+            });
+        }
+
+        function luuNguoiDung() {
+            const data = {
+                id: $('#editMaNguoiDung').val(),
+                hoTen: $('#editHoTen').val(),
+                email: $('#editEmail').val(),
+                soDienThoai: $('#editSoDienThoai').val(),
+                vaiTro: $('#editVaiTro').val()
+            };
+
+            $.post('/Admin/CapNhatNguoiDung', data, function (res) {
+                showToast(res.message, res.success);
+                if (res.success) setTimeout(() => location.reload(), 1000);
+            });
+        }
+
+        function khoaNguoiDung(id) {
+            if (confirm('Bạn có chắc muốn khóa/mở tài khoản này?')) {
+                $.post('/Admin/KhoaNguoiDung', { id: id }, function (res) {
+                    showToast(res.message, res.success);
+                    if (res.success) setTimeout(() => location.reload(), 1000);
+                });
+            }
+        }
+
+        function xoaNguoiDung(id) {
+            if (confirm('⚠️ Bạn có chắc muốn xóa người dùng này không?')) {
+                $.post('/Admin/XoaNguoiDung', { id: id }, function (res) {
+                    showToast(res.message, res.success);
+                    if (res.success) setTimeout(() => location.reload(), 1000);
+                });
+            }
+        }
+
+        function showToast(msg, success) {
+            const toast = new bootstrap.Toast(document.getElementById('toastMsg'));
+            $('#toastBody').text(msg);
+            $('#toastMsg').removeClass('bg-success bg-danger')
+                .addClass(success ? 'bg-success' : 'bg-danger');
+            toast.show();
+        }
+    </script>
+
+    <style>
+        #tblNguoiDung tbody tr:hover {
+            background-color: #fff5f5;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .toast {
+            animation: slideIn 0.4s ease-in-out;
+        }
+
+        @@keyframes slideIn {
+            from
+
+        {
+            transform: translateX(120%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        }
+    </style>
+}
