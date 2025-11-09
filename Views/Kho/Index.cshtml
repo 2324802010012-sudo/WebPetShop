@@ -1,0 +1,79 @@
+﻿@{
+    Layout = "~/Views/Kho/_LayoutKho.cshtml";
+    ViewData["Title"] = "Tổng quan kho";
+}
+
+<div class="container-fluid">
+    <h2 class="fw-bold mb-4 text-primary"><i class="fa-solid fa-chart-pie me-2"></i> Tổng quan kho</h2>
+
+    <div class="row g-4">
+        <!-- Thẻ thống kê -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="fa-solid fa-box fa-2x text-primary mb-2"></i>
+                    <h5 class="fw-bold">Tổng sản phẩm</h5>
+                    <h3 class="text-primary fw-bold">1,245</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="fa-solid fa-file-import fa-2x text-success mb-2"></i>
+                    <h5 class="fw-bold">Đơn nhập tháng này</h5>
+                    <h3 class="text-success fw-bold">56</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="fa-solid fa-file-export fa-2x text-warning mb-2"></i>
+                    <h5 class="fw-bold">Đơn xuất</h5>
+                    <h3 class="text-warning fw-bold">38</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="fa-solid fa-triangle-exclamation fa-2x text-danger mb-2"></i>
+                    <h5 class="fw-bold">Hàng sắp hết</h5>
+                    <h3 class="text-danger fw-bold">12</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <h4 class="fw-bold mb-3"><i class="fa-solid fa-boxes-stacked me-2"></i> Danh sách hàng sắp hết</h4>
+        <table class="table table-striped align-middle shadow-sm">
+            <thead class="table-danger">
+                <tr class="text-center">
+                    <th>#</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Danh mục</th>
+                    <th>Tồn kho</th>
+                    <th>Mức cảnh báo</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="text-center">
+                    <td>1</td>
+                    <td>Thức ăn Royal Canin 2kg</td>
+                    <td>Thức ăn</td>
+                    <td><span class="badge bg-danger">3</span></td>
+                    <td>5</td>
+                </tr>
+                <tr class="text-center">
+                    <td>2</td>
+                    <td>Áo chó cỡ M</td>
+                    <td>Phụ kiện</td>
+                    <td><span class="badge bg-warning text-dark">4</span></td>
+                    <td>5</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

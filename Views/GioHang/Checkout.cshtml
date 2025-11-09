@@ -20,7 +20,10 @@
                     <i class="fa-solid fa-truck-fast me-2"></i> Thông tin giao hàng
                 </div>
                 <div class="card-body">
-                    <form asp-action="XacNhan" method="post">
+                    <!-- ✅ FIX QUAN TRỌNG: thêm asp-controller="GioHang" để gửi đúng -->
+                    <form asp-action="XacNhan" asp-controller="GioHang" method="post">
+                        @Html.AntiForgeryToken()
+
                         <!-- Họ tên + SĐT -->
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -46,12 +49,9 @@
                                 <option value="">-- Chọn khu vực giao hàng --</option>
                                 @foreach (var phi in Model.PhiGiaoHangList ?? Enumerable.Empty<WebPetShop.Models.PhiGiaoHang>())
                                 {
-                                  
                                     <option value="@phi.MaPhi" data-phi="@phi.PhiCoDinh">
                                         @phi.KhuVuc - @phi.DonViGiao (@(phi.PhiCoDinh?.ToString("N0") ?? "0") đ)
                                     </option>
-
-                             
                                 }
                             </select>
                         </div>
@@ -84,8 +84,6 @@
                                 </div>
                             </div>
                         </div>
-
-                  
 
                         <!-- Nút -->
                         <div class="d-flex justify-content-between mt-4">

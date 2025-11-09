@@ -16,45 +16,55 @@ namespace WebPetShop.Controllers
             _context = context;
         }
 
-        // ========== LOGIN ==========
+        // ==========================================================
+        // 🔹 LOGIN (GET)
+        // ==========================================================
         [HttpGet]
-        public IActionResult Login() => View();
+        public IActionResult Login(string? returnUrl = null)
+        {
+            ViewBag.ReturnUrl = returnUrl;
+            return View();
+        }
 
+        // ==========================================================
+        // 🔹 LOGIN (POST)
+        // ==========================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string TenDangNhap, string MatKhau)
+        public async Task<IActionResult> Login(string TenDangNhap, string MatKhau, string? returnUrl = null)
         {
+            // 1️⃣ Kiểm tra dữ liệu đầu vào
             if (string.IsNullOrWhiteSpace(TenDangNhap) || string.IsNullOrWhiteSpace(MatKhau))
             {
-                TempData["Error"] = "Vui lòng nhập đầy đủ thông tin.";
+                TempData["Error"] = "⚠️ Vui lòng nhập đầy đủ thông tin.";
                 return View();
             }
 
+            // 2️⃣ Tìm tài khoản
             var user = await _context.NguoiDungs
                 .FirstOrDefaultAsync(x => x.TenDangNhap == TenDangNhap);
 
             if (user == null || user.TrangThai == false)
             {
-                TempData["Error"] = "Tài khoản không tồn tại hoặc đã bị khóa.";
+                TempData["Error"] = "❌ Tài khoản không tồn tại hoặc đã bị khóa.";
                 return View();
             }
 
-            // So khớp hash
+            // 3️⃣ So khớp mật khẩu
             var incomingHash = HashPassword(MatKhau);
             bool matched = false;
 
             if (LooksLikeSha256(user.MatKhau))
             {
-                // DB đã lưu dạng SHA256
                 matched = user.MatKhau == incomingHash;
             }
             else
             {
-                // DB còn mật khẩu thuần (cũ) → so plain và nâng cấp lên hash nếu đúng
                 matched = user.MatKhau == MatKhau;
                 if (matched)
                 {
-                    user.MatKhau = incomingHash; // nâng cấp lên SHA256
+                    // ✅ Nếu mật khẩu cũ dạng thường → tự động nâng cấp lên SHA256
+                    user.MatKhau = incomingHash;
                     _context.Update(user);
                     await _context.SaveChangesAsync();
                 }
@@ -62,28 +72,50 @@ namespace WebPetShop.Controllers
 
             if (!matched)
             {
-                TempData["Error"] = "Tên đăng nhập hoặc mật khẩu không đúng.";
+                TempData["Error"] = "❌ Tên đăng nhập hoặc mật khẩu không đúng.";
                 return View();
             }
 
-            // Set session
+            // 4️⃣ Lưu Session
             HttpContext.Session.SetString("UserId", user.MaNguoiDung.ToString());
             HttpContext.Session.SetString("Role", user.VaiTro ?? "KhachHang");
             HttpContext.Session.SetString("HoTen", user.HoTen ?? user.TenDangNhap);
 
-            // Điều hướng theo vai trò
-            // ✅ Điều hướng theo vai trò
-            if ((user.VaiTro ?? "").Equals("Admin", StringComparison.OrdinalIgnoreCase))
+            // 5️⃣ Điều hướng theo vai trò hoặc quay lại trang trước đó
+            // 5️⃣ Điều hướng theo vai trò hoặc quay lại trang trước đó
+            if (!string.IsNullOrEmpty(returnUrl))
+                return Redirect(returnUrl); // Nếu có returnUrl → quay lại trang trước
+
+            string role = user.VaiTro?.Trim() ?? "KhachHang";
+
+            switch (role)
             {
-                return RedirectToAction("Index", "Admin");
+                case "Admin":
+                    return RedirectToAction("Index", "Admin");
+
+                case "LeTan":
+                    return RedirectToAction("Index", "LeTan");
+
+                case "KeToan":
+                    return RedirectToAction("Index", "KeToan");
+
+                case "Kho":
+                    return RedirectToAction("Index", "Kho"); // ✅ VÀO GIAO DIỆN KHO
+
+                case "ChamSoc":
+                    return RedirectToAction("Index", "ChamSoc");
+
+                case "GiaoHang":
+                    return RedirectToAction("Index", "GiaoHang");
+
+                default:
+                    return RedirectToAction("Index", "Home"); // Khách hàng
             }
-
-            return RedirectToAction("Index", "Home");
-
         }
-
-        // ========== REGISTER ==========
-        [HttpGet]
+            // ==========================================================
+            // 🔹 REGISTER
+            // ==========================================================
+            [HttpGet]
         public IActionResult Register() => View();
 
         [HttpPost]
@@ -95,22 +127,21 @@ namespace WebPetShop.Controllers
                 string.IsNullOrWhiteSpace(Email) ||
                 string.IsNullOrWhiteSpace(MatKhau))
             {
-                TempData["Error"] = "Vui lòng nhập đầy đủ thông tin.";
+                TempData["Error"] = "⚠️ Vui lòng nhập đầy đủ thông tin.";
                 return View();
             }
 
-            // Kiểm tra trùng username / email
-            bool existsUser = await _context.NguoiDungs.AnyAsync(x => x.TenDangNhap == TenDangNhap);
-            if (existsUser)
+            // Kiểm tra trùng tên đăng nhập
+            if (await _context.NguoiDungs.AnyAsync(x => x.TenDangNhap == TenDangNhap))
             {
-                TempData["Error"] = "Tên đăng nhập đã tồn tại.";
+                TempData["Error"] = "❌ Tên đăng nhập đã tồn tại.";
                 return View();
             }
 
-            bool existsEmail = await _context.NguoiDungs.AnyAsync(x => x.Email == Email);
-            if (existsEmail)
+            // Kiểm tra trùng email
+            if (await _context.NguoiDungs.AnyAsync(x => x.Email == Email))
             {
-                TempData["Error"] = "Email đã được sử dụng.";
+                TempData["Error"] = "❌ Email đã được sử dụng.";
                 return View();
             }
 
@@ -119,7 +150,7 @@ namespace WebPetShop.Controllers
                 HoTen = HoTen,
                 TenDangNhap = TenDangNhap,
                 Email = Email,
-                MatKhau = HashPassword(MatKhau),  // Lưu dạng SHA256
+                MatKhau = HashPassword(MatKhau),
                 VaiTro = "KhachHang",
                 TrangThai = true
             };
@@ -127,34 +158,44 @@ namespace WebPetShop.Controllers
             _context.NguoiDungs.Add(user);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+            TempData["Success"] = "🎉 Đăng ký thành công! Vui lòng đăng nhập.";
             return RedirectToAction("Login");
         }
 
-        // ========== FORGOT (placeholder theo yêu cầu đồ án) ==========
+        // ==========================================================
+        // 🔹 FORGOT PASSWORD (theo yêu cầu đồ án)
+        // ==========================================================
         [HttpGet]
         public IActionResult Forgot() => View();
 
-        // ========== LOGOUT ==========
+        // ==========================================================
+        // 🔹 LOGOUT
+        // ==========================================================
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
             return RedirectToAction("Login");
         }
 
-        // ========== Helpers ==========
+        // ==========================================================
+        // 🔹 Helper functions (Hash, kiểm tra SHA256)
+        // ==========================================================
         private static string HashPassword(string input)
         {
             using var sha = SHA256.Create();
             var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
             var sb = new StringBuilder(bytes.Length * 2);
-            foreach (var b in bytes) sb.Append(b.ToString("x2"));
+            foreach (var b in bytes)
+                sb.Append(b.ToString("x2"));
             return sb.ToString();
         }
 
         private static bool LooksLikeSha256(string? s)
             => !string.IsNullOrEmpty(s) && s.Length == 64 && s.All(IsHex);
+
         private static bool IsHex(char c)
-            => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+            => (c >= '0' && c <= '9') ||
+               (c >= 'a' && c <= 'f') ||
+               (c >= 'A' && c <= 'F');
     }
 }

@@ -109,7 +109,8 @@ namespace WebPetShop.Controllers
             if (string.IsNullOrEmpty(userId))
             {
                 TempData["Error"] = "⚠️ Vui lòng đăng nhập để mua hàng!";
-                return RedirectToAction("Login", "Auth");
+                return RedirectToAction("Login", "Auth",
+                    new { returnUrl = Url.Action("MuaNgay", "GioHang", new { id, soLuong }) });
             }
 
             var sp = _context.SanPhams.Find(id);
@@ -152,102 +153,31 @@ namespace WebPetShop.Controllers
                 return RedirectToAction("Index");
             }
 
-            return View("~/Views/ThanhToan/Index.cshtml", gioHang);
+            // ✅ Tạo model CheckoutVM để hiển thị đúng với view
+            var vm = new CheckoutVM
+            {
+                GioHang = gioHang.ChiTietGioHangs.ToList(),
+                PhiGiaoHangList = _context.PhiGiaoHangs.ToList(),
+                TienHang = gioHang.ChiTietGioHangs.Sum(ct => (ct.SoLuong ?? 1) * ct.MaSpNavigation.Gia),
+                GiamGia = 0,
+                PhiVanChuyen = 0,
+                TongTien = gioHang.ChiTietGioHangs.Sum(ct => (ct.SoLuong ?? 1) * ct.MaSpNavigation.Gia)
+            };
+
+            return View("~/Views/ThanhToan/Checkout.cshtml", vm);
         }
 
-        // ✅ XÁC NHẬN ĐẶT HÀNG (GIỎ HÀNG + MUA NGAY)
+        // ✅ XÁC NHẬN ĐẶT HÀNG (THEO CHECKOUTVM)
         [HttpPost]
-        public IActionResult XacNhan(string HoTen, string SoDienThoai, string DiaChi, string? GhiChu, int? MaSp, int? SoLuong, string PhuongThuc)
+        [ValidateAntiForgeryToken]
+        public IActionResult XacNhan(CheckoutVM model)
         {
             string? userId = HttpContext.Session.GetString("UserId");
             if (string.IsNullOrEmpty(userId))
                 return RedirectToAction("Login", "Auth");
 
             int maNguoiDung = int.Parse(userId);
-            decimal tongTien = 0;
 
-            // ============================================================
-            // 🔹 TRƯỜNG HỢP 1: MUA NGAY (1 sản phẩm duy nhất)
-            // ============================================================
-            if (MaSp != null && SoLuong != null)
-            {
-                var sp = _context.SanPhams.Find(MaSp);
-                if (sp == null)
-                    return NotFound("Không tìm thấy sản phẩm cần mua.");
-
-                // ✅ Kiểm tra tồn kho
-                if (sp.SoLuongTon < SoLuong.Value)
-                {
-                    TempData["Error"] = $"❌ Sản phẩm '{sp.TenSp}' chỉ còn {sp.SoLuongTon} sản phẩm trong kho.";
-                    return RedirectToAction("Index", "GioHang");
-                }
-
-                tongTien = sp.Gia * SoLuong.Value;
-
-                var donHang = new DonHang
-                {
-                    MaNguoiDung = maNguoiDung,
-                    NgayDat = DateTime.Now,
-                    TrangThai = "Chờ xác nhận",
-                    HoTenNhan = HoTen,
-                    SoDienThoai = SoDienThoai,
-                    DiaChiGiao = DiaChi,
-                    PhuongThucThanhToan = PhuongThuc,
-                    GhiChu = GhiChu
-                };
-                _context.DonHangs.Add(donHang);
-                _context.SaveChanges();
-
-                _context.ChiTietDonHangs.Add(new ChiTietDonHang
-                {
-                    MaDh = donHang.MaDh,
-                    MaSp = sp.MaSp,
-                    SoLuong = SoLuong.Value,
-                    DonGia = sp.Gia
-                });
-                _context.SaveChanges();
-
-                // ✅ Trừ tồn kho sản phẩm
-                sp.SoLuongTon -= SoLuong.Value;
-                _context.Update(sp);
-                _context.SaveChanges();
-
-                // ✅ Lưu lịch sử đơn hàng
-                _context.LichSuTrangThaiDonHangs.Add(new LichSuTrangThaiDonHang
-                {
-                    MaDh = donHang.MaDh,
-                    TrangThaiCu = null,
-                    TrangThaiMoi = "Chờ xác nhận",
-                    NguoiThucHien = maNguoiDung,
-                    NgayCapNhat = DateTime.Now
-                });
-                _context.SaveChanges();
-
-                // 🧾 Nếu chọn Online → thêm bản ghi ThanhToanTrucTuyen
-                if (PhuongThuc == "Online")
-                {
-                    var thanhToan = new ThanhToanTrucTuyen
-                    {
-                        MaDh = donHang.MaDh,
-                        MaGiaoDich = "GD" + DateTime.Now.Ticks,
-                        PhuongThuc = "Online",
-                        SoTien = tongTien,
-                        TrangThai = "Đang xử lý"
-                    };
-                    _context.ThanhToanTrucTuyens.Add(thanhToan);
-                    _context.SaveChanges();
-
-                    // donHang.MaTttt = thanhToan.MaTttt; // nếu có cột
-                    _context.SaveChanges();
-                }
-
-                TempData["Success"] = "🎉 Đặt hàng thành công!";
-                return RedirectToAction("ThanhToanThanhCong", new { maDh = donHang.MaDh });
-            }
-
-            // ============================================================
-            // 🔹 TRƯỜNG HỢP 2: THANH TOÁN GIỎ HÀNG
-            // ============================================================
             var gioHang = _context.GioHangs
                 .Include(g => g.ChiTietGioHangs)
                     .ThenInclude(ct => ct.MaSpNavigation)
@@ -259,54 +189,49 @@ namespace WebPetShop.Controllers
                 return RedirectToAction("Index");
             }
 
-            foreach (var ct in gioHang.ChiTietGioHangs)
-            {
-                // ✅ Kiểm tra tồn kho từng sản phẩm
-                if (ct.MaSpNavigation.SoLuongTon < ct.SoLuong)
-                {
-                    TempData["Error"] = $"❌ Sản phẩm '{ct.MaSpNavigation.TenSp}' chỉ còn {ct.MaSpNavigation.SoLuongTon} trong kho.";
-                    return RedirectToAction("Index");
-                }
-
-                tongTien += (ct.SoLuong ?? 1) * ct.MaSpNavigation.Gia;
-            }
-
-            var donHangGH = new DonHang
+            // ✅ Tạo đơn hàng
+            var donHang = new DonHang
             {
                 MaNguoiDung = maNguoiDung,
                 NgayDat = DateTime.Now,
                 TrangThai = "Chờ xác nhận",
-                HoTenNhan = HoTen,
-                SoDienThoai = SoDienThoai,
-                DiaChiGiao = DiaChi,
-                PhuongThucThanhToan = PhuongThuc,
-                GhiChu = GhiChu
+                HoTenNhan = model.HoTenNhan,
+                SoDienThoai = model.SDTNhan,
+                DiaChiGiao = model.DiaChiGiao,
+                PhuongThucThanhToan = model.PhuongThuc,
+     
             };
-            _context.DonHangs.Add(donHangGH);
+            _context.DonHangs.Add(donHang);
             _context.SaveChanges();
 
+            decimal tongTien = 0;
+
+            // ✅ Tạo chi tiết đơn hàng
             foreach (var ct in gioHang.ChiTietGioHangs)
             {
                 _context.ChiTietDonHangs.Add(new ChiTietDonHang
                 {
-                    MaDh = donHangGH.MaDh,
+                    MaDh = donHang.MaDh,
                     MaSp = ct.MaSp,
                     SoLuong = ct.SoLuong ?? 1,
                     DonGia = ct.MaSpNavigation.Gia
                 });
 
-                // ✅ Trừ tồn kho
+                // Trừ tồn kho
                 ct.MaSpNavigation.SoLuongTon -= (ct.SoLuong ?? 1);
                 _context.Update(ct.MaSpNavigation);
+
+                tongTien += (ct.SoLuong ?? 1) * ct.MaSpNavigation.Gia;
             }
 
+            // ✅ Xóa giỏ hàng sau khi đặt
             _context.ChiTietGioHangs.RemoveRange(gioHang.ChiTietGioHangs);
             _context.SaveChanges();
 
-            // ✅ Lưu lịch sử đơn hàng
+            // ✅ Ghi lịch sử
             _context.LichSuTrangThaiDonHangs.Add(new LichSuTrangThaiDonHang
             {
-                MaDh = donHangGH.MaDh,
+                MaDh = donHang.MaDh,
                 TrangThaiCu = null,
                 TrangThaiMoi = "Chờ xác nhận",
                 NguoiThucHien = maNguoiDung,
@@ -314,12 +239,12 @@ namespace WebPetShop.Controllers
             });
             _context.SaveChanges();
 
-            // 🧾 Nếu chọn Online → thêm bản ghi ThanhToanTrucTuyen
-            if (PhuongThuc == "Online")
+            // ✅ Nếu chọn Online → tạo thanh toán
+            if (model.PhuongThuc == "Online")
             {
                 var thanhToan = new ThanhToanTrucTuyen
                 {
-                    MaDh = donHangGH.MaDh,
+                    MaDh = donHang.MaDh,
                     MaGiaoDich = "GD" + DateTime.Now.Ticks,
                     PhuongThuc = "Online",
                     SoTien = tongTien,
@@ -327,13 +252,10 @@ namespace WebPetShop.Controllers
                 };
                 _context.ThanhToanTrucTuyens.Add(thanhToan);
                 _context.SaveChanges();
-
-                // donHangGH.MaTttt = thanhToan.MaTttt; // nếu có cột này
-                _context.SaveChanges();
             }
 
             TempData["Success"] = "🎉 Đặt hàng thành công!";
-            return RedirectToAction("ThanhToanThanhCong", new { maDh = donHangGH.MaDh });
+            return RedirectToAction("ThanhToanThanhCong", new { maDh = donHang.MaDh });
         }
 
         // 🎉 TRANG XÁC NHẬN ĐẶT HÀNG THÀNH CÔNG
