@@ -1,0 +1,35 @@
+﻿@model IEnumerable<WebPetShop.Models.DonHang>
+@{
+    ViewData["Title"] = "Danh sách giao hàng";
+    Layout = "~/Views/Shared/_LayoutGiaoHang.cshtml";
+}
+
+<h3 class="text-success mb-3"><i class="fa-solid fa-truck"></i> Danh sách giao hàng</h3>
+
+<table class="table table-striped bg-white shadow-sm">
+    <thead class="table-success">
+        <tr>
+            <th>Mã đơn</th>
+            <th>Khách hàng</th>
+            <th>Địa chỉ</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.MaDh</td>
+                <td>@item.TenKhachHang</td>
+                <td>@item.DiaChiGiao</td>
+                <td><span class="badge bg-warning">@item.TrangThai</span></td>
+                <td>
+                    <a href="/GiaoHang/CapNhatTrangThai/@item.MaDh" class="btn btn-sm btn-primary">
+                        <i class="fa-solid fa-pen"></i> Cập nhật
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,259 @@
+﻿@model IEnumerable<WebPetShop.Models.SanPham>
+@{
+    ViewData["Title"] = "Quản lý hàng hóa";
+    Layout = "~/Views/Kho/_LayoutKho.cshtml";
+}
+
+<div class="container-fluid py-4">
+
+    <!-- ✅ THỐNG KÊ NHANH -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-danger-subtle">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-danger fw-semibold mb-1">Tổng sản phẩm</h6>
+                        <h3 class="fw-bold text-dark">@Model.Count()</h3>
+                    </div>
+                    <i class="fa-solid fa-box-open fs-2 text-danger"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-warning-subtle">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-warning fw-semibold mb-1">Sắp hết hàng (≤ 5)</h6>
+                        <h3 class="fw-bold text-dark">@Model.Count(x => x.SoLuongTon <= 5)</h3>
+                    </div>
+                    <i class="fa-solid fa-triangle-exclamation fs-2 text-warning"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-success-subtle">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-success fw-semibold mb-1">Đang bán</h6>
+                        <h3 class="fw-bold text-dark">@Model.Count()</h3>
+                    </div>
+                    <i class="fa-solid fa-tags fs-2 text-success"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-info-subtle">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-info fw-semibold mb-1">Tổng tồn kho</h6>
+                        <h3 class="fw-bold text-dark">@Model.Sum(x => x.SoLuongTon)</h3>
+                    </div>
+                    <i class="fa-solid fa-warehouse fs-2 text-info"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🧭 TIÊU ĐỀ & THANH CÔNG CỤ -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <h3 class="fw-bold text-danger mb-0">
+            <i class="fa-solid fa-boxes-stacked me-2"></i> Quản lý hàng hóa
+        </h3>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="ThemSanPham" class="btn btn-danger fw-semibold shadow-sm">
+                <i class="fa-solid fa-square-plus me-1"></i> Thêm sản phẩm
+            </a>
+
+            <button id="toggleView" class="btn btn-outline-danger fw-semibold shadow-sm">
+                <i class="fa-solid fa-table-cells-large me-1"></i> Chuyển chế độ xem
+            </button>
+
+            <div class="input-group shadow-sm" style="min-width:250px;">
+                <input type="text" id="searchInput" class="form-control" placeholder="🔍 Tìm sản phẩm..." />
+                <button class="btn btn-outline-danger" id="btnSearch">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔍 BỘ LỌC -->
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <select id="filterDanhMuc" class="form-select w-auto">
+            <option value="">Tất cả danh mục</option>
+            @foreach (var dm in ViewBag.DanhMucs)
+            {
+                <option value="@dm.TenDanhMuc">@dm.TenDanhMuc</option>
+            }
+        </select>
+
+        <select id="filterGia" class="form-select w-auto">
+            <option value="">Tất cả giá</option>
+            <option value="1">Dưới 100.000 ₫</option>
+            <option value="2">100.000 - 500.000 ₫</option>
+            <option value="3">Trên 500.000 ₫</option>
+        </select>
+
+        <select id="filterTon" class="form-select w-auto">
+            <option value="">Tồn kho</option>
+            <option value="1">Dưới 5</option>
+            <option value="2">5 - 20</option>
+            <option value="3">Trên 20</option>
+        </select>
+    </div>
+
+    <!-- 🧾 BẢNG DANH SÁCH -->
+    <div id="tableView" class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-danger text-center">
+                    <tr>
+                        <th>#</th>
+                        <th>Ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Giá bán</th>
+                        <th>Tồn kho</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    @if (Model != null && Model.Any())
+                    {
+                        int i = 1;
+                        foreach (var sp in Model)
+                        {
+                            <tr class="text-center align-middle">
+                                <td>@i</td>
+                                <td>
+                                    <img src="~/ImagesWWeb/@sp.HinhAnh"
+                                         class="rounded border shadow-sm product-thumb"
+                                         width="70" height="70"
+                                         data-bs-toggle="modal" data-bs-target="#productModal"
+                                         data-name="@sp.TenSp"
+                                         data-category="@sp.MaDanhMucNavigation?.TenDanhMuc"
+                                         data-price="@sp.Gia.ToString("N0") ₫"
+                                         data-desc="@sp.MoTa"
+                                         onerror="this.src='/ImagesWWeb/no-image.png';" />
+                                </td>
+                                <td class="text-start fw-semibold">@sp.TenSp</td>
+                                <td>@sp.MaDanhMucNavigation?.TenDanhMuc</td>
+                                <td class="text-danger fw-bold">@sp.Gia.ToString("N0") ₫</td>
+                                <td>
+                                    <span class="badge fs-6 px-3 @(sp.SoLuongTon <= 3 ? "bg-danger" : sp.SoLuongTon <= 10 ? "bg-warning text-dark" : "bg-success")">
+                                        @sp.SoLuongTon
+                                    </span>
+                                </td>
+                                <td><span class="badge bg-info text-dark">Đang bán</span></td>
+                                <td>
+                                    <a asp-action="ChinhSua" asp-route-id="@sp.MaSp" class="btn btn-sm btn-outline-primary me-1">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <a asp-action="Xoa" asp-route-id="@sp.MaSp" class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Bạn chắc chắn muốn xóa sản phẩm này?');">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="8" class="text-center py-4 text-muted">Không có sản phẩm nào trong kho.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 🧩 GRID VIEW -->
+    <div id="gridView" class="row g-3 d-none mt-1">
+        @foreach (var sp in Model)
+        {
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card h-100 shadow-sm border-0 product-card">
+                    <img src="~/ImagesWWeb/@sp.HinhAnh" class="card-img-top" alt="@sp.TenSp"
+                         onerror="this.src='/ImagesWWeb/no-image.png';"
+                         data-bs-toggle="modal" data-bs-target="#productModal"
+                         data-name="@sp.TenSp"
+                         data-category="@sp.MaDanhMucNavigation?.TenDanhMuc"
+                         data-price="@sp.Gia.ToString("N0") ₫"
+                         data-desc="@sp.MoTa">
+                    <div class="card-body">
+                        <h6 class="fw-semibold text-dark text-truncate">@sp.TenSp</h6>
+                        <p class="text-danger fw-bold mb-2">@sp.Gia.ToString("N0") ₫</p>
+                        <span class="badge bg-light text-dark">Tồn: @sp.SoLuongTon</span>
+                        <p class="text-muted small mt-2">@sp.MaDanhMucNavigation?.TenDanhMuc</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- 🖼️ MODAL XEM CHI TIẾT -->
+<div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Chi tiết sản phẩm</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body d-flex flex-wrap gap-4 align-items-center">
+                <img id="modalImage" src="" width="250" class="rounded shadow-sm border">
+                <div>
+                    <h5 id="modalName" class="fw-bold text-danger"></h5>
+                    <p id="modalCategory" class="text-muted mb-1"></p>
+                    <p id="modalPrice" class="fw-bold fs-5 text-dark"></p>
+                    <p id="modalDesc" class="small text-secondary"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const tableView = document.getElementById('tableView');
+        const gridView = document.getElementById('gridView');
+        document.getElementById('toggleView').addEventListener('click', () => {
+            tableView.classList.toggle('d-none');
+            gridView.classList.toggle('d-none');
+        });
+
+        // 🔍 Tìm kiếm
+        const searchInput = document.getElementById('searchInput');
+        document.getElementById('btnSearch').addEventListener('click', () => {
+            const keyword = searchInput.value.toLowerCase();
+            document.querySelectorAll('#tableBody tr').forEach(row => {
+                const name = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase();
+                row.style.display = name && name.includes(keyword) ? '' : 'none';
+            });
+        });
+
+        // 🔎 Modal xem chi tiết
+        const modal = document.getElementById('productModal');
+        modal.addEventListener('show.bs.modal', e => {
+            const img = e.relatedTarget;
+            document.getElementById('modalName').textContent = img.dataset.name;
+            document.getElementById('modalCategory').textContent = img.dataset.category;
+            document.getElementById('modalPrice').textContent = img.dataset.price;
+            document.getElementById('modalDesc').textContent = img.dataset.desc || "Không có mô tả.";
+            document.getElementById('modalImage').src = img.src;
+        });
+    </script>
+
+    <style>
+        .product-thumb:hover, .product-card img:hover {
+            transform: scale(1.05);
+            transition: all 0.25s ease;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+    </style>
+}

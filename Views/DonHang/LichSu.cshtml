@@ -1,85 +1,112 @@
 ﻿@model IEnumerable<WebPetShop.Models.DonHang>
 @{
     ViewData["Title"] = "Lịch sử đơn hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-
 <div class="container py-5">
-    <h2 class="fw-bold text-danger text-center mb-4">
+    <h3 class="fw-bold text-danger text-center mb-4">
         <i class="fa-solid fa-box-archive me-2"></i> Lịch sử đơn hàng của bạn
-    </h2>
+    </h3>
 
+    <!-- 🧭 THANH LỌC TRẠNG THÁI -->
+    <!-- 🧭 THANH LỌC TRẠNG THÁI -->
+    <ul class="nav nav-pills justify-content-center mb-4 order-filter flex-wrap gap-2">
+        <li class="nav-item">
+            <a class="nav-link active" data-filter="all">
+                <i class="fa-solid fa-list me-1"></i> Tất cả
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-filter="Chờ xác nhận">
+                <i class="fa-regular fa-clock me-1 text-warning"></i> Chờ xác nhận
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-filter="Đã xác nhận">
+                <i class="fa-solid fa-circle-check me-1 text-info"></i> Đã xác nhận
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-filter="Đang giao">
+                <i class="fa-solid fa-truck-fast me-1 text-primary"></i> Đang giao
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-filter="Hoàn tất">
+                <i class="fa-solid fa-check-double me-1 text-success"></i> Hoàn tất
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-filter="Đã hủy">
+                <i class="fa-solid fa-xmark me-1 text-danger"></i> Đã hủy
+            </a>
+        </li>
+    </ul>
+
+    <!-- 🧾 DANH SÁCH ĐƠN -->
     @if (!Model.Any())
     {
-        <div class="alert alert-info text-center shadow-sm">
-            🐾 Bạn chưa có đơn hàng nào!
-            <a href="/SanPham" class="btn btn-danger btn-sm ms-2">
-                <i class="fa-solid fa-shopping-bag me-1"></i> Mua sắm ngay
+        <div class="text-center py-5">
+            <img src="~/images/empty-cart.png" width="200" class="mb-3" />
+            <h5 class="text-muted">Bạn chưa có đơn hàng nào.</h5>
+            <a href="/SanPham" class="btn btn-danger mt-3">
+                <i class="fa-solid fa-store me-2"></i> Mua sắm ngay
             </a>
         </div>
     }
     else
     {
-        foreach (var dh in Model)
+        foreach (var don in Model)
         {
-            var tong = dh.ChiTietDonHangs.Sum(c => c.SoLuong * c.DonGia);
+            string badgeClass = don.TrangThai switch
+            {
+                "Chờ xác nhận" => "bg-warning text-dark",
+                "Đã xác nhận" => "bg-info text-white",
+                "Đang giao" => "bg-primary text-white",
+                "Hoàn tất" => "bg-success text-white",
+                "Đã hủy" => "bg-dark text-white",
+                _ => "bg-secondary text-white"
+            };
 
-            <div class="card mb-4 shadow-sm border-0 rounded-4">
-                <!-- Header -->
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <div class="order-card card shadow-sm mb-4 border-0 rounded-4" data-status="@don.TrangThai">
+                <div class="card-header d-flex justify-content-between align-items-center text-white py-3"
+                     style="background: linear-gradient(90deg,#f44336,#e53935);">
                     <div>
-                        <b>Mã đơn:</b> #@dh.MaDh
-                        <span class="text-muted ms-3">
-                            <i class="fa-regular fa-clock me-1"></i>
-                            @dh.NgayDat?.ToString("dd/MM/yyyy HH:mm")
-                        </span>
+                        <strong>#@don.MaDh</strong> • <i class="fa-regular fa-clock me-1"></i>@don.NgayDat?.ToString("dd/MM/yyyy HH:mm")
                     </div>
-
-                    @{
-                        string badgeClass = dh.TrangThai switch
-                        {
-                            "Hoàn tất" => "bg-success",
-                            "Đang giao" => "bg-primary",
-                            "Đã hủy" => "bg-danger",
-                            _ => "bg-warning text-dark"
-                        };
-                    }
-
-                    <span class="badge rounded-pill px-3 py-2 @badgeClass">
-                        @dh.TrangThai
-                    </span>
+                    <span class="badge @badgeClass px-3 py-2 rounded-pill">@don.TrangThai</span>
                 </div>
 
-                <!-- Body -->
-                <div class="card-body">
-                    @foreach (var ct in dh.ChiTietDonHangs)
+                <div class="card-body bg-light">
+                    @foreach (var ct in don.ChiTietDonHangs)
                     {
-                        <div class="d-flex align-items-center mb-3">
-                            <img src="~/ImagesWWeb/@ct.MaSpNavigation.HinhAnh"
-                                 width="70" height="70"
-                                 class="rounded me-3 shadow-sm"
-                                 style="object-fit:cover;">
-                            <div class="flex-fill">
-                                <div class="fw-semibold">@ct.MaSpNavigation.TenSp</div>
-                                <div class="small text-muted">Số lượng: @ct.SoLuong</div>
+                        <div class="d-flex align-items-center justify-content-between border-bottom py-2">
+                            <div class="d-flex align-items-center">
+                                <img src="@Url.Content("~/ImagesWWeb/" + ct.MaSpNavigation.HinhAnh)"
+                                     width="65" height="65" class="rounded me-3 border"
+                                     style="object-fit:cover;">
+
+                                <div>
+                                    <div class="fw-semibold">@ct.MaSpNavigation.TenSp</div>
+                                    <div class="text-muted small">Số lượng: @ct.SoLuong</div>
+                                </div>
                             </div>
-                            <div class="fw-bold text-danger">
-                                @((ct.SoLuong * ct.DonGia).ToString("N0")) ₫
-                            </div>
+                            <div class="fw-bold text-danger">@ct.DonGia.ToString("N0") đ</div>
                         </div>
                     }
 
-                    <hr />
-
-                    <div class="text-end fw-bold fs-5">
-                        Tổng: <span class="text-danger">@tong.ToString("N0") ₫</span>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="text-muted small">
+                            <i class="fa-solid fa-credit-card me-1"></i> @don.PhuongThucThanhToan
+                        </div>
+                     
                     </div>
                 </div>
 
-                <!-- Footer -->
-                <div class="card-footer text-end bg-white">
-                    <a href="/DonHang/ChiTiet/@dh.MaDh" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                <div class="card-footer bg-white text-end">
+                    <a href="/DonHang/ChiTiet/@don.MaDh"
+                       class="btn btn-outline-danger rounded-pill px-4 fw-semibold hover-btn">
                         <i class="fa-solid fa-eye me-1"></i> Xem chi tiết
                     </a>
                 </div>
@@ -88,35 +115,55 @@
     }
 </div>
 
- <style>
-    .card {
-        border-radius: 16px;
-        transition: all 0.3s ease;
+<style>
+    /* 🌈 Thanh lọc trạng thái đẹp & rõ màu chữ */
+    .order-filter .nav-link {
+        color: #000 !important; /* ⚫ Màu chữ đen mặc định */
+        font-weight: 600;
+        border-radius: 30px;
+        padding: 8px 18px;
+        background-color: #fff; /* Nền trắng mặc định */
+        border: 1px solid #ddd;
+        transition: all 0.25s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+        .order-filter .nav-link i {
+            font-size: 1rem;
+            color: #000; /* ⚫ Icon cũng đen theo */
         }
 
-    .badge {
-        font-size: 0.9rem;
-    }
+        .order-filter .nav-link:hover {
+            background-color: #fff4f4;
+            color: #d32f2f !important;
+            border-color: #f8d7da;
+            transform: translateY(-1px);
+        }
 
-    .card-header {
-        font-size: 0.95rem;
-        font-weight: 500;
-    }
+        .order-filter .nav-link.active {
+            background-color: #d32f2f !important;
+            color: #fff !important; /* ⚪ Khi click -> chữ trắng */
+            border-color: #d32f2f;
+            box-shadow: 0 3px 10px rgba(211, 47, 47, 0.3);
+        }
 
-    .card-body {
-        background-color: #fffefb;
-    }
+            .order-filter .nav-link.active i {
+                color: #fff !important; /* ⚪ Icon cũng đổi trắng khi active */
+            }
 
-    .text-danger {
-        color: #d63031 !important;
-    }
-
-    hr {
-        border-top: 1px solid #eee;
-    }
 </style>
+
+<script>
+    // 🧩 JS: Lọc đơn theo trạng thái
+    document.querySelectorAll(".order-filter .nav-link").forEach(tab => {
+        tab.addEventListener("click", function () {
+            document.querySelectorAll(".order-filter .nav-link").forEach(t => t.classList.remove("active"));
+            this.classList.add("active");
+
+            const filter = this.dataset.filter;
+            document.querySelectorAll(".order-card").forEach(card => {
+                card.style.display = (filter === "all" || card.dataset.status === filter) ? "block" : "none";
+            });
+        });
+    });
+</script>

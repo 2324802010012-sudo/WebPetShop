@@ -276,13 +276,22 @@
                         {
                             <li><a class="nav-link" href="/Auth/Login">Đăng nhập</a></li>
                         }
-
                         <li>
                             <a href="/GioHang" class="cart-icon nav-link position-relative">
                                 <i class="fa-solid fa-cart-shopping"></i>
-                                <span class="cart-badge">3</span>
+
+                                @{
+                                    // ✅ Lấy số lượng sản phẩm trong session
+                                    var cartCount = Context.Session.GetInt32("CartCount") ?? 0;
+                                }
+
+                                @if (cartCount > 0)
+                                {
+                                    <span class="cart-badge">@cartCount</span>
+                                }
                             </a>
                         </li>
+
                     </ul>
                 </div>
             </div>

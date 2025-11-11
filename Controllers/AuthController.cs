@@ -80,6 +80,14 @@ namespace WebPetShop.Controllers
             HttpContext.Session.SetString("UserId", user.MaNguoiDung.ToString());
             HttpContext.Session.SetString("Role", user.VaiTro ?? "KhachHang");
             HttpContext.Session.SetString("HoTen", user.HoTen ?? user.TenDangNhap);
+            // ✅ Tự động cập nhật số lượng giỏ hàng sau khi đăng nhập
+            var gioHang = _context.GioHangs
+                .Include(g => g.ChiTietGioHangs)
+                .FirstOrDefault(g => g.MaNguoiDung == user.MaNguoiDung);
+
+            int tongSoLuong = gioHang?.ChiTietGioHangs.Sum(c => c.SoLuong ?? 0) ?? 0;
+            HttpContext.Session.SetInt32("CartCount", tongSoLuong);
+
 
             // 5️⃣ Điều hướng theo vai trò hoặc quay lại trang trước đó
             // 5️⃣ Điều hướng theo vai trò hoặc quay lại trang trước đó

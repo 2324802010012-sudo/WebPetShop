@@ -72,6 +72,8 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<YeuThich> YeuThiches { get; set; }
     public virtual DbSet<VDanhSachThuCungNhanNuoi> DanhSachThuCungNhanNuoi { get; set; } = null!;
+    public DbSet<PhieuXuat> PhieuXuats { get; set; }
+    public DbSet<ChiTietPhieuXuat> ChiTietPhieuXuats { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -667,9 +669,90 @@ public partial class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__YeuThich__MaSP__32AB8735");
         });
+        // ======================================================
+        // 📤 PHIẾU XUẤT
+        // ======================================================
+        modelBuilder.Entity<PhieuXuat>(entity =>
+        {
+            entity.HasKey(e => e.MaPx).HasName("PK__PhieuXuat__2725E7CACE181046");
+            entity.ToTable("PhieuXuat");
+
+            entity.Property(e => e.MaPx).HasColumnName("MaPX");
+            entity.Property(e => e.MaDh).HasColumnName("MaDH");
+            entity.Property(e => e.NgayXuat)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.TongTien)
+                .HasDefaultValue(0m)
+                .HasColumnType("decimal(18, 2)");
+
+            // ✅ Nhân viên xuất kho
+            entity.HasOne(d => d.MaNhanVienNavigation)
+                .WithMany()
+                .HasForeignKey(d => d.MaNhanVien)
+                .HasConstraintName("FK_PhieuXuat_NhanVien");
+
+            // ✅ Khách hàng nhận hàng
+            entity.HasOne(d => d.MaKhachHangNavigation)
+                .WithMany()
+                .HasForeignKey(d => d.MaKhachHang)
+                .HasConstraintName("FK_PhieuXuat_KhachHang");
+
+            // ✅ Liên kết đến đơn hàng (nếu có)
+            entity.HasOne(d => d.MaDhNavigation)
+                .WithMany(p => p.PhieuXuats)
+                .HasForeignKey(d => d.MaDh)
+                .HasConstraintName("FK_PhieuXuat_DonHang");
+        });
+
+        // ======================================================
+        // 📦 CHI TIẾT PHIẾU XUẤT
+        // ======================================================
+        modelBuilder.Entity<ChiTietPhieuXuat>(entity =>
+        {
+            entity.HasKey(e => e.MaCtpx).HasName("PK__ChiTietPhieuXuat");
+            entity.ToTable("ChiTietPhieuXuat");
+
+            entity.Property(e => e.MaCtpx).HasColumnName("MaCTPX");
+            entity.Property(e => e.MaPx).HasColumnName("MaPX");
+            entity.Property(e => e.MaSp).HasColumnName("MaSP");
+            entity.Property(e => e.SoLuong).HasDefaultValue(1);
+            entity.Property(e => e.DonGia).HasColumnType("decimal(18, 2)");
+
+            // 🔗 FK đến PhieuXuat
+            entity.HasOne(d => d.MaPxNavigation)
+                .WithMany(p => p.ChiTietPhieuXuats)
+                .HasForeignKey(d => d.MaPx)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ChiTietPhieuXuat_PhieuXuat");
+
+            // 🔗 FK đến SanPham
+            entity.HasOne(d => d.MaSpNavigation)
+                .WithMany(p => p.ChiTietPhieuXuats)
+                .HasForeignKey(d => d.MaSp)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ChiTietPhieuXuat_SanPham");
+        });
 
         OnModelCreatingPartial(modelBuilder);
     }
+
+    // ==========================================================
+    // 🧩 FIX TRIGGER + COMPATIBILITY
+    // ==========================================================
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            optionsBuilder.UseSqlServer(
+                "Server=.;Database=PetShopDB;Trusted_Connection=True;TrustServerCertificate=True;",
+                sqlOptions =>
+                {
+                    sqlOptions.UseCompatibilityLevel(120);
+                });
+        }
+    }
+
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

@@ -1,0 +1,65 @@
+﻿@model IEnumerable<WebPetShop.Models.DonHang>
+@{
+    ViewData["Title"] = "Danh sách đơn hàng";
+    Layout = "~/Views/Shared/_LayoutLeTan.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <h3 class="fw-bold text-danger mb-4">
+        <i class="fa-solid fa-box-open me-2"></i> Quản lý đơn hàng
+    </h3>
+
+    <table class="table align-middle table-hover bg-white shadow-sm rounded">
+        <thead class="bg-danger text-white">
+            <tr>
+                <th>Mã đơn</th>
+                <th>Khách hàng</th>
+                <th>Ngày đặt</th>
+                <th>Trạng thái</th>
+                <th class="text-center">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="fw-bold text-secondary">#@item.MaDh</td>
+                    <td>@item.MaNguoiDungNavigation?.HoTen</td>
+                    <td>@item.NgayDat?.ToString("dd/MM/yyyy HH:mm")</td>
+
+                    <td>
+                        @if (item.TrangThai == "Chờ xác nhận")
+                        {
+                            <span class="badge bg-warning text-dark">@item.TrangThai</span>
+                        }
+                        else if (item.TrangThai == "Đã xác nhận")
+                        {
+                            <span class="badge bg-success">@item.TrangThai</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@item.TrangThai</span>
+                        }
+                    </td>
+
+                    <td class="text-center">
+                        <a href="/LeTan/ChiTietDon/@item.MaDh" class="btn btn-sm btn-outline-primary me-1" title="Xem chi tiết">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
+
+                        @if (item.TrangThai == "Chờ xác nhận")
+                        {
+                            <form asp-action="XacNhanDon" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@item.MaDh" />
+                                <button type="submit" class="btn btn-sm btn-success" title="Xác nhận đơn hàng">
+                                    <i class="fa-solid fa-check"></i> Xác nhận
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>

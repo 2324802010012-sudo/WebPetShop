@@ -1,0 +1,180 @@
+﻿@{
+    ViewData["Title"] = "Thêm phiếu xuất";
+    Layout = "~/Views/Kho/_LayoutKho.cshtml";
+    var dsSP = ViewBag.SanPham as List<WebPetShop.Models.SanPham>;
+    var dsKH = ViewBag.KhachHang as List<WebPetShop.Models.NguoiDung>;
+}
+
+<div class="container-fluid py-4">
+    <h3 class="fw-bold text-danger mb-3">
+        <i class="fa-solid fa-truck-ramp-box me-2"></i>Thêm phiếu xuất kho
+    </h3>
+
+    <!-- ✅ Hiển thị thông báo -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <form asp-action="ThemPhieuXuat" method="post" id="formPhieuXuat">
+        <!-- 🧩 Chọn khách hàng -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Khách hàng</label>
+                <div class="input-group">
+                    <select class="form-select" name="MaKhachHang" id="selectKH" required>
+                        <option value="">-- Chọn khách hàng --</option>
+                        @foreach (var kh in dsKH)
+                        {
+                            <option value="@kh.MaNguoiDung"
+                                    data-phone="@kh.SoDienThoai"
+                                    data-address="@kh.DiaChi">
+                                @kh.HoTen
+                            </option>
+                        }
+                    </select>
+                </div>
+                <small id="infoKH" class="text-muted d-block mt-1"></small>
+            </div>
+        </div>
+
+        <!-- 📦 Danh sách sản phẩm -->
+        <h5 class="fw-bold mt-3 mb-2">Danh sách sản phẩm xuất</h5>
+        <table class="table table-bordered align-middle" id="tableSP">
+            <thead class="table-light">
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th width="150">Số lượng</th>
+                    <th width="200">Đơn giá</th>
+                    <th width="60"></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <button type="button" id="btnThem" class="btn btn-outline-danger mb-3">
+            + Thêm sản phẩm
+        </button>
+
+        <!-- 🧮 Tổng tiền -->
+        <div class="mb-3 text-end">
+            <strong class="me-2">Tổng tiền dự kiến:</strong>
+            <span id="tongTien" class="fw-bold text-danger">0</span> ₫
+        </div>
+
+        <!-- 💾 Nút lưu -->
+        <div class="text-end">
+            <button type="submit" class="btn btn-danger px-4">
+                <i class="fa-solid fa-save me-2"></i>Lưu phiếu xuất
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        // ===============================
+        // 📦 Dữ liệu sản phẩm từ Controller
+        // ===============================
+        const dsSP = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(dsSP));
+
+        // ===============================
+        // ➕ Thêm dòng sản phẩm
+        // ===============================
+        document.getElementById("btnThem").addEventListener("click", () => {
+            const tbody = document.querySelector("#tableSP tbody");
+            const i = tbody.children.length;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>
+                    <select name="chiTiet[${i}].MaSp" class="form-select" required>
+                        ${dsSP.map(sp => `<option value="${sp.MaSp}" data-ton="${sp.SoLuongTon}">${sp.TenSp} (${sp.SoLuongTon} tồn)</option>`).join('')}
+                    </select>
+                </td>
+                <td>
+                    <input name="chiTiet[${i}].SoLuong" type="number" min="1" class="form-control text-end" required value="1" />
+                </td>
+                <td>
+                    <input name="chiTiet[${i}].DonGia" type="number" min="1000" step="1000" class="form-control text-end" required value="10000" />
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-outline-danger btnXoa">🗑</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            capNhatTongTien();
+        });
+
+        // ===============================
+        // ❌ Xóa dòng sản phẩm
+        // ===============================
+        document.addEventListener("click", e => {
+            if (e.target.classList.contains("btnXoa")) {
+                e.target.closest("tr").remove();
+                capNhatTongTien();
+            }
+        });
+
+        // ===============================
+        // 🧾 Hiển thị thông tin khách hàng
+        // ===============================
+        document.getElementById("selectKH").addEventListener("change", (e) => {
+            const selected = e.target.selectedOptions[0];
+            const phone = selected.getAttribute("data-phone");
+            const address = selected.getAttribute("data-address");
+            document.getElementById("infoKH").innerText = selected.value
+                ? `📞 ${phone || "Chưa có SĐT"} | 📍 ${address || "Chưa có địa chỉ"}`
+                : "";
+        });
+
+        // ===============================
+        // 💰 Tính tổng tiền tự động
+        // ===============================
+        document.addEventListener("input", e => {
+            if (e.target.name?.includes("SoLuong") || e.target.name?.includes("DonGia"))
+                capNhatTongTien();
+        });
+
+        function capNhatTongTien() {
+            let tong = 0;
+            document.querySelectorAll("#tableSP tbody tr").forEach(row => {
+                const sl = parseFloat(row.querySelector("input[name*='SoLuong']").value) || 0;
+                const dg = parseFloat(row.querySelector("input[name*='DonGia']").value) || 0;
+                tong += sl * dg;
+            });
+            document.getElementById("tongTien").innerText = tong.toLocaleString("vi-VN");
+        }
+
+        // ===============================
+        // 🚫 Kiểm tra trước khi gửi
+        // ===============================
+        document.getElementById("formPhieuXuat").addEventListener("submit", e => {
+            const kh = document.getElementById("selectKH").value;
+            const rows = document.querySelectorAll("#tableSP tbody tr");
+            if (!kh) {
+                alert("❌ Vui lòng chọn khách hàng!");
+                e.preventDefault();
+                return;
+            }
+            if (rows.length === 0) {
+                alert("❌ Vui lòng thêm ít nhất 1 sản phẩm vào phiếu xuất!");
+                e.preventDefault();
+                return;
+            }
+            for (let r of rows) {
+                const sl = parseInt(r.querySelector("input[name*='SoLuong']").value);
+                const dg = parseInt(r.querySelector("input[name*='DonGia']").value);
+                if (sl <= 0 || dg <= 0) {
+                    alert("❌ Số lượng và đơn giá phải lớn hơn 0!");
+                    e.preventDefault();
+                    return;
+                }
+            }
+        });
+    </script>
+}

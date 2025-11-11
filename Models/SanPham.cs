@@ -32,4 +32,5 @@ public partial class SanPham
     public virtual DanhMuc MaDanhMucNavigation { get; set; } = null!;
 
     public virtual ICollection<YeuThich> YeuThiches { get; set; } = new List<YeuThich>();
+    public virtual ICollection<ChiTietPhieuXuat> ChiTietPhieuXuats { get; set; } = new List<ChiTietPhieuXuat>();
 }

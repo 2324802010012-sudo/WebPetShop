@@ -1,0 +1,195 @@
+﻿@model WebPetShop.Models.PhieuNhap
+@{
+    ViewData["Title"] = "Thêm phiếu nhập";
+    Layout = "~/Views/Kho/_LayoutKho.cshtml";
+    var dsSP = ViewBag.SanPham as List<WebPetShop.Models.SanPham>;
+    var dsNCC = ViewBag.NhaCungCap as List<WebPetShop.Models.NhaCungCap>;
+}
+
+<div class="container-fluid py-4">
+    <h3 class="fw-bold text-danger mb-3">
+        <i class="fa fa-plus-circle me-2"></i>Thêm phiếu nhập
+    </h3>
+
+    <form asp-action="ThemPhieuNhap" method="post">
+        <!-- 🧩 CHỌN NHÀ CUNG CẤP -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Nhà cung cấp</label>
+                <div class="input-group">
+                    <select asp-for="MaNcc" class="form-select" id="selectNCC" required>
+                        <option value="">-- Chọn nhà cung cấp --</option>
+                        @foreach (var ncc in dsNCC)
+                        {
+                            <option value="@ncc.MaNcc"
+                                    data-phone="@ncc.SoDienThoai"
+                                    data-address="@ncc.DiaChi">
+                                @ncc.TenNcc
+                            </option>
+                        }
+                    </select>
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalThemNCC">
+                        <i class="fa fa-plus"></i>
+                    </button>
+                </div>
+                <small id="infoNCC" class="text-muted d-block mt-1"></small>
+            </div>
+        </div>
+
+        <!-- 🧾 DANH SÁCH SẢN PHẨM NHẬP -->
+        <h5 class="fw-bold mt-3 mb-2">Danh sách sản phẩm nhập</h5>
+        <table class="table table-bordered align-middle" id="tableSP">
+            <thead class="table-light">
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th width="120">Số lượng</th>
+                    <th width="180">Đơn giá</th>
+                    <th width="180">Thành tiền</th>
+                    <th width="60"></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <div class="d-flex justify-content-end align-items-center mb-3">
+            <h5 class="fw-bold text-danger me-2 mb-0">Tổng tiền tạm tính:</h5>
+            <h4 id="tongTien" class="text-dark mb-0">0 ₫</h4>
+        </div>
+
+        <button type="button" id="btnThem" class="btn btn-outline-danger mb-3">
+            + Thêm sản phẩm
+        </button>
+        <button type="submit" class="btn btn-danger">💾 Lưu phiếu nhập</button>
+    </form>
+</div>
+
+<!-- 🧾 Modal Thêm Nhà Cung Cấp -->
+<div class="modal fade" id="modalThemNCC" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fa fa-user-plus me-2"></i>Thêm nhà cung cấp mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Tên nhà cung cấp</label>
+                    <input type="text" id="nccTen" class="form-control" placeholder="Nhập tên..." />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Số điện thoại</label>
+                    <input type="text" id="nccSDT" class="form-control" placeholder="Nhập số điện thoại..." />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Địa chỉ</label>
+                    <textarea id="nccDiaChi" class="form-control" rows="2" placeholder="Nhập địa chỉ..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" id="btnLuuNCC" class="btn btn-danger">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const dsSP = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(dsSP));
+
+        // 🧾 Hàm tính tổng tiền toàn bộ
+        function capNhatTongTien() {
+            let tong = 0;
+            document.querySelectorAll("#tableSP tbody tr").forEach(tr => {
+                const soLuong = parseInt(tr.querySelector('input[name*="SoLuong"]').value) || 0;
+                const donGia = parseFloat(tr.querySelector('input[name*="DonGia"]').value) || 0;
+                const thanhTien = soLuong * donGia;
+                tr.querySelector(".thanhTien").textContent = thanhTien.toLocaleString("vi-VN") + " ₫";
+                tong += thanhTien;
+            });
+            document.getElementById("tongTien").textContent = tong.toLocaleString("vi-VN") + " ₫";
+        }
+
+        // ➕ Thêm dòng sản phẩm
+        document.getElementById("btnThem").addEventListener("click", () => {
+            const tbody = document.querySelector("#tableSP tbody");
+            const i = tbody.children.length;
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>
+                    <select name="chiTiet[${i}].MaSp" class="form-select">
+                        ${dsSP.map(sp => `<option value="${sp.MaSp}">${sp.TenSp}</option>`).join('')}
+                    </select>
+                </td>
+                <td><input name="chiTiet[${i}].SoLuong" type="number" min="1" class="form-control" value="1" /></td>
+                <td><input name="chiTiet[${i}].DonGia" type="number" min="1000" step="1000" class="form-control" value="10000" /></td>
+                <td class="thanhTien fw-semibold text-end">10,000 ₫</td>
+                <td><button type="button" class="btn btn-outline-danger btnXoa">🗑</button></td>
+            `;
+            tbody.appendChild(tr);
+            capNhatTongTien();
+        });
+
+        // 🗑 Xóa dòng
+        document.addEventListener("click", e => {
+            if (e.target.classList.contains("btnXoa")) {
+                e.target.closest("tr").remove();
+                capNhatTongTien();
+            }
+        });
+
+        // 🎯 Cập nhật tổng khi sửa số lượng / đơn giá
+        document.addEventListener("input", e => {
+            if (e.target.name?.includes("SoLuong") || e.target.name?.includes("DonGia")) {
+                capNhatTongTien();
+            }
+        });
+
+        // 🧩 Hiển thị thông tin NCC
+        document.getElementById("selectNCC").addEventListener("change", (e) => {
+            const selected = e.target.selectedOptions[0];
+            const phone = selected.getAttribute("data-phone");
+            const address = selected.getAttribute("data-address");
+            document.getElementById("infoNCC").innerText = selected.value
+                ? `📞 ${phone || "Chưa có SĐT"} | 📍 ${address || "Chưa có địa chỉ"}`
+                : "";
+        });
+
+        // 🧾 Lưu NCC mới (AJAX)
+        document.getElementById("btnLuuNCC").addEventListener("click", async () => {
+            const ten = document.getElementById("nccTen").value.trim();
+            const sdt = document.getElementById("nccSDT").value.trim();
+            const diachi = document.getElementById("nccDiaChi").value.trim();
+
+            if (!ten) {
+                alert("Vui lòng nhập tên nhà cung cấp!");
+                return;
+            }
+
+            const response = await fetch('/Kho/ThemNhaCungCapAjax', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ TenNcc: ten, SoDienThoai: sdt, DiaChi: diachi })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                const select = document.getElementById("selectNCC");
+                const opt = document.createElement("option");
+                opt.value = result.maNcc;
+                opt.textContent = result.tenNcc;
+                opt.setAttribute("data-phone", result.soDienThoai || "");
+                opt.setAttribute("data-address", result.diaChi || "");
+                select.appendChild(opt);
+                select.value = result.maNcc;
+                document.getElementById("infoNCC").innerText = `📞 ${result.soDienThoai || ""} | 📍 ${result.diaChi || ""}`;
+                bootstrap.Modal.getInstance(document.getElementById("modalThemNCC")).hide();
+                document.getElementById("nccTen").value = "";
+                document.getElementById("nccSDT").value = "";
+                document.getElementById("nccDiaChi").value = "";
+            } else {
+                alert(result.message || "Thêm nhà cung cấp thất bại!");
+            }
+        });
+    </script>
+}

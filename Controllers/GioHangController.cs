@@ -48,6 +48,14 @@ namespace WebPetShop.Controllers
                 chiTiet.SoLuong = soLuong;
                 _context.Update(chiTiet);
                 _context.SaveChanges();
+
+                // ✅ Cập nhật lại số lượng giỏ hàng trong Session
+                var gioHang = _context.GioHangs
+                    .Include(g => g.ChiTietGioHangs)
+                    .FirstOrDefault(g => g.MaGh == chiTiet.MaGh);
+                int tong = gioHang?.ChiTietGioHangs.Sum(c => c.SoLuong ?? 0) ?? 0;
+                HttpContext.Session.SetInt32("CartCount", tong);
+
                 TempData["Success"] = "✅ Cập nhật số lượng thành công!";
             }
             return RedirectToAction("Index");
@@ -97,6 +105,13 @@ namespace WebPetShop.Controllers
             }
 
             _context.SaveChanges();
+
+            // ✅ Cập nhật lại tổng số lượng trong Session
+            int tongSoLuong = _context.ChiTietGioHangs
+                .Where(c => c.MaGh == gioHang.MaGh)
+                .Sum(c => c.SoLuong ?? 0);
+            HttpContext.Session.SetInt32("CartCount", tongSoLuong);
+
             TempData["Success"] = "🛒 Đã thêm sản phẩm vào giỏ hàng!";
             return RedirectToAction("Index");
         }
@@ -128,6 +143,14 @@ namespace WebPetShop.Controllers
             {
                 _context.ChiTietGioHangs.Remove(chiTiet);
                 _context.SaveChanges();
+
+                // ✅ Cập nhật lại Session sau khi xóa sản phẩm
+                var gioHang = _context.GioHangs
+                    .Include(g => g.ChiTietGioHangs)
+                    .FirstOrDefault(g => g.MaGh == chiTiet.MaGh);
+                int tongSoLuong = gioHang?.ChiTietGioHangs.Sum(c => c.SoLuong ?? 0) ?? 0;
+                HttpContext.Session.SetInt32("CartCount", tongSoLuong);
+
                 TempData["Success"] = "🗑️ Đã xóa sản phẩm khỏi giỏ hàng!";
             }
             return RedirectToAction("Index");
@@ -153,7 +176,6 @@ namespace WebPetShop.Controllers
                 return RedirectToAction("Index");
             }
 
-            // ✅ Tạo model CheckoutVM để hiển thị đúng với view
             var vm = new CheckoutVM
             {
                 GioHang = gioHang.ChiTietGioHangs.ToList(),
@@ -189,7 +211,6 @@ namespace WebPetShop.Controllers
                 return RedirectToAction("Index");
             }
 
-            // ✅ Tạo đơn hàng
             var donHang = new DonHang
             {
                 MaNguoiDung = maNguoiDung,
@@ -199,14 +220,12 @@ namespace WebPetShop.Controllers
                 SoDienThoai = model.SDTNhan,
                 DiaChiGiao = model.DiaChiGiao,
                 PhuongThucThanhToan = model.PhuongThuc,
-     
             };
             _context.DonHangs.Add(donHang);
             _context.SaveChanges();
 
             decimal tongTien = 0;
 
-            // ✅ Tạo chi tiết đơn hàng
             foreach (var ct in gioHang.ChiTietGioHangs)
             {
                 _context.ChiTietDonHangs.Add(new ChiTietDonHang
@@ -217,7 +236,6 @@ namespace WebPetShop.Controllers
                     DonGia = ct.MaSpNavigation.Gia
                 });
 
-                // Trừ tồn kho
                 ct.MaSpNavigation.SoLuongTon -= (ct.SoLuong ?? 1);
                 _context.Update(ct.MaSpNavigation);
 
@@ -228,7 +246,9 @@ namespace WebPetShop.Controllers
             _context.ChiTietGioHangs.RemoveRange(gioHang.ChiTietGioHangs);
             _context.SaveChanges();
 
-            // ✅ Ghi lịch sử
+            // 🧹 Làm trống session giỏ hàng
+            HttpContext.Session.SetInt32("CartCount", 0);
+
             _context.LichSuTrangThaiDonHangs.Add(new LichSuTrangThaiDonHang
             {
                 MaDh = donHang.MaDh,
@@ -239,7 +259,6 @@ namespace WebPetShop.Controllers
             });
             _context.SaveChanges();
 
-            // ✅ Nếu chọn Online → tạo thanh toán
             if (model.PhuongThuc == "Online")
             {
                 var thanhToan = new ThanhToanTrucTuyen

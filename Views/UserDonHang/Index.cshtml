@@ -1,25 +1,98 @@
 ﻿@model IEnumerable<WebPetShop.Models.DonHang>
+@{
+    ViewData["Title"] = "Lịch sử đơn hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 
-<h2 class="section-title">📄 Lịch sử đơn hàng</h2>
+<div class="container py-5">
+    <h2 class="text-center text-danger fw-bold mb-4">
+        <i class="fa-solid fa-box-archive me-2"></i> Lịch sử đơn hàng của bạn
+    </h2>
 
-<table class="table pastel-table">
-    <thead>
-        <tr>
-            <th>Mã DH</th>
-            <th>Ngày đặt</th>
-            <th>Tổng tiền</th>
-            <th>Trạng thái</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
+    @if (!Model.Any())
+    {
+        <div class="text-center">
+            <img src="~/images/empty-cart.png" width="220" class="mb-3" />
+            <h5 class="text-muted">Bạn chưa có đơn hàng nào.</h5>
+            <a href="/SanPham" class="btn btn-danger mt-3">
+                <i class="fa-solid fa-shopping-bag me-1"></i> Mua sắm ngay
+            </a>
+        </div>
+    }
+    else
+    {
+        foreach (var dh in Model)
         {
-            <tr>
-                <td>@item.MaDh</td>
-                <td>@item.NgayDat?.ToString("dd/MM/yyyy")</td>
-                <td>@String.Format("{0:N0}đ", item.TongTien)</td>
-                <td>@item.TrangThai</td>
-            </tr>
+            var tong = dh.ChiTietDonHangs.Sum(c => c.SoLuong * c.DonGia);
+
+            <div class="card mb-4 border-0 shadow-sm rounded-4 order-card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <div>
+                        <b>Mã đơn:</b> #@dh.MaDh
+                        <span class="text-muted ms-3">
+                            <i class="fa-regular fa-clock me-1"></i>
+                            @dh.NgayDat?.ToString("dd/MM/yyyy HH:mm")
+                        </span>
+                    </div>
+
+                    @{
+                        string badgeClass = dh.TrangThai switch
+                        {
+                            "Hoàn tất" => "bg-success",
+                            "Đang giao" => "bg-primary",
+                            "Đã hủy" => "bg-danger",
+                            "Đã xác nhận" => "bg-info",
+                            _ => "bg-warning text-dark"
+                        };
+                    }
+
+                    <span class="badge rounded-pill px-3 py-2 @badgeClass">@dh.TrangThai</span>
+                </div>
+
+                <div class="card-body bg-white">
+                    @foreach (var ct in dh.ChiTietDonHangs)
+                    {
+                        <div class="d-flex align-items-center justify-content-between border-bottom py-2">
+                            <div class="d-flex align-items-center">
+                                <img src="~/ImagesWWeb/@ct.MaSpNavigation.HinhAnh"
+                                     width="65" height="65"
+                                     class="rounded shadow-sm me-3"
+                                     style="object-fit:cover;">
+                                <div>
+                                    <div class="fw-semibold">@ct.MaSpNavigation.TenSp</div>
+                                    <div class="text-muted small">Số lượng: @ct.SoLuong</div>
+                                </div>
+                            </div>
+                            <div class="fw-bold text-danger">
+                                @((ct.SoLuong * ct.DonGia).ToString("N0")) ₫
+                            </div>
+                        </div>
+                    }
+
+                    <div class="text-end mt-3 fw-bold fs-5">
+                        Tổng: <span class="text-danger">@tong.ToString("N0") ₫</span>
+                    </div>
+                </div>
+
+                <div class="card-footer text-end bg-white">
+                    <a href="/UserDonHang/ChiTiet/@dh.MaDh"
+                       class="btn btn-outline-danger rounded-pill px-3">
+                        <i class="fa-solid fa-eye me-1"></i> Xem chi tiết
+                    </a>
+                </div>
+            </div>
         }
-    </tbody>
-</table>
+    }
+</div>
+
+<style>
+    .order-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .badge {
+        font-size: 0.85rem;
+    }
+</style>

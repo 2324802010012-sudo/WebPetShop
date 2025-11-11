@@ -1,0 +1,57 @@
+﻿@model IEnumerable<WebPetShop.Models.PhieuXuat>
+@{
+    ViewData["Title"] = "Danh sách phiếu xuất";
+    Layout = "~/Views/Kho/_LayoutKho.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <h3 class="fw-bold text-danger mb-3">
+        <i class="fa-solid fa-truck-ramp-box me-2"></i>Danh sách phiếu xuất
+    </h3>
+
+    <!-- 🧩 Thông báo -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <a href="/Kho/ThemPhieuXuat" class="btn btn-danger mb-3">
+        <i class="fa fa-plus-circle me-2"></i>Thêm phiếu xuất
+    </a>
+
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-danger text-center">
+            <tr>
+                <th>#</th>
+                <th>Khách hàng</th>
+                <th>Nhân viên xuất</th>
+                <th>Ngày xuất</th>
+                <th>Tổng tiền</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int stt = 1;
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@stt++</td>
+                        <td>@item.MaKhachHangNavigation?.HoTen</td>
+                        <td>@item.MaNhanVienNavigation?.HoTen</td>
+                        <td>@item.NgayXuat?.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td class="text-end text-danger fw-bold">@item.TongTien?.ToString("N0") ₫</td>
+                        <td class="text-center">
+                            <a href="/Kho/ChiTietPhieuXuat/@item.MaPx" class="btn btn-outline-danger btn-sm">
+                                <i class="fa-solid fa-eye me-1"></i>Xem
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

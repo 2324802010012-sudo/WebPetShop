@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebPetShop.Models;
 
@@ -52,4 +53,10 @@ public partial class DonHang
     public virtual ThanhToanTrucTuyen? MaTtttNavigation { get; set; }
 
     public virtual ICollection<ThanhToanTrucTuyen> ThanhToanTrucTuyens { get; set; } = new List<ThanhToanTrucTuyen>();
+    public virtual ICollection<PhieuXuat> PhieuXuats { get; set; } = new List<PhieuXuat>();
+    [NotMapped]
+    public string? TenKhachHang => MaNguoiDungNavigation?.HoTen;
+
+    [NotMapped]
+    public string? EmailKhachHang => MaNguoiDungNavigation?.Email;
 }

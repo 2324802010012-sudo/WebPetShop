@@ -3,6 +3,9 @@ using WebPetShop.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ✅ Thêm HttpContextAccessor để dùng HttpContext.Session, ViewBag, v.v.
+builder.Services.AddHttpContextAccessor();
+
 // ✅ Cấu hình Session (giữ đăng nhập lâu dài)
 builder.Services.AddSession(options =>
 {
@@ -16,7 +19,6 @@ builder.Services.AddSession(options =>
     // ✅ Cho phép cookie session hoạt động ổn định trên HTTPS
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
-
 
 // ✅ Cấu hình DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

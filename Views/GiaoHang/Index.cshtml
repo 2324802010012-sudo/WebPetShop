@@ -1,0 +1,17 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutGiaoHang.cshtml";
+    ViewData["Title"] = "Trang Giao Hàng";
+}
+<div class="container py-5">
+    <h2 class="text-success"><i class="fa-solid fa-truck me-2"></i> Xin chào, @Context.Session.GetString("HoTen") 👋</h2>
+    <p>Đây là giao diện dành riêng cho nhân viên giao hàng.</p>
+
+    <div class="mt-4">
+        <a href="/GiaoHang/DanhSachGiaoHang" class="btn btn-success me-2">
+            <i class="fa-solid fa-list"></i> Danh sách giao hàng
+        </a>
+        <a href="/GiaoHang/BaoCaoGiaoHang" class="btn btn-outline-success">
+            <i class="fa-solid fa-chart-line"></i> Báo cáo giao hàng
+        </a>
+    </div>
+</div>

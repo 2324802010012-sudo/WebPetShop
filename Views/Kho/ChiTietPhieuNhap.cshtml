@@ -1,0 +1,93 @@
+﻿@model WebPetShop.Models.PhieuNhap
+@{
+    ViewData["Title"] = "Chi tiết phiếu nhập";
+    Layout = "~/Views/Kho/_LayoutKho.cshtml";
+}
+
+<div class="container-fluid py-4">
+
+    <!-- 🧾 Tiêu đề -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold text-danger mb-0">
+            <i class="fa-solid fa-file-invoice me-2"></i>Chi tiết phiếu nhập
+        </h3>
+        <div>
+            <a href="/Kho/InPhieuNhap/@Model.MaPn" target="_blank" class="btn btn-danger me-2">
+                <i class="fa fa-print me-1"></i>In phiếu
+            </a>
+            <a href="/Kho/PhieuNhap" class="btn btn-outline-secondary">
+                <i class="fa fa-arrow-left me-1"></i>Quay lại
+            </a>
+        </div>
+    </div>
+
+    <!-- 🧩 Thông tin chung -->
+    <div class="card shadow-sm border-0 p-4 mb-4">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <strong class="text-muted">Mã phiếu nhập:</strong>
+                <div class="fw-semibold">@Model.MaPn</div>
+            </div>
+            <div class="col-md-4">
+                <strong class="text-muted">Nhà cung cấp:</strong>
+                <div class="fw-semibold">@Model.MaNccNavigation?.TenNcc</div>
+            </div>
+            <div class="col-md-4">
+                <strong class="text-muted">Nhân viên nhập:</strong>
+                <div class="fw-semibold">@Model.MaNhanVienNavigation?.HoTen</div>
+            </div>
+            <div class="col-md-4">
+                <strong class="text-muted">Ngày nhập:</strong>
+                <div>@Model.NgayNhap?.ToString("dd/MM/yyyy HH:mm")</div>
+            </div>
+            <div class="col-md-4">
+                <strong class="text-muted">Tổng tiền:</strong>
+                <div class="text-danger fw-bold fs-5">@Model.TongTien?.ToString("N0") ₫</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📦 Danh sách sản phẩm -->
+    <div class="card shadow-sm border-0 p-3">
+        <h5 class="fw-bold text-danger mb-3">
+            <i class="fa-solid fa-boxes-stacked me-2"></i>Danh sách sản phẩm nhập
+        </h5>
+
+        <table class="table table-bordered align-middle text-center">
+            <thead class="table-danger">
+                <tr>
+                    <th style="width: 60px;">#</th>
+                    <th>Tên sản phẩm</th>
+                    <th style="width: 120px;">Số lượng</th>
+                    <th style="width: 150px;">Đơn giá</th>
+                    <th style="width: 160px;">Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int stt = 1;
+                    decimal tong = 0;
+                    foreach (var c in Model.ChiTietPhieuNhaps)
+                    {
+                        var thanhTien = (c.SoLuong ?? 0) * (c.DonGia ?? 0);
+                        tong += thanhTien;
+                        <tr>
+                            <td>@stt++</td>
+                            <td class="text-start">@c.MaSpNavigation?.TenSp</td>
+                            <td>@c.SoLuong</td>
+                            <td>@c.DonGia?.ToString("N0") ₫</td>
+                            <td class="fw-semibold text-danger">@thanhTien.ToString("N0") ₫</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot class="table-light">
+                <tr>
+                    <td colspan="4" class="text-end fw-bold">Tổng cộng:</td>
+                    <td class="fw-bold text-danger">@tong.ToString("N0") ₫</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+</div>

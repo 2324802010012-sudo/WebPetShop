@@ -2,13 +2,17 @@
     Layout = null;
     var hoTen = Context.Session.GetString("HoTen") ?? "Nhân viên kho";
 }
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"] - Kho PetShop</title>
+
+    <!-- ⚙️ Base định tuyến cho Razor (rất quan trọng) -->
+    <base href="~/" />
+
+    <!-- ✅ Bootstrap & FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
 
@@ -24,7 +28,7 @@
             font-family: 'Poppins', sans-serif;
         }
 
-        /* 🔸 Sidebar */
+        /* 🟥 SIDEBAR */
         .sidebar {
             width: 240px;
             height: 100vh;
@@ -35,8 +39,8 @@
             left: 0;
             display: flex;
             flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
             z-index: 100;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.08);
         }
 
             .sidebar .brand {
@@ -45,8 +49,7 @@
                 text-align: center;
                 padding: 20px;
                 background: var(--hover-red);
-                border-bottom: 1px solid rgba(255,255,255,0.2);
-                letter-spacing: 0.5px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             }
 
             .sidebar a {
@@ -65,14 +68,14 @@
                     border-radius: 0 30px 30px 0;
                 }
 
-        /* 🔸 Main content */
+        /* 🔸 MAIN CONTENT */
         .main {
             margin-left: 240px;
             min-height: 100vh;
             background-color: #fff;
         }
 
-        /* 🔸 Topbar */
+        /* 🔸 TOPBAR */
         .topbar {
             background: #ffffff;
             border-bottom: 2px solid var(--main-red);
@@ -103,7 +106,7 @@
                     color: #fff;
                 }
 
-        /* 🔸 Scrollbar đẹp */
+        /* 🔸 SCROLLBAR */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -116,32 +119,38 @@
 </head>
 
 <body>
-    <!-- Sidebar -->
+    <!-- 🧭 SIDEBAR -->
     <div class="sidebar">
         <div class="brand">
             <i class="fa-solid fa-warehouse me-2"></i> Kho PetShop
         </div>
 
-        <a asp-controller="Kho" asp-action="Index" class="active">
+        <!-- Menu -->
+        <a asp-controller="Kho" asp-action="Index"
+           class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
             <i class="fa-solid fa-gauge me-2"></i> Tổng quan
         </a>
-        <a asp-controller="Kho" asp-action="HangHoa">
+        <a asp-controller="Kho" asp-action="HangHoa"
+           class="@(ViewContext.RouteData.Values["action"]?.ToString() == "HangHoa" ? "active" : "")">
             <i class="fa-solid fa-boxes-stacked me-2"></i> Hàng hóa
         </a>
-        <a asp-controller="Kho" asp-action="NhapKho">
+        <a asp-controller="Kho" asp-action="NhapKho"
+           class="@(ViewContext.RouteData.Values["action"]?.ToString() == "NhapKho" ? "active" : "")">
             <i class="fa-solid fa-file-import me-2"></i> Phiếu nhập
         </a>
-        <a asp-controller="Kho" asp-action="XuatKho">
+        <a asp-controller="Kho" asp-action="XuatKho"
+           class="@(ViewContext.RouteData.Values["action"]?.ToString() == "XuatKho" ? "active" : "")">
             <i class="fa-solid fa-file-export me-2"></i> Phiếu xuất
         </a>
-        <a asp-controller="Kho" asp-action="BaoCao">
+        <a asp-controller="Kho" asp-action="BaoCao"
+           class="@(ViewContext.RouteData.Values["action"]?.ToString() == "BaoCao" ? "active" : "")">
             <i class="fa-solid fa-chart-line me-2"></i> Báo cáo
         </a>
     </div>
 
-    <!-- Main -->
+    <!-- 🧩 MAIN CONTENT -->
     <div class="main">
-        <!-- Topbar -->
+        <!-- TOPBAR -->
         <div class="topbar">
             <div class="fw-bold text-danger fs-5">
                 <i class="fa-solid fa-clipboard-list me-2"></i> Hệ thống quản lý kho
@@ -155,12 +164,27 @@
             </div>
         </div>
 
-        <!-- Nội dung trang con -->
+        <!-- BODY -->
         <div class="p-4 bg-light">
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+
             @RenderBody()
         </div>
     </div>
 
+    <!-- ✅ JAVASCRIPT PHẢI ĐÚNG THỨ TỰ -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
+
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

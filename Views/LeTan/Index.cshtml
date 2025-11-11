@@ -1,0 +1,264 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "Trang Lễ Tân - PetShop";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #fff5f5;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: #d32f2f;
+            color: #fff;
+            height: 100vh;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 30px 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+            .sidebar .brand {
+                font-size: 1.4rem;
+                font-weight: 700;
+                color: #fff;
+                text-align: center;
+                margin-bottom: 35px;
+            }
+
+            .sidebar a {
+                color: #fff;
+                display: block;
+                text-decoration: none;
+                padding: 10px 15px;
+                border-radius: 10px;
+                margin-bottom: 10px;
+                transition: all 0.3s;
+            }
+
+                .sidebar a:hover,
+                .sidebar a.active {
+                    background: #b71c1c;
+                    color: #fff;
+                    transform: translateX(3px);
+                }
+
+            .sidebar i {
+                width: 22px;
+            }
+
+        /* Header */
+        .header {
+            margin-left: 250px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .header .user-info {
+                font-weight: 600;
+                color: #333;
+            }
+
+        /* Content */
+        .content {
+            margin-left: 250px;
+            padding: 50px;
+        }
+
+        .greeting h2 {
+            color: #d32f2f;
+            font-weight: 700;
+        }
+
+        .greeting p {
+            color: #555;
+        }
+
+        /* Cards */
+        .feature-card {
+            background: #fff;
+            border: none;
+            border-radius: 15px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+            .feature-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            }
+
+            .feature-card i {
+                font-size: 2rem;
+                margin-bottom: 15px;
+            }
+
+            .feature-card h5 {
+                font-weight: 600;
+                color: #333;
+            }
+
+        /* Logout button */
+        .logout-btn {
+            color: #fff;
+            background: #b71c1c;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+            .logout-btn:hover {
+                background: #a31616;
+            }
+
+        .badge {
+            font-size: 0.8rem;
+            border-radius: 10px;
+            padding: 3px 8px;
+            box-shadow: 0 1px 3px rgba(255, 0, 0, 0.3);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-paw me-2"></i> Lễ Tân
+        </div>
+
+        <a asp-controller="LeTan" asp-action="Index"
+           class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+            <i class="fa-solid fa-house"></i> Trang chủ
+        </a>
+
+        <a asp-controller="LeTan" asp-action="DonHang"
+           class="@(ViewContext.RouteData.Values["action"]?.ToString() == "DonHang" ? "active" : "") d-flex justify-content-between align-items-center">
+            <span><i class="fa-solid fa-box"></i> Đơn hàng</span>
+            @if (ViewBag.DonHangMoi > 0)
+            {
+                <span class="badge bg-light text-danger fw-bold">@ViewBag.DonHangMoi</span>
+            }
+        </a>
+
+        <a asp-controller="LeTan" asp-action="KyGui"
+           class="@(ViewContext.RouteData.Values["action"]?.ToString() == "KyGui" ? "active" : "") d-flex justify-content-between align-items-center">
+            <span><i class="fa-solid fa-dog"></i> Ký gửi</span>
+            @if (ViewBag.KyGuiMoi > 0)
+            {
+                <span class="badge bg-light text-danger fw-bold">@ViewBag.KyGuiMoi</span>
+            }
+        </a>
+
+        <a asp-controller="LeTan" asp-action="BaiNhanNuoi"
+           class="@(ViewContext.RouteData.Values["action"]?.ToString() == "BaiNhanNuoi" ? "active" : "") d-flex justify-content-between align-items-center">
+            <span><i class="fa-solid fa-heart"></i> Nhận nuôi</span>
+            @if (ViewBag.BaiNhanNuoiMoi > 0)
+            {
+                <span class="badge bg-light text-danger fw-bold">@ViewBag.BaiNhanNuoiMoi</span>
+            }
+        </a>
+
+        <a asp-controller="LeTan" asp-action="HoTroKhachHang"
+           class="@(ViewContext.RouteData.Values["action"]?.ToString() == "HoTroKhachHang" ? "active" : "") d-flex justify-content-between align-items-center">
+            <span><i class="fa-solid fa-comments"></i> Hỗ trợ KH</span>
+            @if (ViewBag.HoTroMoi > 0)
+            {
+                <span class="badge bg-light text-danger fw-bold">@ViewBag.HoTroMoi</span>
+            }
+        </a>
+
+        <div class="mt-4 text-center">
+            <form asp-controller="Auth" asp-action="Logout" method="post">
+                <button type="submit" class="logout-btn w-100">
+                    <i class="fa-solid fa-right-from-bracket me-1"></i> Đăng xuất
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Header -->
+    <div class="header">
+        <div>
+            <h5 class="mb-0 fw-semibold text-danger"><i class="fa-solid fa-headset me-2"></i>PetShop - Lễ Tân Dashboard</h5>
+        </div>
+        <div class="user-info">
+            <i class="fa-solid fa-user-circle me-2 text-danger"></i>
+            @Context.Session.GetString("HoTen")
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <div class="greeting mb-5">
+            <h2>👋 Xin chào, <span class="text-danger">@Context.Session.GetString("HoTen")</span></h2>
+            <p>Chào mừng bạn quay lại với hệ thống quản lý Lễ Tân PetShop. Hãy chọn chức năng bạn muốn thực hiện bên dưới.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-3">
+                <a href="/LeTan/DonHang" class="text-decoration-none">
+                    <div class="feature-card">
+                        <i class="fa-solid fa-box text-danger"></i>
+                        <h5>Quản lý đơn hàng</h5>
+                        <p class="text-muted">Xem và duyệt đơn hàng khách đặt</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-3">
+                <a href="/LeTan/KyGui" class="text-decoration-none">
+                    <div class="feature-card">
+                        <i class="fa-solid fa-dog text-warning"></i>
+                        <h5>Ký gửi thú cưng</h5>
+                        <p class="text-muted">Tạo và quản lý phiếu ký gửi</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-3">
+                <a href="/LeTan/BaiNhanNuoi" class="text-decoration-none">
+                    <div class="feature-card">
+                        <i class="fa-solid fa-heart text-success"></i>
+                        <h5>Đăng bài nhận nuôi</h5>
+                        <p class="text-muted">Tạo bài nhận nuôi thú bị bỏ lại</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-3">
+                <a href="/LeTan/HoTroKhachHang" class="text-decoration-none">
+                    <div class="feature-card">
+                        <i class="fa-solid fa-comments text-primary"></i>
+                        <h5>Hỗ trợ khách hàng</h5>
+                        <p class="text-muted">Giải đáp và phản hồi khách hàng</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

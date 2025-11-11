@@ -1,0 +1,51 @@
+﻿@model WebPetShop.Models.PhieuXuat
+@{
+    ViewData["Title"] = "Chi tiết phiếu xuất";
+    Layout = "~/Views/Kho/_LayoutKho.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <h3 class="fw-bold text-danger mb-3">
+        <i class="fa-solid fa-file-invoice me-2"></i>Chi tiết phiếu xuất
+    </h3>
+
+    <div class="card p-3 mb-4 shadow-sm border-0">
+        <div><strong>Mã phiếu xuất:</strong> @Model.MaPx</div>
+        <div><strong>Khách hàng:</strong> @Model.MaKhachHangNavigation?.HoTen</div>
+        <div><strong>Nhân viên xuất:</strong> @Model.MaNhanVienNavigation?.HoTen</div>
+        <div><strong>Ngày xuất:</strong> @Model.NgayXuat?.ToString("dd/MM/yyyy HH:mm")</div>
+        <div><strong>Tổng tiền:</strong> <span class="text-danger fw-bold">@Model.TongTien?.ToString("N0") ₫</span></div>
+    </div>
+
+    <h5 class="fw-bold mb-2">Danh sách sản phẩm xuất</h5>
+    <table class="table table-bordered align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Tên sản phẩm</th>
+                <th>Số lượng</th>
+                <th>Đơn giá</th>
+                <th>Thành tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int stt = 1;
+                foreach (var c in Model.ChiTietPhieuXuats)
+                {
+                    <tr>
+                        <td>@stt++</td>
+                        <td>@c.MaSpNavigation?.TenSp</td>
+                        <td>@c.SoLuong</td>
+                        <td>@c.DonGia.ToString("N0") ₫</td>
+                        <td>@((c.SoLuong * c.DonGia).ToString("N0")) ₫</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    <a href="/Kho/XuatKho" class="btn btn-outline-secondary mt-3">
+        ← Quay lại danh sách
+    </a>
+</div>

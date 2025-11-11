@@ -1,0 +1,209 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Lễ Tân PetShop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #fff5f5;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        /* ================= SIDEBAR ================= */
+        .sidebar {
+            background: #d32f2f;
+            color: #fff;
+            height: 100vh;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 30px 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+            .sidebar .brand {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #fff;
+                text-align: center;
+                margin-bottom: 35px;
+            }
+
+            .sidebar a {
+                color: #fff;
+                display: block;
+                text-decoration: none;
+                padding: 10px 15px;
+                border-radius: 10px;
+                margin-bottom: 10px;
+                transition: all 0.3s;
+            }
+
+                .sidebar a:hover,
+                .sidebar a.active {
+                    background: #b71c1c;
+                    color: #fff;
+                    transform: translateX(3px);
+                }
+
+            .sidebar i {
+                width: 22px;
+            }
+
+        /* ================= HEADER ================= */
+        .header {
+            margin-left: 250px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .header h5 {
+                color: #d32f2f;
+                font-weight: 600;
+                margin: 0;
+            }
+
+            .header .user-info {
+                font-weight: 600;
+                color: #333;
+            }
+
+                .header .user-info i {
+                    color: #d32f2f;
+                }
+
+        /* ================= MAIN CONTENT ================= */
+        .content {
+            margin-left: 250px;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        /* ================= LOGOUT ================= */
+        .logout-btn {
+            color: #fff;
+            background: #b71c1c;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+            .logout-btn:hover {
+                background: #a31616;
+            }
+
+        /* ================= RESPONSIVE ================= */
+        @@media (max-width: 992px) {
+            .sidebar
+
+        {
+            position: relative;
+            width: 100%;
+            height: auto;
+            padding: 15px;
+        }
+
+        .header {
+            margin-left: 0;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .content {
+            margin-left: 0;
+            padding: 20px;
+        }
+
+            .badge {
+                animation: pulse 1.2s infinite;
+            }
+            @@keyframes pulse {
+                0%
+
+        {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.2);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+
+        }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-paw me-2"></i> Lễ Tân
+        </div>
+        <a asp-controller="LeTan" asp-action="Index" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+            <i class="fa-solid fa-house"></i> Trang chủ
+        </a>
+        <a href="/LeTan/DonHang"
+           class="nav-link text-white d-flex align-items-center justify-content-between position-relative">
+            <span><i class="fa-solid fa-box me-2"></i> Đơn hàng</span>
+
+            @if (ViewBag.SoDonCho != null && ViewBag.SoDonCho > 0)
+            {
+                <span class="badge position-absolute top-0 end-0 translate-middle-y bg-warning text-dark fw-bold shadow-sm"
+                      style="border-radius: 50%; width:22px; height:22px; line-height:22px; font-size:0.75rem; text-align:center;"
+                      title="Đơn hàng chờ xác nhận">
+                    @ViewBag.SoDonCho
+                </span>
+            }
+        </a>
+
+        <a asp-controller="LeTan" asp-action="KyGui" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "KyGui" ? "active" : "")">
+            <i class="fa-solid fa-dog"></i> Ký gửi
+        </a>
+        <a asp-controller="LeTan" asp-action="BaiNhanNuoi" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "BaiNhanNuoi" ? "active" : "")">
+            <i class="fa-solid fa-heart"></i> Nhận nuôi
+        </a>
+        <a asp-controller="LeTan" asp-action="HoTroKhachHang" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "HoTroKhachHang" ? "active" : "")">
+            <i class="fa-solid fa-comments"></i> Hỗ trợ KH
+        </a>
+
+        <div class="mt-4 text-center">
+            <form asp-controller="Auth" asp-action="Logout" method="post">
+                <button type="submit" class="logout-btn w-100">
+                    <i class="fa-solid fa-right-from-bracket me-1"></i> Đăng xuất
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <h5><i class="fa-solid fa-headset me-2"></i>PetShop - Lễ Tân Dashboard</h5>
+        <div class="user-info">
+            <i class="fa-solid fa-user-circle me-2"></i>
+            @(HttpContextAccessor.HttpContext?.Session.GetString("HoTen") ?? "Lễ Tân")
+        </div>
+    </div>
+
+    <!-- Content -->
+    <main class="content">
+        @RenderBody()
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

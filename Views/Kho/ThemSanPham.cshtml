@@ -1,0 +1,86 @@
+﻿@model WebPetShop.Models.SanPham
+@{
+    ViewData["Title"] = "Thêm sản phẩm mới";
+    Layout = "~/Views/Kho/_LayoutKho.cshtml";
+}
+
+<div class="container py-4">
+    <!-- 🧩 Tiêu đề -->
+    <h3 class="fw-bold text-danger mb-4">
+        <i class="fa-solid fa-square-plus me-2"></i> Thêm sản phẩm mới
+    </h3>
+
+    <!-- 🧾 Form thêm sản phẩm -->
+    <form asp-controller="Kho" asp-action="ThemSanPham"
+          method="post" enctype="multipart/form-data"
+          class="card p-4 shadow-sm border-0">
+        @Html.AntiForgeryToken()
+
+        <div class="row g-3">
+            <!-- Tên sản phẩm -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Tên sản phẩm</label>
+                <input asp-for="TenSp" class="form-control" placeholder="Nhập tên sản phẩm..." required />
+                <span asp-validation-for="TenSp" class="text-danger"></span>
+            </div>
+
+            <!-- Giá bán -->
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Giá bán</label>
+                <input asp-for="Gia" class="form-control" type="number" step="1000" min="0" placeholder="VNĐ" />
+                <span asp-validation-for="Gia" class="text-danger"></span>
+            </div>
+
+            <!-- Số lượng tồn -->
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Số lượng tồn</label>
+                <input asp-for="SoLuongTon" class="form-control" type="number" min="0" placeholder="0" />
+                <span asp-validation-for="SoLuongTon" class="text-danger"></span>
+            </div>
+
+            <!-- Danh mục -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Danh mục</label>
+                <select asp-for="MaDanhMuc" class="form-select"
+                        asp-items="@(new SelectList(ViewBag.DanhMucs, "MaDanhMuc", "TenDanhMuc"))">
+                    <option value="">-- Chọn danh mục --</option>
+                </select>
+                <span asp-validation-for="MaDanhMuc" class="text-danger"></span>
+            </div>
+
+            <!-- Ảnh sản phẩm -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Ảnh sản phẩm</label>
+                <input type="file" name="HinhAnhFile" class="form-control" accept="image/*" />
+                <small class="text-muted fst-italic">Hỗ trợ: JPG, PNG, JPEG</small>
+            </div>
+
+            <!-- Mô tả -->
+            <div class="col-12">
+                <label class="form-label fw-semibold">Mô tả</label>
+                <textarea asp-for="MoTa" class="form-control" rows="3" placeholder="Nhập mô tả sản phẩm..."></textarea>
+                <span asp-validation-for="MoTa" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Nút thao tác -->
+        <div class="mt-4 d-flex justify-content-between">
+            <a asp-action="HangHoa" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại
+            </a>
+            <button type="submit" class="btn btn-danger px-4 fw-semibold">
+                <i class="fa-solid fa-floppy-disk"></i> Lưu sản phẩm
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <!-- ✅ Validation & Log submit -->
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelector("form").addEventListener("submit", e => {
+            console.log("✅ Form đang gửi tới:", e.target.action);
+        });
+    </script>
+}
