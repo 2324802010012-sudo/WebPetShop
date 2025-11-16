@@ -1,0 +1,138 @@
+﻿@{
+    ViewData["Title"] = "Báo cáo giao hàng";
+    Layout = "~/Views/Shared/_LayoutGiaoHang.cshtml";
+
+    var tong = ViewBag.TongGiao;
+    var dangGiao = ViewBag.DangGiao;
+    var thanhCong = ViewBag.ThanhCong;
+    var thatBai = ViewBag.ThatBai;
+
+    var ds = ViewBag.ThongKeGiaoHang as List<dynamic>;
+}
+
+<div class="container-fluid py-4">
+
+    <!-- TIÊU ĐỀ -->
+    <h3 class="fw-bold text-danger mb-4">
+        <i class="fa-solid fa-truck-fast me-2"></i>Báo cáo giao hàng
+    </h3>
+
+    <!-- THỐNG KÊ TỔNG QUAN -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-2 border-danger">
+                <div class="card-body">
+                    <h6 class="fw-bold text-secondary">Tổng giao</h6>
+                    <h2 class="fw-bold text-danger">@tong</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-2 border-warning">
+                <div class="card-body">
+                    <h6 class="fw-bold text-warning">Đang giao</h6>
+                    <h2 class="fw-bold text-warning">@dangGiao</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-2 border-success">
+                <div class="card-body">
+                    <h6 class="fw-bold text-success">Thành công</h6>
+                    <h2 class="fw-bold text-success">@thanhCong</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-2 border-danger">
+                <div class="card-body">
+                    <h6 class="fw-bold text-danger">Thất bại</h6>
+                    <h2 class="fw-bold text-danger">@thatBai</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BIỂU ĐỒ 6 THÁNG -->
+    <div class="card shadow-sm border-0 p-4 mb-4">
+        <h5 class="fw-bold mb-3 text-danger">
+            <i class="fa-solid fa-chart-column me-2"></i>Thống kê giao hàng 6 tháng gần nhất
+        </h5>
+        <canvas id="chartGH" height="120"></canvas>
+    </div>
+
+    <!-- BẢNG CHI TIẾT -->
+    <div class="card shadow-sm border-0 p-3">
+        <h5 class="fw-bold mb-3 text-danger">
+            <i class="fa-solid fa-table-list me-2"></i>Chi tiết theo tháng
+        </h5>
+
+        <table class="table table-hover align-middle table-bordered">
+            <thead class="text-center" style="background-color: #ffdddd;">
+                <tr class="fw-bold text-danger">
+                    <th>Tháng</th>
+                    <th>Tổng đơn</th>
+                    <th class="text-success">Thành công</th>
+                    <th class="text-danger">Thất bại</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in ds)
+                {
+                    <tr class="text-center">
+                        <td class="fw-bold">Tháng @row.Thang</td>
+                        <td>@row.Tong</td>
+                        <td class="text-success fw-bold">@row.ThanhCong</td>
+                        <td class="text-danger fw-bold">@row.ThatBai</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- SCRIPT BIỂU ĐỒ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var data = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ds));
+
+    const labels = data.map(x => "Tháng " + x.Thang);
+    const tong = data.map(x => x.Tong);
+    const thanhCong = data.map(x => x.ThanhCong);
+    const thatBai = data.map(x => x.ThatBai);
+
+    new Chart(document.getElementById('chartGH'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: "Tổng đơn",
+                    data: tong,
+                    backgroundColor: "#dc3545",
+                },
+                {
+                    label: "Thành công",
+                    data: thanhCong,
+                    backgroundColor: "#198754",
+                },
+                {
+                    label: "Thất bại",
+                    data: thatBai,
+                    backgroundColor: "#ff0000",
+                }
+            ]
+        },
+        options: {
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>

@@ -1,0 +1,146 @@
+﻿@model IEnumerable<WebPetShop.Models.DonHang>
+
+@{
+    ViewData["Title"] = "Đơn hàng cần kho xử lý";
+    Layout = "~/Views/Kho/_LayoutKho.cshtml";
+}
+
+<div class="container-fluid">
+
+    <!-- TIÊU ĐỀ -->
+    <h3 class="fw-bold text-danger mb-4">
+        <i class="fa-solid fa-dolly me-2"></i> Đơn hàng cần kho xử lý
+    </h3>
+
+    <!-- BẢNG -->
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-danger text-center">
+                    <tr>
+                        <th style="width: 10%">Mã đơn</th>
+                        <th style="width: 25%">Khách hàng</th>
+                        <th style="width: 20%">Ngày đặt</th>
+                        <th style="width: 20%">Trạng thái</th>
+                        <th style="width: 25%">Thao tác</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr class="text-center">
+
+                            <!-- MÃ ĐƠN -->
+                            <td class="fw-bold text-danger">#@item.MaDh</td>
+
+                            <!-- KHÁCH HÀNG -->
+                            <td class="fw-semibold">
+                                <i class="fa-solid fa-user text-secondary me-1"></i>
+                                @item.MaNguoiDungNavigation?.HoTen
+                            </td>
+
+                            <!-- NGÀY ĐẶT -->
+                            <td>
+                                <i class="fa-solid fa-clock text-secondary me-1"></i>
+                                @item.NgayDat?.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+
+                            <!-- TRẠNG THÁI -->
+                            <td>
+                                @if (item.TrangThai == "Đã xác nhận")
+                                {
+                                    <span class="badge bg-info text-dark px-3 py-2 shadow-sm">
+                                        Đã xác nhận
+                                    </span>
+                                }
+                                else if (item.TrangThai == "Đang chuẩn bị")
+                                {
+                                    <span class="badge bg-warning text-dark px-3 py-2 shadow-sm">
+                                        Đang chuẩn bị
+                                    </span>
+                                }
+                            </td>
+
+                            <!-- THAO TÁC -->
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+
+                                    @if (item.TrangThai == "Đã xác nhận")
+                                    {
+                                        <button class="btn btn-sm btn-warning px-3 shadow-sm"
+                                                onclick="confirmChuanBi(@item.MaDh)">
+                                            <i class="fa-solid fa-box-open me-1"></i>
+                                            Chuẩn bị hàng
+                                        </button>
+                                    }
+
+                                    @if (item.TrangThai == "Đang chuẩn bị")
+                                    {
+                                        <button class="btn btn-sm btn-success px-3 shadow-sm"
+                                                onclick="confirmGiaoHang(@item.MaDh)">
+                                            <i class="fa-solid fa-truck-fast me-1"></i>
+                                            Giao vận chuyển
+                                        </button>
+                                    }
+
+                                </div>
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- POPUP XÁC NHẬN -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3 text-center rounded-4">
+
+            <h5 id="confirmMessage" class="fw-bold mb-3 text-danger"></h5>
+
+            <div class="d-flex justify-content-center gap-3">
+                <button class="btn btn-secondary px-4" data-bs-dismiss="modal">
+                    Hủy
+                </button>
+
+                <a id="confirmBtn" class="btn px-4 text-white"></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        // Xác nhận chuẩn bị hàng
+        function confirmChuanBi(id) {
+            document.getElementById("confirmMessage").innerText =
+                "Xác nhận chuyển đơn #" + id + " sang trạng thái ĐANG CHUẨN BỊ?";
+
+            let btn = document.getElementById("confirmBtn");
+            btn.innerText = "Xác nhận";
+            btn.className = "btn btn-warning text-white px-4";
+            btn.href = "/Kho/ChuanBiHang/" + id;
+
+            new bootstrap.Modal(document.getElementById("confirmModal")).show();
+        }
+
+        // Xác nhận giao vận chuyển
+        function confirmGiaoHang(id) {
+            document.getElementById("confirmMessage").innerText =
+                "Xác nhận giao đơn #" + id + " cho đơn vị vận chuyển?";
+
+            let btn = document.getElementById("confirmBtn");
+            btn.innerText = "Giao hàng";
+            btn.className = "btn btn-success text-white px-4";
+            btn.href = "/Kho/GiaoChoVanChuyen/" + id;
+
+            new bootstrap.Modal(document.getElementById("confirmModal")).show();
+        }
+
+    </script>
+}

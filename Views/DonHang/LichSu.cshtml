@@ -5,46 +5,62 @@
 }
 
 <div class="container py-5">
+
     <h3 class="fw-bold text-danger text-center mb-4">
         <i class="fa-solid fa-box-archive me-2"></i> Lịch sử đơn hàng của bạn
     </h3>
 
-    <!-- 🧭 THANH LỌC TRẠNG THÁI -->
-    <!-- 🧭 THANH LỌC TRẠNG THÁI -->
-    <ul class="nav nav-pills justify-content-center mb-4 order-filter flex-wrap gap-2">
-        <li class="nav-item">
-            <a class="nav-link active" data-filter="all">
-                <i class="fa-solid fa-list me-1"></i> Tất cả
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-filter="Chờ xác nhận">
-                <i class="fa-regular fa-clock me-1 text-warning"></i> Chờ xác nhận
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-filter="Đã xác nhận">
-                <i class="fa-solid fa-circle-check me-1 text-info"></i> Đã xác nhận
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-filter="Đang giao">
-                <i class="fa-solid fa-truck-fast me-1 text-primary"></i> Đang giao
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-filter="Hoàn tất">
-                <i class="fa-solid fa-check-double me-1 text-success"></i> Hoàn tất
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-filter="Đã hủy">
-                <i class="fa-solid fa-xmark me-1 text-danger"></i> Đã hủy
-            </a>
-        </li>
-    </ul>
+    <!-- ===============================
+         THANH TRẠNG THÁI ĐƠN HÀNG (UI MỚI)
+    =============================== -->
+    <div class="status-bar d-flex justify-content-center gap-3 mb-4 flex-nowrap">
 
-    <!-- 🧾 DANH SÁCH ĐƠN -->
+
+        <div class="status-item active" data-filter="all">
+            <i class="fa-solid fa-list icon"></i>
+            <span>Tất cả</span>
+        </div>
+
+        <div class="status-item" data-filter="Chờ xác nhận">
+            <i class="fa-regular fa-clock icon text-warning"></i>
+            <span>Chờ xác nhận</span>
+        </div>
+
+        <div class="status-item" data-filter="Đã xác nhận">
+            <i class="fa-solid fa-circle-check icon text-info"></i>
+            <span>Đã xác nhận</span>
+        </div>
+
+        <div class="status-item" data-filter="Đang chuẩn bị">
+            <i class="fa-solid fa-box-open icon text-secondary"></i>
+            <span>Đang chuẩn bị</span>
+        </div>
+
+        <div class="status-item" data-filter="Chờ giao">
+            <i class="fa-solid fa-truck-loading icon text-primary"></i>
+            <span>Chờ giao</span>
+        </div>
+
+        <div class="status-item" data-filter="Đang giao">
+            <i class="fa-solid fa-truck-fast icon text-primary"></i>
+            <span>Đang giao</span>
+        </div>
+
+        <div class="status-item" data-filter="Hoàn tất">
+            <i class="fa-solid fa-check-double icon text-success"></i>
+            <span>Hoàn tất</span>
+        </div>
+
+        <div class="status-item" data-filter="Đã hủy">
+            <i class="fa-solid fa-xmark icon text-danger"></i>
+            <span>Đã hủy</span>
+        </div>
+
+    </div>
+
+    <!-- ===============================
+        DANH SÁCH ĐƠN HÀNG
+    =============================== -->
     @if (!Model.Any())
     {
         <div class="text-center py-5">
@@ -57,112 +73,168 @@
     }
     else
     {
+        var trangThaiChoHuy = new[]
+        {
+        "Chờ xác nhận",
+        "Đã xác nhận",
+        "Đang chuẩn bị"
+        };
+
         foreach (var don in Model)
         {
             string badgeClass = don.TrangThai switch
             {
                 "Chờ xác nhận" => "bg-warning text-dark",
                 "Đã xác nhận" => "bg-info text-white",
+                "Đang chuẩn bị" => "bg-secondary text-white",
+                "Chờ giao" => "bg-primary text-white",
                 "Đang giao" => "bg-primary text-white",
                 "Hoàn tất" => "bg-success text-white",
                 "Đã hủy" => "bg-dark text-white",
                 _ => "bg-secondary text-white"
             };
 
-            <div class="order-card card shadow-sm mb-4 border-0 rounded-4" data-status="@don.TrangThai">
+            <div class="order-card card shadow-sm mb-4 border-0 rounded-4"
+                 data-status="@don.TrangThai">
+
+                <!-- HEADER -->
                 <div class="card-header d-flex justify-content-between align-items-center text-white py-3"
                      style="background: linear-gradient(90deg,#f44336,#e53935);">
                     <div>
-                        <strong>#@don.MaDh</strong> • <i class="fa-regular fa-clock me-1"></i>@don.NgayDat?.ToString("dd/MM/yyyy HH:mm")
+                        <strong>#@don.MaDh</strong> •
+                        <i class="fa-regular fa-clock me-1"></i>
+                        @don.NgayDat?.ToString("dd/MM/yyyy HH:mm")
                     </div>
                     <span class="badge @badgeClass px-3 py-2 rounded-pill">@don.TrangThai</span>
                 </div>
 
+                <!-- BODY -->
                 <div class="card-body bg-light">
                     @foreach (var ct in don.ChiTietDonHangs)
                     {
                         <div class="d-flex align-items-center justify-content-between border-bottom py-2">
                             <div class="d-flex align-items-center">
                                 <img src="@Url.Content("~/ImagesWWeb/" + ct.MaSpNavigation.HinhAnh)"
-                                     width="65" height="65" class="rounded me-3 border"
-                                     style="object-fit:cover;">
+                                     width="65" height="65"
+                                     class="rounded me-3 border" style="object-fit:cover;">
 
                                 <div>
                                     <div class="fw-semibold">@ct.MaSpNavigation.TenSp</div>
                                     <div class="text-muted small">Số lượng: @ct.SoLuong</div>
                                 </div>
                             </div>
+
                             <div class="fw-bold text-danger">@ct.DonGia.ToString("N0") đ</div>
                         </div>
                     }
-
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <div class="text-muted small">
-                            <i class="fa-solid fa-credit-card me-1"></i> @don.PhuongThucThanhToan
-                        </div>
-                     
-                    </div>
                 </div>
 
-                <div class="card-footer bg-white text-end">
+                <!-- FOOTER -->
+                <div class="card-footer bg-white d-flex justify-content-end gap-2">
+
+                    @if (trangThaiChoHuy.Contains(don.TrangThai))
+                    {
+                        <a onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')"
+                           asp-action="HuyDon"
+                           asp-controller="DonHang"
+                           asp-route-id="@don.MaDh"
+                           class="btn btn-outline-dark rounded-pill px-3 fw-semibold">
+                            <i class="fa-solid fa-xmark me-1"></i> Hủy đơn
+                        </a>
+                    }
+
                     <a href="/DonHang/ChiTiet/@don.MaDh"
                        class="btn btn-outline-danger rounded-pill px-4 fw-semibold hover-btn">
                         <i class="fa-solid fa-eye me-1"></i> Xem chi tiết
                     </a>
+
                 </div>
+
             </div>
         }
     }
 </div>
 
+
+<!-- ===============================
+    CSS LÀM FILTER ĐẸP
+=============================== -->
 <style>
-    /* 🌈 Thanh lọc trạng thái đẹp & rõ màu chữ */
-    .order-filter .nav-link {
-        color: #000 !important; /* ⚫ Màu chữ đen mặc định */
-        font-weight: 600;
-        border-radius: 30px;
-        padding: 8px 18px;
-        background-color: #fff; /* Nền trắng mặc định */
-        border: 1px solid #ddd;
-        transition: all 0.25s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    .status-bar {
+        margin-top: 10px;
     }
 
-        .order-filter .nav-link i {
-            font-size: 1rem;
-            color: #000; /* ⚫ Icon cũng đen theo */
+    /* Hộp trạng thái nhỏ gọn hơn */
+    .status-item {
+        width: 120px;
+        height: 90px;
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #eee;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+        text-align: center;
+        padding: 12px 8px;
+        cursor: pointer;
+        transition: 0.25s;
+    }
+
+        /* Hover */
+        .status-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+            border-color: #ff9b9b;
         }
 
-        .order-filter .nav-link:hover {
-            background-color: #fff4f4;
-            color: #d32f2f !important;
-            border-color: #f8d7da;
-            transform: translateY(-1px);
-        }
-
-        .order-filter .nav-link.active {
-            background-color: #d32f2f !important;
-            color: #fff !important; /* ⚪ Khi click -> chữ trắng */
+        /* Khi active */
+        .status-item.active {
+            background: #d32f2f;
+            color: white !important;
             border-color: #d32f2f;
-            box-shadow: 0 3px 10px rgba(211, 47, 47, 0.3);
+            box-shadow: 0 6px 15px rgba(211,47,47,0.3);
         }
 
-            .order-filter .nav-link.active i {
-                color: #fff !important; /* ⚪ Icon cũng đổi trắng khi active */
+            .status-item.active i {
+                color: white !important;
             }
+
+        /* Icon nhỏ lại */
+        .status-item .icon {
+            font-size: 22px; /* 🚀 nhỏ hơn 32px */
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        /* Chữ nhỏ hơn */
+        .status-item span {
+            font-size: 13px;
+            font-weight: 600;
+            display: block;
+        }
 
 </style>
 
+
+<!-- ===============================
+    SCRIPT FILTER MỚI – FULL WORK
+=============================== -->
 <script>
-    // 🧩 JS: Lọc đơn theo trạng thái
-    document.querySelectorAll(".order-filter .nav-link").forEach(tab => {
-        tab.addEventListener("click", function () {
-            document.querySelectorAll(".order-filter .nav-link").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".status-item").forEach(item => {
+        item.addEventListener("click", function () {
+
+            // remove active
+            document.querySelectorAll(".status-item")
+                .forEach(i => i.classList.remove("active"));
+
+            // set active
             this.classList.add("active");
 
             const filter = this.dataset.filter;
+
             document.querySelectorAll(".order-card").forEach(card => {
-                card.style.display = (filter === "all" || card.dataset.status === filter) ? "block" : "none";
+                card.style.display =
+                    (filter === "all" || card.dataset.status === filter)
+                        ? "block"
+                        : "none";
             });
         });
     });

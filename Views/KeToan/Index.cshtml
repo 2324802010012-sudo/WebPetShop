@@ -1,0 +1,62 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutKeToan.cshtml";
+    ViewData["Title"] = "Dashboard kế toán";
+
+    var tongHoaDon = ViewBag.TongHoaDon;
+    var doanhThu = ViewBag.DoanhThuThang;
+    var cod = ViewBag.DonCODChuaThu;
+    var chiPhi = ViewBag.TongChiPhiNhap;
+}
+
+<div class="container py-4">
+
+    <h2 class="fw-bold text-danger mb-4">
+        <i class="fa-solid fa-calculator me-2"></i>Dashboard kế toán
+    </h2>
+
+    <div class="row g-4">
+
+        <!-- Tổng hóa đơn -->
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3 border-0" style="border-left:5px solid #c62828;">
+                <h6 class="text-muted">Tổng hóa đơn</h6>
+                <h2 class="fw-bold text-danger">@tongHoaDon</h2>
+            </div>
+        </div>
+
+        <!-- Doanh thu tháng -->
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3 border-0" style="border-left:5px solid #2e7d32;">
+                <h6 class="text-muted">Doanh thu tháng</h6>
+                <h2 class="fw-bold text-success">@doanhThu.ToString("N0") ₫</h2>
+            </div>
+        </div>
+
+        <!-- COD chưa thu -->
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3 border-0" style="border-left:5px solid #ff8f00;">
+                <h6 class="text-muted">COD chưa thu</h6>
+                <h2 class="fw-bold text-warning">@cod</h2>
+            </div>
+        </div>
+
+        <!-- Chi phí nhập -->
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3 border-0" style="border-left:5px solid #0277bd;">
+                <h6 class="text-muted">Chi phí nhập hàng</h6>
+                <h2 class="fw-bold text-primary">@chiPhi.ToString("N0") ₫</h2>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-4">
+        <a href="/KeToan/HoaDon" class="btn btn-danger px-4">
+            <i class="fa-solid fa-file-invoice-dollar me-2"></i>Danh sách hoá đơn
+        </a>
+        <a href="/KeToan/BaoCaoTaiChinh" class="btn btn-outline-danger px-4 ms-2">
+            <i class="fa-solid fa-chart-line me-2"></i>Báo cáo tài chính
+        </a>
+    </div>
+
+</div>

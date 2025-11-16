@@ -26,7 +26,10 @@
             var tong = dh.ChiTietDonHangs.Sum(c => c.SoLuong * c.DonGia);
 
             <div class="card mb-4 border-0 shadow-sm rounded-4 order-card">
+
+                <!-- HEADER -->
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
+
                     <div>
                         <b>Mã đơn:</b> #@dh.MaDh
                         <span class="text-muted ms-3">
@@ -42,14 +45,24 @@
                             "Đang giao" => "bg-primary",
                             "Đã hủy" => "bg-danger",
                             "Đã xác nhận" => "bg-info",
-                            _ => "bg-warning text-dark"
+                            "Đang chuẩn bị" => "bg-warning text-dark",
+                            _ => "bg-secondary"
                         };
                     }
 
-                    <span class="badge rounded-pill px-3 py-2 @badgeClass">@dh.TrangThai</span>
+                    <span class="badge rounded-pill px-3 py-2 @badgeClass">
+                        @dh.TrangThai
+                    </span>
                 </div>
 
+                <!-- TIMELINE -->
+                <div class="px-4 pt-3">
+                    <partial name="~/Views/Shared/Timeline_TrangThai.cshtml" model="dh" />
+                </div>
+
+                <!-- BODY -->
                 <div class="card-body bg-white">
+
                     @foreach (var ct in dh.ChiTietDonHangs)
                     {
                         <div class="d-flex align-items-center justify-content-between border-bottom py-2">
@@ -63,6 +76,7 @@
                                     <div class="text-muted small">Số lượng: @ct.SoLuong</div>
                                 </div>
                             </div>
+
                             <div class="fw-bold text-danger">
                                 @((ct.SoLuong * ct.DonGia).ToString("N0")) ₫
                             </div>
@@ -85,7 +99,7 @@
     }
 </div>
 
-<style>
+ <style>
     .order-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);

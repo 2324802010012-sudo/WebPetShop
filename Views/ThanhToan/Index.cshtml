@@ -1,20 +1,29 @@
 ﻿@using WebPetShop.Models
 @model dynamic
+
 @{
     ViewData["Title"] = "Thanh toán đơn hàng";
+
     GioHang? gioHang = Model is GioHang ? Model : null;
     SanPham? spMuaNgay = Model is SanPham ? Model : null;
+
     int soLuong = ViewBag.SoLuong ?? 1;
+    decimal tienHang = 0;
+
+    if (spMuaNgay != null)
+        tienHang = spMuaNgay.Gia * soLuong;
+    else if (gioHang != null)
+        tienHang = gioHang.ChiTietGioHangs.Sum(x => (x.SoLuong ?? 1) * x.MaSpNavigation.Gia);
 }
 
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
 <div class="container py-5">
+
     <h2 class="fw-bold text-danger text-center mb-4">
         <i class="fa-solid fa-credit-card me-2"></i> Thanh toán đơn hàng
     </h2>
 
-    <!-- ⚠️ Nếu giỏ hàng trống -->
     @if (gioHang == null && spMuaNgay == null)
     {
         <div class="alert alert-info text-center">
@@ -25,87 +34,113 @@
     else
     {
         <div class="row g-4">
-            <!-- 🧾 Bên trái: Thông tin giao hàng -->
+
+            <!-- 🚚 THÔNG TIN GIAO HÀNG -->
             <div class="col-lg-7">
                 <div class="card shadow-sm border-0 rounded-4 p-4">
-                    <h5 class="fw-bold mb-3">📦 Thông tin giao hàng</h5>
 
-                    <!-- ✅ Sửa lại form để gọi đúng Controller -->
+                    <h5 class="fw-bold mb-3">
+                        <i class="fa-solid fa-truck-fast me-2"></i> Thông tin giao hàng
+                    </h5>
+
                     <form asp-action="XacNhan" asp-controller="GioHang" method="post">
                         @Html.AntiForgeryToken()
 
+                        <!-- Họ tên -->
                         <div class="mb-3">
-                            <label class="form-label">Họ tên người nhận</label>
-                            <input type="text" name="HoTen" class="form-control" placeholder="Nhập họ tên người nhận" required>
+                            <label class="form-label fw-semibold">Họ tên người nhận</label>
+                            <input type="text" name="HoTen" class="form-control rounded-3" required />
                         </div>
 
+                        <!-- SDT -->
                         <div class="mb-3">
-                            <label class="form-label">Số điện thoại</label>
-                            <input type="tel" name="SoDienThoai" class="form-control" placeholder="Nhập số điện thoại" required>
+                            <label class="form-label fw-semibold">Số điện thoại</label>
+                            <input type="tel" name="SoDienThoai" class="form-control rounded-3" required />
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Địa chỉ giao hàng</label>
-                            <textarea name="DiaChi" rows="2" class="form-control" placeholder="Nhập địa chỉ nhận hàng" required></textarea>
-                        </div>
+                        <!-- ĐỊA CHỈ GIAO HÀNG FULL -->
+                        <div class="mt-3">
+                            <label class="form-label fw-semibold">Địa chỉ giao hàng</label>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Phương thức thanh toán</label>
-                            <div class="payment-options p-3 border rounded-3">
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="PhuongThuc" id="cod" value="COD" checked>
-                                    <label class="form-check-label" for="cod">
-                                        💵 Thanh toán khi nhận hàng (COD)
-                                    </label>
+                            <div class="row g-3">
+
+                                <!-- Tỉnh -->
+                                <div class="col-md-4">
+                                    <select id="tinh" class="form-select" required>
+                                        <option value="">-- Chọn Tỉnh/TP --</option>
+                                    </select>
                                 </div>
 
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="PhuongThuc" id="bank" value="ChuyenKhoan">
-                                    <label class="form-check-label" for="bank">
-                                        🏦 Chuyển khoản ngân hàng
-                                    </label>
-                                    <div class="mt-2 ms-4 text-muted small bank-info d-none">
-                                        <p class="mb-1"><b>Ngân hàng:</b> Vietcombank – CN Thủ Dầu Một</p>
-                                        <p class="mb-1"><b>Số tài khoản:</b> 0123456789</p>
-                                        <p class="mb-0"><b>Chủ TK:</b> CÔNG TY PETSHOP</p>
-                                    </div>
+                                <!-- Huyện -->
+                                <div class="col-md-4">
+                                    <select id="huyen" class="form-select" required>
+                                        <option value="">-- Chọn Quận/Huyện --</option>
+                                    </select>
                                 </div>
 
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="PhuongThuc" id="online" value="Online">
-                                    <label class="form-check-label" for="online">
-                                        💳 Thanh toán Online (VNPay, Momo, ZaloPay)
-                                    </label>
+                                <!-- Xã -->
+                                <div class="col-md-4">
+                                    <select id="xa" class="form-select" required>
+                                        <option value="">-- Chọn Phường/Xã --</option>
+                                    </select>
                                 </div>
+
+                                <!-- Số nhà -->
+                                <div class="col-12">
+                                    <input type="text" id="soNha" class="form-control" placeholder="Số nhà, tên đường" required />
+                                </div>
+
+                                <!-- Input nộp về Controller -->
+                                <input type="hidden" name="DiaChi" id="diaChiHoanChinh" />
+
+                                <!-- Input MaPhi -->
+                                <input type="hidden" name="MaPhi" id="maPhi" />
                             </div>
                         </div>
 
-                        <style>
-                            .payment-options {
-                                background: #fafafa;
-                                transition: all 0.3s ease;
-                            }
-
-                            .form-check-label {
-                                cursor: pointer;
-                            }
-
-                            .bank-info {
-                                font-size: 14px;
-                                color: #555;
-                                background: #f8f9fa;
-                                border-left: 3px solid #198754;
-                                padding: 6px 12px;
-                                border-radius: 8px;
-                            }
-                        </style>
-
-                        <div class="mb-3">
-                            <label class="form-label">Ghi chú</label>
-                            <textarea name="GhiChu" rows="2" class="form-control" placeholder="Ghi chú cho cửa hàng (nếu có)"></textarea>
+                        <!-- MÃ CODE -->
+                        <div class="mb-3 mt-3">
+                            <label class="form-label fw-semibold">Mã khuyến mãi</label>
+                            <div class="input-group">
+                                <input type="text" name="MaCode" id="maCode" class="form-control rounded-start-3" placeholder="Nhập mã (VD: PETSHOP10)" />
+                                <button type="button" class="btn btn-outline-danger" id="applyCode">Áp dụng</button>
+                            </div>
+                            <small id="discountInfo" class="text-success"></small>
                         </div>
 
-                        <!-- 🧩 Nếu là mua ngay thì gửi mã sản phẩm -->
+                        <!-- PHƯƠNG THỨC THANH TOÁN -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Phương thức thanh toán</label>
+
+                            <div class="border rounded-4 p-3 bg-light">
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="PhuongThuc" value="COD" checked>
+                                    <label class="form-check-label">💵 Thanh toán COD</label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="PhuongThuc" id="bank" value="Bank">
+                                    <label class="form-check-label">🏦 Chuyển khoản</label>
+
+                                    <div class="bank-info d-none mt-2 ms-4 p-2 rounded"
+                                         style="background:#f8f9fa;border-left:3px solid #198754;">
+                                        <p class="mb-1"><b>Ngân hàng:</b> Vietcombank - CN TDM</p>
+                                        <p class="mb-1"><b>Số tài khoản:</b> 0123456789</p>
+                                        <p class="mb-0"><b>Chủ tài khoản:</b> CÔNG TY PETSHOP</p>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Ghi chú -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Ghi chú</label>
+                            <textarea name="GhiChu" rows="2" class="form-control rounded-3"></textarea>
+                        </div>
+
+                        <!-- MUA NGAY -->
                         @if (spMuaNgay != null)
                         {
                             <input type="hidden" name="MaSp" value="@spMuaNgay.MaSp" />
@@ -114,79 +149,96 @@
 
                         <div class="text-end">
                             <a href="/GioHang" class="btn btn-outline-secondary me-2">
-                                <i class="fa-solid fa-arrow-left"></i> Quay lại giỏ hàng
+                                <i class="fa-solid fa-arrow-left"></i> Quay lại
                             </a>
-                            <button type="submit" class="btn btn-danger fw-bold px-4">
+                            <button class="btn btn-danger fw-bold px-4">
                                 <i class="fa-solid fa-check-circle me-1"></i> Xác nhận đặt hàng
                             </button>
                         </div>
+
                     </form>
+
                 </div>
             </div>
 
-            <!-- 🛍️ Bên phải: sản phẩm -->
+            <!-- 🛍 ĐƠN HÀNG -->
             <div class="col-lg-5">
                 <div class="card shadow-sm border-0 rounded-4">
+
                     <div class="card-header bg-danger text-white fw-bold">
                         🛍️ Đơn hàng của bạn
                     </div>
 
-                    <!-- 💰 Nếu là mua ngay -->
-                    @if (spMuaNgay != null)
-                    {
-                        var tongTien = spMuaNgay.Gia * soLuong;
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex align-items-center">
-                                <img src="~/ImagesWWeb/@spMuaNgay.HinhAnh" class="rounded me-3" width="60" height="60" style="object-fit:cover;">
+                    <div class="card-body">
+
+                        @if (spMuaNgay != null)
+                        {
+                            <div class="d-flex align-items-center mb-3 border-bottom pb-2">
+                                <img src="~/ImagesWWeb/@spMuaNgay.HinhAnh" width="60" class="rounded me-3">
+
                                 <div class="flex-fill">
                                     <div class="fw-semibold">@spMuaNgay.TenSp</div>
                                     <small>Số lượng: @soLuong</small>
                                 </div>
-                                <div class="text-danger fw-bold">
-                                    @String.Format("{0:N0} ₫", tongTien)
-                                </div>
-                            </li>
-                        </ul>
-                        <div class="card-footer bg-light text-end fw-bold fs-5">
-                            Tổng cộng: <span class="text-danger">@tongTien.ToString("N0") ₫</span>
-                        </div>
-                    }
-                    else if (gioHang != null && gioHang.ChiTietGioHangs.Any())
-                    {
-                        decimal tongTien = 0;
-                        foreach (var sp in gioHang.ChiTietGioHangs)
-                        {
-                            tongTien += (sp.SoLuong ?? 1) * sp.MaSpNavigation.Gia;
-                        }
 
-                        <ul class="list-group list-group-flush">
+                                <div class="text-danger fw-bold">
+                                    @String.Format("{0:N0} đ", tienHang)
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
                             @foreach (var sp in gioHang.ChiTietGioHangs)
                             {
-                                <li class="list-group-item d-flex align-items-center">
-                                    <img src="~/ImagesWWeb/@sp.MaSpNavigation.HinhAnh" class="rounded me-3" width="60" height="60" style="object-fit:cover;">
+                                <div class="d-flex align-items-center mb-3 border-bottom pb-2">
+                                    <img src="~/ImagesWWeb/@sp.MaSpNavigation.HinhAnh" width="60" class="rounded me-3">
+
                                     <div class="flex-fill">
-                                        <div class="fw-semibold">@sp.MaSpNavigation.TenSp</div>
+                                        <div>@sp.MaSpNavigation.TenSp</div>
                                         <small>Số lượng: @sp.SoLuong</small>
                                     </div>
-                                    <div class="text-danger fw-bold">
-                                        @String.Format("{0:N0} ₫", (sp.SoLuong ?? 1) * sp.MaSpNavigation.Gia)
-                                    </div>
-                                </li>
-                            }
-                        </ul>
 
-                        <div class="card-footer bg-light text-end fw-bold fs-5">
-                            Tổng cộng: <span class="text-danger">@tongTien.ToString("N0") ₫</span>
+                                    <div class="text-danger fw-bold">
+                                        @String.Format("{0:N0} đ", (sp.SoLuong ?? 1) * sp.MaSpNavigation.Gia)
+                                    </div>
+                                </div>
+                            }
+                        }
+
+                        <hr />
+
+                        <div class="d-flex justify-content-between">
+                            <span>Tạm tính:</span>
+                            <span id="tienHang">@tienHang.ToString("N0") đ</span>
                         </div>
-                    }
+
+                        <div class="d-flex justify-content-between">
+                            <span>Giảm giá:</span>
+                            <span id="giamGia">0 đ</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <span>Phí ship:</span>
+                            <span id="phiShip">0 đ</span>
+                        </div>
+
+                        <hr />
+
+                        <div class="d-flex justify-content-between fs-4 fw-bold">
+                            <span>Tổng:</span>
+                            <span id="tongCong" class="text-danger">@tienHang.ToString("N0") đ</span>
+                        </div>
+
+                    </div>
                 </div>
             </div>
+
         </div>
     }
 </div>
 
 <style>
-    textarea, input {
+    input, textarea, select {
         border-radius: 10px !important;
     }
 
@@ -195,15 +247,124 @@
     }
 
     .btn-danger:hover {
-        background-color: #c22f2f;
+        background: #c22f2f !important;
     }
 </style>
 
+<!-- 🌍 LOAD TỈNH/HUYỆN/XÃ -->
+<script>
+    fetch("https://provinces.open-api.vn/api/?depth=3")
+        .then(res => res.json())
+        .then(data => {
+            const tinhSelect = document.getElementById("tinh");
+            const huyenSelect = document.getElementById("huyen");
+            const xaSelect = document.getElementById("xa");
+
+            // Load tỉnh
+            data.forEach(t => {
+                tinhSelect.innerHTML += `<option value="${t.name}" data-id="${t.code}">${t.name}</option>`;
+            });
+
+            // Load huyện khi chọn tỉnh
+            tinhSelect.onchange = function () {
+                huyenSelect.innerHTML = `<option value="">-- Chọn Quận/Huyện --</option>`;
+                xaSelect.innerHTML = `<option value="">-- Chọn Phường/Xã --</option>`;
+
+                const code = this.options[this.selectedIndex].dataset.id;
+                const tinh = data.find(x => x.code == code);
+
+                tinh.districts.forEach(h => {
+                    huyenSelect.innerHTML += `<option value="${h.name}" data-id="${h.code}">${h.name}</option>`;
+                });
+
+                updateFinalAddress();
+                autoPhiShip();
+            };
+
+            // Load xã khi chọn huyện
+            huyenSelect.onchange = function () {
+                xaSelect.innerHTML = `<option value="">-- Chọn Phường/Xã --</option>`;
+
+                const tinhCode = tinhSelect.options[tinhSelect.selectedIndex].dataset.id;
+                const tinh = data.find(x => x.code == tinhCode);
+
+                const huyenCode = this.options[this.selectedIndex].dataset.id;
+                const huyen = tinh.districts.find(x => x.code == huyenCode);
+
+                huyen.wards.forEach(x => {
+                    xaSelect.innerHTML += `<option value="${x.name}">${x.name}</option>`;
+                });
+
+                updateFinalAddress();
+                autoPhiShip();
+            };
+
+            xaSelect.onchange = updateFinalAddress;
+            document.getElementById("soNha").oninput = updateFinalAddress;
+
+            function updateFinalAddress() {
+                const soNha = document.getElementById("soNha").value;
+                const tinh = tinhSelect.value;
+                const huyen = huyenSelect.value;
+                const xa = xaSelect.value;
+
+                if (tinh && huyen && xa) {
+                    document.getElementById("diaChiHoanChinh").value =
+                        `${soNha}, ${xa}, ${huyen}, ${tinh}`;
+                }
+            }
+        });
+</script>
+
+<!-- PHÍ SHIP TỰ ĐỘNG -->
+<script>
+    let tienHang = @tienHang;
+    let giamGia = 0;
+    let phiShip = 0;
+
+    function updateTotal() {
+        document.getElementById("giamGia").innerText = giamGia.toLocaleString("vi-VN") + " đ";
+        document.getElementById("phiShip").innerText = phiShip.toLocaleString("vi-VN") + " đ";
+
+        let tong = tienHang - giamGia + phiShip;
+        document.getElementById("tongCong").innerText = tong.toLocaleString("vi-VN") + " đ";
+    }
+
+    // 🎯 Lấy phí ship tự động dựa trên tỉnh + huyện
+    function autoPhiShip() {
+        const tinh = document.getElementById("tinh").value;
+        const huyen = document.getElementById("huyen").value;
+
+        if (!tinh || !huyen) return;
+
+        fetch(`/GioHang/GetPhiShip?tinh=${tinh}&huyen=${huyen}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data) return;
+
+                phiShip = data.phiCoDinh;
+
+                // set vào UI
+                document.getElementById("phiShip").innerText =
+                    data.phiCoDinh.toLocaleString("vi-VN") + " đ";
+
+                // set vào input hidden để gửi Controller
+                document.getElementById("maPhi").value = data.maPhi;
+
+                updateTotal();
+            });
+    }
+
+    // Nhận sự kiện thay đổi tỉnh huyện
+    document.getElementById("tinh").addEventListener("change", autoPhiShip);
+    document.getElementById("huyen").addEventListener("change", autoPhiShip);
+</script>
+
+<!-- BANK -->
 <script>
     const bankOption = document.getElementById("bank");
     const bankInfo = document.querySelector(".bank-info");
 
-    // Ẩn/hiện thông tin tài khoản ngân hàng
     document.querySelectorAll("input[name='PhuongThuc']").forEach(el => {
         el.addEventListener("change", function () {
             bankInfo.classList.toggle("d-none", !bankOption.checked);

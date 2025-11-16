@@ -186,7 +186,7 @@ namespace WebPetShop.Controllers
                 TongTien = gioHang.ChiTietGioHangs.Sum(ct => (ct.SoLuong ?? 1) * ct.MaSpNavigation.Gia)
             };
 
-            return View("~/Views/ThanhToan/Checkout.cshtml", vm);
+            return View("~/Views/GioHang/Checkout.cshtml", vm);
         }
 
         // ✅ XÁC NHẬN ĐẶT HÀNG (THEO CHECKOUTVM)
@@ -291,5 +291,31 @@ namespace WebPetShop.Controllers
 
             return View(donHang);
         }
+        [HttpGet]
+        public IActionResult GetPhiShip(string tinh, string huyen)
+        {
+            tinh = tinh.ToLower();
+            huyen = huyen.ToLower();
+
+            // Nếu trong tỉnh Bình Dương
+            if (tinh.Contains("bình dương"))
+            {
+                if (huyen.Contains("thủ dầu một"))
+                {
+                    var phi = _context.PhiGiaoHangs.FirstOrDefault(x => x.KhuVuc == "Nội thành");
+                    return Json(phi);
+                }
+                else
+                {
+                    var phi = _context.PhiGiaoHangs.FirstOrDefault(x => x.KhuVuc == "Ngoại thành");
+                    return Json(phi);
+                }
+            }
+
+            // Tỉnh khác → Toàn quốc
+            var qc = _context.PhiGiaoHangs.FirstOrDefault(x => x.KhuVuc == "Toàn quốc");
+            return Json(qc);
+        }
+
     }
 }

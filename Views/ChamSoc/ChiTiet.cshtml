@@ -1,0 +1,66 @@
+﻿@model WebPetShop.Models.KyGuiThuCung
+@{
+    var lichSu = ViewBag.LichSu as List<WebPetShop.Models.ChiTietChamSoc>;
+}
+
+<div class="container py-4">
+    <h2 class="fw-bold text-danger mb-3">
+        <i class="fa-solid fa-dog me-2"></i> Chi tiết ký gửi: @Model.TenThuCung
+    </h2>
+
+    <div class="card shadow-sm p-4 mb-4">
+        <h5 class="fw-bold mb-3">Thông tin thú cưng</h5>
+
+        <p><b>Khách gửi:</b> @Model.MaKhNavigation?.HoTen</p>
+        <p><b>Giống:</b> @Model.GiongLoai</p>
+        <p><b>Tuổi:</b> @Model.Tuoi</p>
+        <p><b>Ngày gửi:</b> @Model.NgayGui?.ToString("dd/MM/yyyy")</p>
+    </div>
+
+    <div class="card shadow-sm p-4 mb-4">
+        <h5 class="fw-bold mb-3">Cập nhật chăm sóc</h5>
+
+        <form asp-action="ThemChamSoc" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="maKyGui" value="@Model.MaKyGui" />
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Tình trạng</label>
+                <input type="text" class="form-control" name="tinhTrang" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Ghi chú</label>
+                <textarea class="form-control" name="ghiChu" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Hình ảnh</label>
+                <input type="file" class="form-control" name="hinhAnh" />
+            </div>
+
+            <button class="btn btn-danger px-4 fw-bold" type="submit">
+                <i class="fa-solid fa-plus"></i> Cập nhật
+            </button>
+        </form>
+    </div>
+
+    <h4 class="fw-bold text-danger mt-4">📌 Lịch sử chăm sóc</h4>
+    <div class="row mt-3">
+        @foreach (var c in lichSu)
+        {
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <p><b>Ngày:</b> @(c.NgayCapNhat?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa cập nhật")</p>
+                        <p><b>Tình trạng:</b> @c.TinhTrang</p>
+                        <p><b>Ghi chú:</b> @c.GhiChu</p>
+
+                        @if (!string.IsNullOrEmpty(c.HinhAnh))
+                        {
+                            <img src="~/ImagesChamSoc/@c.HinhAnh" class="img-fluid rounded" />
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>

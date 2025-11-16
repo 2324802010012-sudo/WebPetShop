@@ -1,0 +1,59 @@
+﻿@model IEnumerable<WebPetShop.Models.HoaDon>
+
+@{
+    Layout = "~/Views/Shared/_LayoutKeToan.cshtml";
+    ViewData["Title"] = "Danh sách hóa đơn";
+}
+
+<div class="container py-4">
+
+    <h2 class="fw-bold text-danger mb-4">
+        <i class="fa-solid fa-file-invoice-dollar me-2"></i>Danh sách hóa đơn
+    </h2>
+
+    <table class="table table-bordered table-hover shadow-sm align-middle">
+        <thead class="table-danger text-center">
+            <tr>
+                <th>#</th>
+                <th>Đơn hàng</th>
+                <th>Ngày lập</th>
+                <th>Số tiền</th>
+                <th>Hình thức</th>
+                <th>Kế toán</th>
+                <th>Chi tiết</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int stt = 1;
+                foreach (var h in Model)
+                {
+                    <tr>
+                        <td>@stt++</td>
+
+                        <!-- mã đơn hàng -->
+                        <td>@h.MaDhNavigation?.MaDh</td>
+
+                        <!-- ngày lập -->
+                        <td>@(h.NgayLap.HasValue? h.NgayLap.Value.ToString("dd/MM/yyyy HH:mm") : "")</td>
+
+                        <!-- Số tiền -->
+                        <td class="text-end fw-bold text-danger">
+                            @String.Format("{0:N0} ₫", h.SoTien)
+                        </td>
+
+                        <td>@h.HinhThuc</td>
+
+                        <td>@h.MaKeToanNavigation?.HoTen</td>
+
+                        <td class="text-center">
+                            <a href="/KeToan/ChiTietHoaDon/@h.MaHd" class="btn btn-outline-danger btn-sm">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

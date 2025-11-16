@@ -30,12 +30,34 @@ public partial class DonHang
 
     public int? MaPhi { get; set; }
 
-    public int? MaTttt { get; set; }
+    // THANH TOÁN TRỰC TUYẾN (1 - 1)
+    [Column("MaTTTT")]
+    public int? MaTTTT { get; set; }
+
+    [ForeignKey("MaTTTT")]
+    public virtual ThanhToanTrucTuyen? ThanhToanTrucTuyenNavigation { get; set; }
+
+    // THANH TOÁN THỰC TẾ (COD/CK) (1 - 1)
+    [Column("MaHTTT")]
+    public int? MaHTTT { get; set; }
+
+    [ForeignKey("MaHTTT")]
+    public virtual HinhThucThanhToanThucTe? HinhThucThanhToanThucTeNavigation { get; set; }
 
     public string? SoDienThoai { get; set; }
 
     public string? GhiChu { get; set; }
 
+    // Khuyến mãi
+    public virtual KhuyenMai? MaKmNavigation { get; set; }
+
+    // Người dùng
+    public virtual NguoiDung MaNguoiDungNavigation { get; set; } = null!;
+
+    // Phí giao hàng
+    public virtual PhiGiaoHang? MaPhiNavigation { get; set; }
+
+    // COLLECTION NAVIGATIONS
     public virtual ICollection<ChiTietDonHang> ChiTietDonHangs { get; set; } = new List<ChiTietDonHang>();
 
     public virtual ICollection<GiaoHang> GiaoHangs { get; set; } = new List<GiaoHang>();
@@ -44,16 +66,9 @@ public partial class DonHang
 
     public virtual ICollection<LichSuTrangThaiDonHang> LichSuTrangThaiDonHangs { get; set; } = new List<LichSuTrangThaiDonHang>();
 
-    public virtual KhuyenMai? MaKmNavigation { get; set; }
-
-    public virtual NguoiDung MaNguoiDungNavigation { get; set; } = null!;
-
-    public virtual PhiGiaoHang? MaPhiNavigation { get; set; }
-
-    public virtual ThanhToanTrucTuyen? MaTtttNavigation { get; set; }
-
-    public virtual ICollection<ThanhToanTrucTuyen> ThanhToanTrucTuyens { get; set; } = new List<ThanhToanTrucTuyen>();
     public virtual ICollection<PhieuXuat> PhieuXuats { get; set; } = new List<PhieuXuat>();
+
+    // NON-MAPPED
     [NotMapped]
     public string? TenKhachHang => MaNguoiDungNavigation?.HoTen;
 

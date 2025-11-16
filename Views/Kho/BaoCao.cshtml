@@ -1,0 +1,275 @@
+﻿@{
+    ViewData["Title"] = "Báo cáo tồn kho";
+    Layout = "~/Views/Kho/_LayoutKho.cshtml";
+
+    var tongSanPham = ViewBag.TongSanPham ?? 0;
+    var sapHet = ViewBag.SapHet ?? 0;
+    var tongTonKho = ViewBag.TongTonKho ?? 0;
+
+    var nhapThang = ViewBag.NhapThang ?? 0;
+    var xuatThang = ViewBag.XuatThang ?? 0;
+
+    var danhSachSapHet = ViewBag.SanPhamSapHet as List<WebPetShop.Models.SanPham>;
+    var thongKeNX = ViewBag.ThongKeNX as List<dynamic>;
+}
+
+<div class="container-fluid py-4">
+
+    <h2 class="fw-bold text-danger mb-4">
+        <i class="fa-solid fa-chart-column me-2"></i>Báo cáo kho
+    </h2>
+
+    <!-- ====================== THÔNG KÊ TỔNG QUAN ======================= -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-danger-subtle shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="fw-bold text-danger">Tổng sản phẩm</h6>
+                    <h2 class="fw-bold">@tongSanPham</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-warning-subtle shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="fw-bold text-warning">Sản phẩm sắp hết (≤5)</h6>
+                    <h2 class="fw-bold">@sapHet</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-info-subtle shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="fw-bold text-info">Tổng tồn kho</h6>
+                    <h2 class="fw-bold">@tongTonKho</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-success-subtle shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="fw-bold text-success">Nhập / Xuất tháng này</h6>
+                    <h2 class="fw-bold">
+                        @nhapThang / @xuatThang
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================== BIỂU ĐỒ NHẬP – XUẤT ======================= -->
+    <div class="card p-4 shadow-sm border-0 mb-4">
+        <h5 class="fw-bold mb-3">
+            <i class="fa-solid fa-chart-line me-2"></i>Biểu đồ nhập – xuất 6 tháng gần nhất
+        </h5>
+
+        <canvas id="chartNX" height="110"></canvas>
+    </div>
+
+    <!-- ====================== SẢN PHẨM SẮP HẾT ======================= -->
+    <div class="card p-3 shadow-sm border-0 mb-4">
+        <h5 class="fw-bold mb-3">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>Sản phẩm sắp hết hàng
+        </h5>
+
+        @if (danhSachSapHet != null && danhSachSapHet.Count > 0)
+        {
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Tồn kho</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int stt = 1;
+                        foreach (var sp in danhSachSapHet)
+                        {
+                            <tr>
+                                <td>@stt++</td>
+                                <td>@sp.TenSp</td>
+                                <td>@sp.MaDanhMucNavigation?.TenDanhMuc</td>
+                                <td class="text-danger fw-bold">@sp.SoLuongTon</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="text-muted fst-italic">Không có sản phẩm nào sắp hết hàng.</p>
+        }
+    </div>
+
+    <!-- ====================== THỐNG KÊ NHẬP – XUẤT CHI TIẾT ======================= -->
+    <div class="card p-3 shadow-sm border-0">
+        <h5 class="fw-bold mb-3">
+            <i class="fa-solid fa-database me-2"></i>Thống kê nhập – xuất chi tiết
+        </h5>
+
+        <table class="table table-bordered table-hover">
+            <thead class="table-danger text-center">
+                <tr>
+                    <th>Tháng</th>
+                    <th>Số phiếu nhập</th>
+                    <th>Số phiếu xuất</th>
+                    <th>Tổng giá trị nhập</th>
+                    <th>Tổng giá trị xuất</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in thongKeNX)
+                {
+                    <tr>
+                        <td class="text-center fw-bold">@row.Thang</td>
+                        <td class="text-center">@row.SoPN</td>
+                        <td class="text-center">@row.SoPX</td>
+                        <td class="text-end text-success">@row.TongNhap.ToString("N0") ₫</td>
+                        <td class="text-end text-danger">@row.TongXuat.ToString("N0") ₫</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<h3 class="fw-bold text-primary mb-3 mt-4">
+    <i class="fa-solid fa-boxes-stacked me-2"></i>Thống kê đơn hàng
+</h3>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 bg-dark-subtle">
+            <div class="card-body">
+                <h6 class="fw-bold">Tổng đơn hàng</h6>
+                <h2 class="fw-bold">@ViewBag.TongDonHang</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 bg-info-subtle">
+            <div class="card-body">
+                <h6 class="fw-bold text-info">Đơn mới hôm nay</h6>
+                <h2 class="fw-bold">@ViewBag.DonMoiHomNay</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 bg-warning-subtle">
+            <div class="card-body">
+                <h6 class="fw-bold text-warning">Đang xử lý</h6>
+                <h2 class="fw-bold">@ViewBag.DonDangXuLy</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 bg-success-subtle">
+            <div class="card-body">
+                <h6 class="fw-bold text-success">Đã hoàn tất</h6>
+                <h2 class="fw-bold">@ViewBag.DonHoanTat</h2>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card p-4 shadow-sm border-0 mb-4">
+    <h5 class="fw-bold mb-3">
+        <i class="fa-solid fa-chart-simple me-2"></i>Đơn hàng 6 tháng gần nhất
+    </h5>
+
+    <canvas id="chartDH" height="110"></canvas>
+</div>
+
+<div class="card p-3 shadow-sm border-0">
+    <table class="table table-bordered text-center">
+        <thead class="table-primary">
+            <tr>
+                <th>Tháng</th>
+                <th>Số đơn</th>
+                <th>Doanh thu</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in ViewBag.ThongKeDonHang)
+            {
+                <tr>
+                    <td>Tháng @d.Thang</td>
+                    <td>@d.SoDon</td>
+                    <td class="fw-bold text-success">@d.DoanhThu.ToString("N0") ₫</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- ====================== SCRIPT BIỂU ĐỒ ======================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    var data = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(thongKeNX));
+
+    var labels = data.map(x => "Tháng " + x.Thang);
+    var nhap = data.map(x => x.TongNhap);
+    var xuat = data.map(x => x.TongXuat);
+
+    const ctx = document.getElementById('chartNX');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Nhập',
+                    data: nhap,
+                    borderWidth: 3,
+                    borderColor: '#28a745',
+                    fill: false,
+                    tension: 0.3
+                },
+                {
+                    label: 'Xuất',
+                    data: xuat,
+                    borderWidth: 3,
+                    borderColor: '#dc3545',
+                    fill: false,
+                    tension: 0.3
+                }
+            ]
+        }
+    });
+</script>
+<script>
+    var dh = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ThongKeDonHang));
+
+    var labelsDH = dh.map(x => "Tháng " + x.Thang);
+    var soDon = dh.map(x => x.SoDon);
+    var doanhThu = dh.map(x => x.DoanhThu);
+
+    const ctxDH = document.getElementById('chartDH');
+    new Chart(ctxDH, {
+        type: 'bar',
+        data: {
+            labels: labelsDH,
+            datasets: [
+                {
+                    label: 'Số đơn',
+                    data: soDon,
+                    backgroundColor: '#0d6efd'
+                },
+                {
+                    label: 'Doanh thu',
+                    data: doanhThu,
+                    backgroundColor: '#198754'
+                }
+            ]
+        }
+    });
+</script>

@@ -1,35 +1,182 @@
 ﻿@model IEnumerable<WebPetShop.Models.DonHang>
+
 @{
     ViewData["Title"] = "Danh sách giao hàng";
     Layout = "~/Views/Shared/_LayoutGiaoHang.cshtml";
 }
 
-<h3 class="text-success mb-3"><i class="fa-solid fa-truck"></i> Danh sách giao hàng</h3>
+<div class="container py-4">
 
-<table class="table table-striped bg-white shadow-sm">
-    <thead class="table-success">
-        <tr>
-            <th>Mã đơn</th>
-            <th>Khách hàng</th>
-            <th>Địa chỉ</th>
-            <th>Trạng thái</th>
-            <th>Thao tác</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.MaDh</td>
-                <td>@item.TenKhachHang</td>
-                <td>@item.DiaChiGiao</td>
-                <td><span class="badge bg-warning">@item.TrangThai</span></td>
-                <td>
-                    <a href="/GiaoHang/CapNhatTrangThai/@item.MaDh" class="btn btn-sm btn-primary">
-                        <i class="fa-solid fa-pen"></i> Cập nhật
-                    </a>
-                </td>
-            </tr>
+    <!-- 🔥 TIÊU ĐỀ + Ô TÌM KIẾM + LỌC -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-danger mb-2">
+            <i class="fa-solid fa-truck-fast me-2"></i> Danh sách giao hàng
+        </h3>
+
+        <div class="d-flex gap-2">
+
+            <!-- Ô tìm kiếm -->
+            <div class="input-group shadow-sm search-box">
+                <span class="input-group-text bg-danger text-white border-0">
+                    <i class="fa-solid fa-search"></i>
+                </span>
+                <input type="text" id="searchBox" class="form-control border-0"
+                       placeholder="Tìm theo tên, mã đơn...">
+            </div>
+
+            <!-- Lọc trạng thái -->
+            <select id="statusFilter" class="form-select shadow-sm border-0 fw-semibold filter-select">
+                <option value="all">-- Tất cả trạng thái --</option>
+                <option value="Chờ giao">Chờ giao</option>
+                <option value="Đang giao">Đang giao</option>
+                <option value="Hoàn tất">Hoàn tất</option>
+                <option value="Đã hủy">Đã hủy</option>
+            </select>
+        </div>
+    </div>
+
+
+    <!-- 🟥 DANH SÁCH ĐƠN HÀNG -->
+    <div class="card shadow-sm rounded-4 border-0 overflow-hidden">
+
+        <table class="table table-hover align-middle text-center" id="orderTable">
+
+            <thead class="text-white" style="background:#c62828;">
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Địa chỉ giao</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    string badgeClass = item.TrangThai switch
+                    {
+                        "Chờ giao" => "status-wait",
+                        "Đang giao" => "status-shipping",
+                        "Hoàn tất" => "status-done",
+                        "Đã hủy" => "status-cancel",
+                        _ => "status-other"
+                    };
+
+                    <tr class="order-row">
+                        <td class="fw-bold text-danger">#@item.MaDh</td>
+
+                        <td>
+                            <i class="fa-solid fa-user text-muted me-1"></i>
+                            @item.TenKhachHang
+                        </td>
+
+                        <td>@item.DiaChiGiao</td>
+
+                        <td>
+                            <span class="status-badge @badgeClass">@item.TrangThai</span>
+                        </td>
+
+                        <td>
+                            <a href="/GiaoHang/CapNhatTrangThai/@item.MaDh"
+                               class="btn btn-sm btn-outline-danger rounded-pill px-3 action-btn">
+                                <i class="fa-solid fa-pen-to-square me-1"></i> Cập nhật
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+
+<!-- 🌈 STYLE PREMIUM -->
+<style>
+    /* --- Search & filter đẹp --- */
+    .search-box {
+        width: 240px;
+    }
+
+    .filter-select {
+        min-width: 160px;
+        border-radius: 12px;
+    }
+
+    /* --- Badge gradient hiện đại --- */
+    .status-badge {
+        padding: 6px 16px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: inline-block;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .status-wait {
+        background: linear-gradient(to right, #ffecb3, #ffe082);
+        color: #8d6e63;
+    }
+
+    .status-shipping {
+        background: linear-gradient(to right, #64b5f6, #42a5f5);
+        color: #0d47a1;
+    }
+
+    .status-done {
+        background: linear-gradient(to right, #81c784, #66bb6a);
+        color: #1b5e20;
+    }
+
+    .status-cancel {
+        background: linear-gradient(to right, #ef9a9a, #e57373);
+        color: #b71c1c;
+    }
+
+    .status-other {
+        background: #eeeeee;
+        color: #616161;
+    }
+
+    /* --- Hover hàng --- */
+    .order-row:hover {
+        background: #fff4f4;
+        transition: 0.25s;
+    }
+
+    /* --- Nút cập nhật --- */
+    .action-btn {
+        border-width: 2px;
+        transition: 0.25s;
+    }
+
+        .action-btn:hover {
+            background: #d32f2f;
+            color: white !important;
+            border-color: #d32f2f;
+            transform: translateY(-2px);
         }
-    </tbody>
-</table>
+</style>
+
+<!-- 🔎 SCRIPT LỌC + TÌM KIẾM -->
+<script>
+    function filterTable() {
+        let txt = document.getElementById("searchBox").value.toLowerCase();
+        let status = document.getElementById("statusFilter").value;
+        let rows = document.querySelectorAll("#orderTable tbody tr");
+
+        rows.forEach(row => {
+            let rowText = row.innerText.toLowerCase();
+            let rowStatus = row.querySelector(".status-badge").innerText.trim();
+
+            let matchText = rowText.includes(txt);
+            let matchStatus = (status === "all" || rowStatus === status);
+
+            row.style.display = (matchText && matchStatus) ? "" : "none";
+        });
+    }
+
+    document.getElementById("searchBox").addEventListener("keyup", filterTable);
+    document.getElementById("statusFilter").addEventListener("change", filterTable);
+</script>

@@ -73,47 +73,29 @@ namespace WebPetShop.Controllers
         [HttpPost]
         public IActionResult XacNhanDon(int id)
         {
-            var donHang = _context.DonHangs
-                .Include(d => d.MaNguoiDungNavigation)
-                .FirstOrDefault(d => d.MaDh == id);
+            var don = _context.DonHangs.FirstOrDefault(d => d.MaDh == id);
+            if (don == null) return NotFound();
 
-            if (donHang == null)
-                return NotFound();
-
-            // 🎯 Cập nhật trạng thái
-            donHang.TrangThai = "Đã xác nhận"; // hiển thị bên khách hàng
+            // ⭐ Cập nhật trạng thái đúng
+            don.TrangThai = "Đã xác nhận";
             _context.SaveChanges();
 
-            // 🎯 Gửi thông báo cho kho (tạo 1 bản ghi trong LichSuHeThong hoặc 1 table Notification nếu có)
-            var log = new LichSuHeThong
+            // ⭐ Ghi log
+            _context.LichSuHeThongs.Add(new LichSuHeThong
             {
-                MaNguoiDung = Convert.ToInt32(HttpContext.Session.GetString("UserId")),
-                HanhDong = $"Lễ tân xác nhận đơn #{donHang.MaDh}, chuyển sang kho chuẩn bị hàng",
+                MaNguoiDung = int.Parse(HttpContext.Session.GetString("UserId")),
+                HanhDong = $"Lễ tân xác nhận đơn #{id}, chuyển sang kho chuẩn bị hàng",
                 NgayThucHien = DateTime.Now
-            };
-            _context.LichSuHeThongs.Add(log);
-
-            // 🎯 Cập nhật thêm trạng thái bên kho (tùy cách bạn thể hiện)
-            // Ví dụ: lưu trạng thái hiển thị riêng cho kho
-            var phieuXuat = new PhieuXuat
-            {
-                MaDh = donHang.MaDh,
-                NgayXuat = DateTime.Now,
-                TongTien = donHang.TongTien ?? 0,
-                MaNhanVien = null,
-                MaKhachHang = donHang.MaNguoiDung,
-            };
-            _context.PhieuXuats.Add(phieuXuat);
+            });
 
             _context.SaveChanges();
 
-            TempData["Success"] = $"✅ Đã xác nhận đơn #{donHang.MaDh} và gửi sang kho chuẩn bị hàng.";
+            TempData["Success"] = $"✅ Đã xác nhận đơn #{id} và gửi sang kho!";
             return RedirectToAction("DonHang");
         }
-    
 
-// =================== KÝ GỬI ===================
-public IActionResult KyGui()
+        // =================== KÝ GỬI ===================
+        public IActionResult KyGui()
         {
             ViewBag.KyGuiMoi = _context.KyGuiThuCungs.Count(k => k.TrangThai == "Chờ xác nhận");
             return View(_context.KyGuiThuCungs.Include(k => k.MaKhNavigation).ToList());

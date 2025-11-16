@@ -2,16 +2,35 @@
     Layout = "~/Views/Shared/_LayoutGiaoHang.cshtml";
     ViewData["Title"] = "Trang Giao Hàng";
 }
-<div class="container py-5">
-    <h2 class="text-success"><i class="fa-solid fa-truck me-2"></i> Xin chào, @Context.Session.GetString("HoTen") 👋</h2>
-    <p>Đây là giao diện dành riêng cho nhân viên giao hàng.</p>
 
-    <div class="mt-4">
-        <a href="/GiaoHang/DanhSachGiaoHang" class="btn btn-success me-2">
-            <i class="fa-solid fa-list"></i> Danh sách giao hàng
+<div class="container py-5">
+
+    <!-- Tiêu đề -->
+    <h2 class="fw-bold text-danger">
+        <i class="fa-solid fa-truck-fast me-2" style="color:#ffcc00;"></i>
+        Xin chào, @Context.Session.GetString("HoTen") 👋
+    </h2>
+
+    <p class="text-muted">
+        Đây là giao diện dành riêng cho nhân viên giao hàng.
+    </p>
+
+    <!-- Nút chức năng -->
+    <div class="mt-4 d-flex gap-3">
+
+        <!-- 🔴 Nút đỏ chính -->
+        <a href="/GiaoHang/DanhSachGiaoHang"
+           class="btn fw-semibold px-4 py-2"
+           style="background:#d32f2f; color:white; border-radius:10px;">
+            <i class="fa-solid fa-list me-2"></i> Danh sách giao hàng
         </a>
-        <a href="/GiaoHang/BaoCaoGiaoHang" class="btn btn-outline-success">
-            <i class="fa-solid fa-chart-line"></i> Báo cáo giao hàng
+
+        <!-- ⚪ Nút viền đỏ -->
+        <a href="/GiaoHang/BaoCaoGiaoHang"
+           class="btn fw-semibold px-4 py-2"
+           style="border:2px solid #d32f2f; color:#d32f2f; border-radius:10px;">
+            <i class="fa-solid fa-chart-line me-2"></i> Báo cáo giao hàng
         </a>
+
     </div>
 </div>

@@ -19,7 +19,7 @@ public partial class ThanhToanTrucTuyen
 
     public DateTime? NgayThanhToan { get; set; }
 
-    public virtual ICollection<DonHang> DonHangs { get; set; } = new List<DonHang>();
 
     public virtual DonHang MaDhNavigation { get; set; } = null!;
+
 }

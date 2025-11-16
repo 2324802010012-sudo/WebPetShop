@@ -7,6 +7,7 @@
     <h3 class="fw-bold text-danger mb-4">
         <i class="fa-solid fa-receipt me-2"></i> Chi tiết đơn hàng #@Model.MaDh
     </h3>
+    <partial name="~/Views/Shared/Timeline_TrangThai.cshtml" model="Model" />
 
     <p><b>Ngày đặt:</b> @Model.NgayDat?.ToString("dd/MM/yyyy HH:mm")</p>
     <p><b>Trạng thái:</b> <span class="badge bg-warning text-dark">@Model.TrangThai</span></p>

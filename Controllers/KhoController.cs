@@ -53,7 +53,7 @@ namespace WebPetShop.Controllers
 
         // ==========================================================
         public IActionResult NhapKho() => RedirectToAction("PhieuNhap");
-        public IActionResult BaoCao() => View();
+
 
         // ==========================================================
         // ✏️ CHỈNH SỬA SẢN PHẨM
@@ -189,6 +189,34 @@ namespace WebPetShop.Controllers
             ViewBag.SanPham = _context.SanPhams.OrderBy(s => s.TenSp).ToList();
             return View();
         }
+        public IActionResult ChiTietPhieuNhap(int id)
+        {
+            var pn = _context.PhieuNhaps
+                .Include(p => p.MaNccNavigation)
+                .Include(p => p.MaNhanVienNavigation)
+                .Include(p => p.ChiTietPhieuNhaps)
+                    .ThenInclude(ct => ct.MaSpNavigation)
+                .FirstOrDefault(p => p.MaPn == id);
+
+            if (pn == null)
+                return NotFound();
+
+            return View(pn);
+        }
+        public IActionResult InPhieuNhap(int id)
+        {
+            var pn = _context.PhieuNhaps
+                .Include(p => p.MaNccNavigation)
+                .Include(p => p.MaNhanVienNavigation)
+                .Include(p => p.ChiTietPhieuNhaps)
+                    .ThenInclude(ct => ct.MaSpNavigation)
+                .FirstOrDefault(p => p.MaPn == id);
+
+            if (pn == null)
+                return NotFound();
+
+            return View(pn);
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -312,7 +340,7 @@ namespace WebPetShop.Controllers
                     }
                 }
 
-                    _context.SaveChanges();
+                _context.SaveChanges();
 
                 // 🚚 Nếu phiếu xuất gắn với đơn hàng → tạo phiếu giao hàng
                 if (MaDH != null)
@@ -346,6 +374,7 @@ namespace WebPetShop.Controllers
                 TempData["Error"] = "❌ Lỗi khi tạo phiếu xuất: " + ex.Message;
                 return RedirectToAction(nameof(ThemPhieuXuat));
             }
+
         }
 
         public IActionResult ChiTietPhieuXuat(int id)
@@ -361,5 +390,250 @@ namespace WebPetShop.Controllers
             return View(px);
         }
 
+        public IActionResult DonChoXuLy()
+        {
+            var don = _context.DonHangs
+                .Where(d => d.TrangThai == "Đã xác nhận" || d.TrangThai == "Đang chuẩn bị")
+                .Include(d => d.MaNguoiDungNavigation)
+                .ToList();
+
+            return View(don);
+        }
+        public IActionResult ChuanBiHang(int id)
+        {
+            var don = _context.DonHangs
+                .Include(d => d.ChiTietDonHangs)
+                .FirstOrDefault(d => d.MaDh == id);
+
+            if (don == null) return NotFound();
+
+            // Chuyển trạng thái
+            don.TrangThai = "Đang chuẩn bị";
+            _context.DonHangs.Update(don);
+
+            // Tự tạo phiếu xuất nếu chưa có
+            if (!_context.PhieuXuats.Any(px => px.MaDh == id))
+            {
+                var px = new PhieuXuat
+                {
+                    MaDh = id,
+                    MaKhachHang = don.MaNguoiDung,
+                    NgayXuat = DateTime.Now,
+                    MaNhanVien = HttpContext.Session.GetInt32("UserId"),
+                    TongTien = don.TongTien ?? 0
+                };
+
+                _context.PhieuXuats.Add(px);
+                _context.SaveChanges();
+
+                // Thêm chi tiết phiếu xuất + trừ tồn kho
+                foreach (var ct in don.ChiTietDonHangs)
+                {
+                    _context.ChiTietPhieuXuats.Add(new ChiTietPhieuXuat
+                    {
+                        MaPx = px.MaPx,
+                        MaSp = ct.MaSp,
+                        SoLuong = ct.SoLuong,
+                        DonGia = ct.DonGia
+                    });
+
+                    // trừ tồn kho
+                    var sp = _context.SanPhams.Find(ct.MaSp);
+                    if (sp != null)
+                    {
+                        sp.SoLuongTon -= ct.SoLuong;
+                    }
+                }
+            }
+
+            _context.SaveChanges();
+            return RedirectToAction("DonChoXuLy");
+        }
+
+        public IActionResult GiaoChoVanChuyen(int id)
+        {
+            var don = _context.DonHangs.Find(id);
+            if (don == null) return NotFound();
+
+            // Cập nhật trạng thái đơn
+            don.TrangThai = "Chờ giao";
+
+            // Tạo bản ghi giao hàng
+            var gh = new GiaoHang
+            {
+                MaDh = id,
+                DonViGiao = "Nội bộ PetShop",
+                TrangThai = "Chờ giao",
+                NgayGiao = DateTime.Now,
+                MaNhanVienGiao = null
+            };
+
+            _context.GiaoHangs.Add(gh);
+
+            _context.SaveChanges();
+            return RedirectToAction("DonChoXuLy");
+        }
+
+
+        public IActionResult BaoCao()
+        {
+            // ================================
+            // 1️⃣ THỐNG KÊ SẢN PHẨM
+            // ================================
+            ViewBag.TongSanPham = _context.SanPhams.Count();
+
+            // Sản phẩm sắp hết
+            var sapHet = _context.SanPhams
+                .Where(sp => sp.SoLuongTon <= 5)
+                .Include(sp => sp.MaDanhMucNavigation)
+                .ToList();
+
+            ViewBag.SapHet = sapHet.Count;
+            ViewBag.SanPhamSapHet = sapHet;
+
+            // Tổng tồn kho
+            ViewBag.TongTonKho = _context.SanPhams.Sum(sp => sp.SoLuongTon ?? 0);
+
+            // Nhập – xuất tháng này
+            var thang = DateTime.Now.Month;
+            var nam = DateTime.Now.Year;
+
+            ViewBag.NhapThang = _context.PhieuNhaps
+                .Count(p => p.NgayNhap.HasValue &&
+                            p.NgayNhap.Value.Month == thang &&
+                            p.NgayNhap.Value.Year == nam);
+
+            ViewBag.XuatThang = _context.PhieuXuats
+                .Count(p => p.NgayXuat.HasValue &&
+                            p.NgayXuat.Value.Month == thang &&
+                            p.NgayXuat.Value.Year == nam);
+
+
+            // ================================
+            // 2️⃣ THỐNG KÊ NHẬP – XUẤT 6 THÁNG
+            // ================================
+            var thongKeNX = new List<dynamic>();
+
+            for (int i = 5; i >= 0; i--)
+            {
+                var t = DateTime.Now.AddMonths(-i).Month;
+                var y = DateTime.Now.AddMonths(-i).Year;
+
+                var soPN = _context.PhieuNhaps.Count(p =>
+                    p.NgayNhap.HasValue && p.NgayNhap.Value.Month == t && p.NgayNhap.Value.Year == y);
+
+                var soPX = _context.PhieuXuats.Count(p =>
+                    p.NgayXuat.HasValue && p.NgayXuat.Value.Month == t && p.NgayXuat.Value.Year == y);
+
+                var tongNhap = _context.PhieuNhaps
+                    .Where(p => p.NgayNhap.HasValue &&
+                                p.NgayNhap.Value.Month == t &&
+                                p.NgayNhap.Value.Year == y)
+                    .Sum(p => (decimal?)p.TongTien ?? 0);
+
+                var tongXuat = _context.PhieuXuats
+                    .Where(p => p.NgayXuat.HasValue &&
+                                p.NgayXuat.Value.Month == t &&
+                                p.NgayXuat.Value.Year == y)
+                    .Sum(p => (decimal?)p.TongTien ?? 0);
+
+                thongKeNX.Add(new
+                {
+                    Thang = t,
+                    SoPN = soPN,
+                    SoPX = soPX,
+                    TongNhap = tongNhap,
+                    TongXuat = tongXuat
+                });
+            }
+
+            ViewBag.ThongKeNX = thongKeNX;
+
+
+            // ================================
+            // 3️⃣ THỐNG KÊ ĐƠN HÀNG
+            // ================================
+            ViewBag.TongDonHang = _context.DonHangs.Count(d => d.TrangThai != "Đã hủy");
+
+            var today = DateTime.Today;
+            ViewBag.DonMoiHomNay = _context.DonHangs
+                .Count(d => d.NgayDat.HasValue && d.NgayDat.Value.Date == today);
+
+            ViewBag.DonDangXuLy = _context.DonHangs
+                .Count(d => d.TrangThai == "Đã xác nhận"
+                         || d.TrangThai == "Đang chuẩn bị"
+                         || d.TrangThai == "Chờ giao");
+
+            ViewBag.DonHoanTat = _context.DonHangs.Count(d => d.TrangThai == "Hoàn tất");
+
+
+            // Doanh thu tháng này = phiếu xuất + đơn hoàn tất
+            var now = DateTime.Now;
+
+            var doanhThuPX_Thang = _context.PhieuXuats
+                .Where(px => px.NgayXuat.HasValue &&
+                             px.NgayXuat.Value.Month == now.Month &&
+                             px.NgayXuat.Value.Year == now.Year)
+                .Sum(px => (decimal?)px.TongTien ?? 0);
+
+            var doanhThuDH_Thang = _context.DonHangs
+                .Where(d => d.NgayDat.HasValue &&
+                            d.NgayDat.Value.Month == now.Month &&
+                            d.NgayDat.Value.Year == now.Year &&
+                            d.TrangThai == "Hoàn tất")
+                .SelectMany(d => d.ChiTietDonHangs)
+                .Sum(ct => (decimal?)(ct.SoLuong * ct.DonGia) ?? 0);
+
+            ViewBag.DoanhThuThang = doanhThuPX_Thang + doanhThuDH_Thang;
+
+
+            // ================================
+            // 4️⃣ THỐNG KÊ ĐƠN HÀNG 6 THÁNG
+            // ================================
+            var thongKeDonHang = new List<dynamic>();
+
+            for (int i = 5; i >= 0; i--)
+            {
+                var t = DateTime.Now.AddMonths(-i).Month;
+                var y = DateTime.Now.AddMonths(-i).Year;
+
+                var soDH = _context.DonHangs.Count(d =>
+                    d.NgayDat.HasValue &&
+                    d.NgayDat.Value.Month == t &&
+                    d.NgayDat.Value.Year == y &&
+                    d.TrangThai != "Đã hủy");
+
+                // Doanh thu từ PHIẾU XUẤT
+                var doanhThuPX = _context.PhieuXuats
+                    .Where(px => px.NgayXuat.HasValue &&
+                                 px.NgayXuat.Value.Month == t &&
+                                 px.NgayXuat.Value.Year == y)
+                    .Sum(px => (decimal?)px.TongTien ?? 0);
+
+                // Doanh thu từ ĐƠN HÀNG HOÀN TẤT → tính đúng từ chi tiết đơn
+                var doanhThuDH = _context.DonHangs
+                    .Where(d => d.NgayDat.HasValue &&
+                                d.NgayDat.Value.Month == t &&
+                                d.NgayDat.Value.Year == y &&
+                                d.TrangThai == "Hoàn tất")
+                    .SelectMany(d => d.ChiTietDonHangs)
+                    .Sum(ct => (decimal?)(ct.SoLuong * ct.DonGia) ?? 0);
+
+                thongKeDonHang.Add(new
+                {
+                    Thang = t,
+                    SoDon = soDH,
+                    DoanhThu = doanhThuPX + doanhThuDH
+                });
+            }
+
+            ViewBag.ThongKeDonHang = thongKeDonHang;
+
+
+            // ================================
+            // RETURN VIEW
+            // ================================
+            return View();
+        }
     }
 }

@@ -75,6 +75,8 @@ public partial class ApplicationDbContext : DbContext
     public DbSet<PhieuXuat> PhieuXuats { get; set; }
     public DbSet<ChiTietPhieuXuat> ChiTietPhieuXuats { get; set; }
 
+    public DbSet<HinhThucThanhToanThucTe> HinhThucThanhToanThucTes { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -257,23 +259,23 @@ public partial class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__DeXuatNha__MaNha__18EBB532");
         });
-
         modelBuilder.Entity<DonHang>(entity =>
         {
             entity.HasKey(e => e.MaDh).HasName("PK__DonHang__27258661E6A07298");
 
             entity.ToTable("DonHang", tb =>
-                {
-                    tb.HasTrigger("trg_LuuLichSuTrangThaiDonHang");
-                    tb.HasTrigger("trg_TaoHoaDonTuDong");
-                });
+            {
+                tb.HasTrigger("trg_LuuLichSuTrangThaiDonHang");
+                tb.HasTrigger("trg_TaoHoaDonTuDong");
+            });
 
             entity.Property(e => e.MaDh).HasColumnName("MaDH");
             entity.Property(e => e.DiaChiGiao).HasMaxLength(200);
             entity.Property(e => e.GhiChu).HasMaxLength(300);
             entity.Property(e => e.HoTenNhan).HasMaxLength(100);
             entity.Property(e => e.MaKm).HasColumnName("MaKM");
-            entity.Property(e => e.MaTttt).HasColumnName("MaTTTT");
+            entity.Property(e => e.MaTTTT).HasColumnName("MaTTTT");
+            entity.Property(e => e.MaHTTT).HasColumnName("MaHTTT");
             entity.Property(e => e.MaVanDon).HasMaxLength(50);
             entity.Property(e => e.NgayDat)
                 .HasDefaultValueSql("(getdate())")
@@ -286,22 +288,60 @@ public partial class ApplicationDbContext : DbContext
                 .HasMaxLength(50)
                 .HasDefaultValue("Chờ duyệt");
 
-            entity.HasOne(d => d.MaKmNavigation).WithMany(p => p.DonHangs)
-                .HasForeignKey(d => d.MaKm)
-                .HasConstraintName("FK__DonHang__MaKM__6754599E");
+            // Khuyến mãi
+            entity.HasOne(d => d.MaKmNavigation)
+                .WithMany(p => p.DonHangs)
+                .HasForeignKey(d => d.MaKm);
 
-            entity.HasOne(d => d.MaNguoiDungNavigation).WithMany(p => p.DonHangs)
+            // Người dùng
+            entity.HasOne(d => d.MaNguoiDungNavigation)
+                .WithMany(p => p.DonHangs)
                 .HasForeignKey(d => d.MaNguoiDung)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__DonHang__MaNguoi__66603565");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.MaPhiNavigation).WithMany(p => p.DonHangs)
-                .HasForeignKey(d => d.MaPhi)
-                .HasConstraintName("FK__DonHang__MaPhi__68487DD7");
+            // Phí giao hàng
+            entity.HasOne(d => d.MaPhiNavigation)
+                .WithMany(p => p.DonHangs)
+                .HasForeignKey(d => d.MaPhi);
 
-            entity.HasOne(d => d.MaTtttNavigation).WithMany(p => p.DonHangs)
-                .HasForeignKey(d => d.MaTttt)
+            // 🔗 1–1: Thanh toán trực tuyến
+            entity.HasOne(d => d.ThanhToanTrucTuyenNavigation)
+                .WithOne(p => p.MaDhNavigation)
+                .HasForeignKey<ThanhToanTrucTuyen>(p => p.MaDh)
                 .HasConstraintName("FK_DonHang_ThanhToanTrucTuyen");
+
+            // 🔗 1–1: Hình thức thanh toán thực tế
+            entity.HasOne(d => d.HinhThucThanhToanThucTeNavigation)
+                .WithMany(p => p.DonHangs)
+                .HasForeignKey(d => d.MaHTTT)
+                .HasConstraintName("FK_DonHang_HTThanhToanThucTe");
+        });
+
+        // =========================
+        // Hình Thức Thanh Toán Thực Tế (COD tiền mặt / chuyển khoản)
+        // =========================
+        modelBuilder.Entity<HinhThucThanhToanThucTe>(entity =>
+        {
+            entity.HasKey(e => e.MaHTTT) // Primary key
+                  .HasName("PK_HinhThucThanhToanThucTe");
+
+            entity.ToTable("HinhThucThanhToanThucTe");
+
+            entity.Property(e => e.MaHTTT)
+                  .HasColumnName("MaHTTT");
+
+            entity.Property(e => e.TenHinhThuc)
+                  .HasMaxLength(100)
+                  .IsRequired();
+
+            entity.Property(e => e.MoTa)
+                  .HasMaxLength(255);
+
+            // QUAN HỆ 1 - N: Một hình thức có nhiều đơn hàng
+            entity.HasMany(e => e.DonHangs)
+                  .WithOne(d => d.HinhThucThanhToanThucTeNavigation)
+                  .HasForeignKey(d => d.MaHTTT)
+                  .HasConstraintName("FK_DonHang_HTThanhToanThucTe");
         });
 
         modelBuilder.Entity<GiaoHang>(entity =>
@@ -592,28 +632,16 @@ public partial class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__SanPham__MaDanhM__5070F446");
         });
-
         modelBuilder.Entity<ThanhToanTrucTuyen>(entity =>
         {
-            entity.HasKey(e => e.MaTttt).HasName("PK__ThanhToa__44843A5D0FA5E91A");
+            entity.ToTable("ThanhToanTrucTuyen");   //  ⬅ FIX QUAN TRỌNG
 
-            entity.ToTable("ThanhToanTrucTuyen");
-
+            entity.HasKey(e => e.MaTttt);
             entity.Property(e => e.MaTttt).HasColumnName("MaTTTT");
             entity.Property(e => e.MaDh).HasColumnName("MaDH");
-            entity.Property(e => e.MaGiaoDich).HasMaxLength(100);
-            entity.Property(e => e.NgayThanhToan)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.PhuongThuc).HasMaxLength(50);
-            entity.Property(e => e.SoTien).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.TrangThai).HasMaxLength(50);
-
-            entity.HasOne(d => d.MaDhNavigation).WithMany(p => p.ThanhToanTrucTuyens)
-                .HasForeignKey(d => d.MaDh)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ThanhToanT__MaDH__6FE99F9F");
         });
+
+
 
         modelBuilder.Entity<ThuCungNhanNuoi>(entity =>
         {

@@ -1,0 +1,73 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutKeToan.cshtml";
+    ViewData["Title"] = "Báo cáo tài chính";
+
+    var dt = ViewBag.DoanhThu;
+    var cp = ViewBag.ChiPhi;
+    var ln = ViewBag.LoiNhuan;
+
+    var thongKe = ViewBag.ThongKe as List<dynamic>;
+}
+
+<div class="container py-4">
+
+    <h2 class="fw-bold text-danger mb-4">
+        <i class="fa-solid fa-chart-line me-2"></i>Báo cáo tài chính
+    </h2>
+
+    <!-- Tổng quan -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-4">
+            <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid #2e7d32;">
+                <h6>Doanh thu tháng</h6>
+                <h2 class="fw-bold text-success">@dt.ToString("N0") ₫</h2>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid #c62828;">
+                <h6>Chi phí nhập hàng</h6>
+                <h2 class="fw-bold text-danger">@cp.ToString("N0") ₫</h2>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid #0277bd;">
+                <h6>Lợi nhuận</h6>
+                <h2 class="fw-bold text-primary">@ln.ToString("N0") ₫</h2>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Biểu đồ -->
+    <div class="card p-4 shadow-sm border-0 mb-4">
+        <h5 class="fw-bold mb-3">Biểu đồ doanh thu - chi phí - lợi nhuận 12 tháng</h5>
+        <canvas id="chartTC" height="120"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        var data = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(thongKe));
+
+        var labels = data.map(x => "Tháng " + x.Thang);
+        var doanhThu = data.map(x => x.DoanhThu);
+        var chiPhi = data.map(x => x.ChiPhi);
+        var loiNhuan = data.map(x => x.LoiNhuan);
+
+        new Chart(document.getElementById('chartTC'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: "Doanh thu", data: doanhThu, borderColor: "#2e7d32", borderWidth: 3 },
+                    { label: "Chi phí", data: chiPhi, borderColor: "#c62828", borderWidth: 3 },
+                    { label: "Lợi nhuận", data: loiNhuan, borderColor: "#0277bd", borderWidth: 3 }
+                ]
+            }
+        });
+    </script>
+
+</div>

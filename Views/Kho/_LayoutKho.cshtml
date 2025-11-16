@@ -120,33 +120,45 @@
 
 <body>
     <!-- 🧭 SIDEBAR -->
+    <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="brand">
             <i class="fa-solid fa-warehouse me-2"></i> Kho PetShop
         </div>
 
-        <!-- Menu -->
         <a asp-controller="Kho" asp-action="Index"
            class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
             <i class="fa-solid fa-gauge me-2"></i> Tổng quan
         </a>
+
+        <!-- ⭐ MỤC MỚI – ĐƠN CẦN XỬ LÝ -->
+        <a asp-controller="Kho" asp-action="DonChoXuLy"
+           class="@(ViewContext.RouteData.Values["action"]?.ToString() == "DonChoXuLy" ? "active" : "")">
+            <i class="fa-solid fa-clipboard-check me-2"></i> Đơn cần xử lý
+        </a>
+
+
         <a asp-controller="Kho" asp-action="HangHoa"
            class="@(ViewContext.RouteData.Values["action"]?.ToString() == "HangHoa" ? "active" : "")">
             <i class="fa-solid fa-boxes-stacked me-2"></i> Hàng hóa
         </a>
+
         <a asp-controller="Kho" asp-action="NhapKho"
            class="@(ViewContext.RouteData.Values["action"]?.ToString() == "NhapKho" ? "active" : "")">
             <i class="fa-solid fa-file-import me-2"></i> Phiếu nhập
         </a>
+
         <a asp-controller="Kho" asp-action="XuatKho"
            class="@(ViewContext.RouteData.Values["action"]?.ToString() == "XuatKho" ? "active" : "")">
             <i class="fa-solid fa-file-export me-2"></i> Phiếu xuất
         </a>
+
         <a asp-controller="Kho" asp-action="BaoCao"
            class="@(ViewContext.RouteData.Values["action"]?.ToString() == "BaoCao" ? "active" : "")">
             <i class="fa-solid fa-chart-line me-2"></i> Báo cáo
         </a>
     </div>
+
 
     <!-- 🧩 MAIN CONTENT -->
     <div class="main">

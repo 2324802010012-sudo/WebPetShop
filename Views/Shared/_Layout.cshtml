@@ -301,11 +301,19 @@
         <div class="category-bar">
             <div class="container">
                 <nav class="nav justify-content-center">
-                    <a class="nav-link" href="/SanPham/Meo"><i class="fa-solid fa-cat me-1"></i> Mèo</a>
-                    <a class="nav-link" href="/SanPham/Cho"><i class="fa-solid fa-dog me-1"></i> Chó</a>
-                    <a class="nav-link fw-bold text-warning" href="/FlashSale"><i class="fa-solid fa-bolt me-1"></i> Flash Sale</a>
-                    <a class="nav-link" href="/KyGui"><i class="fa-solid fa-box-open me-1"></i> Ký gửi</a>
-                    <a class="nav-link text-white fw-semibold" href="/DichVu/NhanNuoi">🏡 Nhận nuôi </a>          
+                   
+                    <a class="nav-link fw-bold text-warning" href="/#flashsale">
+                        <i class="fa-solid fa-bolt me-1"></i> Flash Sale
+                    </a>
+
+                    <a class="nav-link" href="/DichVu#kygui">
+                        <i class="fa-solid fa-box-open me-1"></i> Ký gửi
+                    </a>
+
+                    <a class="nav-link text-white fw-semibold" href="/DichVu#nhannuoi">
+                        🏡 Nhận nuôi
+                    </a>
+
                 </nav>
             </div>
             <!-- 🏃‍♂️ THANH CHỮ CHẠY THÔNG BÁO -->
@@ -320,7 +328,22 @@
             </div>
         </div>
     </header>
-
+    <script>
+        document.querySelectorAll('a[href^="/#"]').forEach(anchor => {
+            anchor.addEventListener("click", function (e) {
+                const targetId = this.getAttribute("href").replace("/", "");
+                const target = document.querySelector(targetId);
+                if (target) {
+                    e.preventDefault();
+                    window.scrollTo({
+                        top: target.offsetTop - 100,
+                        behavior: "smooth"
+                    });
+                }
+            });
+        });
+    </script>
+.
     <style> .scrolling-bar {
     background: #FFD9D9;
     overflow: hidden;
@@ -413,5 +436,6 @@
 
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

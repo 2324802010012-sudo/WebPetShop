@@ -1,6 +1,118 @@
-﻿<div class="bg-dark text-white vh-100 p-3" style="width:250px">
-    <h4 class="text-center mb-4"><i class="fa-solid fa-truck me-2"></i>Giao hàng</h4>
-    <a href="/GiaoHang/Index" class="d-block text-white mb-2"><i class="fa-solid fa-home me-2"></i>Trang chủ</a>
-    <a href="/GiaoHang/DanhSachGiaoHang" class="d-block text-white mb-2"><i class="fa-solid fa-list me-2"></i>Danh sách giao</a>
-    <a href="/GiaoHang/BaoCaoGiaoHang" class="d-block text-white"><i class="fa-solid fa-chart-line me-2"></i>Báo cáo</a>
-</div>
+﻿@using Microsoft.AspNetCore.Http
+@{
+    var path = Context.Request.Path; // Check active menu
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Giao hàng</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        body {
+            margin: 0;
+            background: #fdecec; /* nền hồng nhạt giống Lễ Tân */
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* ====================== SIDEBAR ====================== */
+        .sidebar-giaohang {
+            width: 250px;
+            height: 100vh;
+            background: #d32f2f; /* đỏ PetShop */
+            color: white;
+            padding: 25px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            box-shadow: 3px 0 10px rgba(0,0,0,0.15);
+        }
+
+            .sidebar-giaohang h4 {
+                font-weight: 700;
+                color: #fff;
+                margin-bottom: 35px;
+                font-size: 20px;
+                letter-spacing: 1px;
+            }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: 0.25s;
+            margin-bottom: 12px;
+        }
+
+            .menu-item i {
+                width: 28px;
+                font-size: 18px;
+            }
+
+            /* Hover */
+            .menu-item:hover {
+                background: #b71c1c; /* đỏ đậm hơn */
+                transform: translateX(4px);
+            }
+
+            /* Active item */
+            .menu-item.active {
+                background: white;
+                color: #d32f2f !important;
+                font-weight: 700;
+            }
+
+        /* ====================== MAIN CONTENT ====================== */
+        .main-content {
+            margin-left: 260px;
+            padding: 35px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar-giaohang">
+        <h4><i class="fa-solid fa-truck-fast me-2 text-warning"></i>GIAO HÀNG</h4>
+
+        <a href="/GiaoHang/Index"
+           class="menu-item @(path == "/GiaoHang/Index" ? "active" : "")">
+            <i class="fa-solid fa-house"></i> Trang chủ
+        </a>
+
+        <a href="/GiaoHang/DanhSachGiaoHang"
+           class="menu-item @(path == "/GiaoHang/DanhSachGiaoHang" ? "active" : "")">
+            <i class="fa-solid fa-list"></i> Danh sách giao
+        </a>
+
+        <a href="/GiaoHang/BaoCaoGiaoHang"
+           class="menu-item @(path == "/GiaoHang/BaoCaoGiaoHang" ? "active" : "")">
+            <i class="fa-solid fa-chart-line"></i> Báo cáo
+        </a>
+
+        <hr class="border-light">
+
+        <a href="/Auth/Logout" class="menu-item text-white">
+            <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+        </a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        @RenderBody()
+    </div>
+
+    @RenderSection("Scripts", required: false)
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

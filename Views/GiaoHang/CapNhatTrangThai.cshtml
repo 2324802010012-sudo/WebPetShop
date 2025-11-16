@@ -1,0 +1,92 @@
+﻿@model WebPetShop.Models.DonHang
+@{
+    ViewData["Title"] = "Cập nhật trạng thái đơn hàng";
+    Layout = "~/Views/Shared/_LayoutGiaoHang.cshtml";
+}
+
+<div class="container py-4">
+
+    <h3 class="fw-bold text-danger mb-4">
+        <i class="fa-solid fa-pen-to-square me-2"></i> Cập nhật trạng thái đơn hàng #@Model.MaDh
+    </h3>
+
+    <!-- 🧩 THÔNG TIN KHÁCH HÀNG -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-user me-2"></i> Thông tin khách hàng</h5>
+
+            <p><b>Khách hàng:</b> @Model.TenKhachHang</p>
+            <p><b>Địa chỉ:</b> @Model.DiaChiGiao</p>
+            <p><b>Ngày đặt:</b> @Model.NgayDat?.ToString("dd/MM/yyyy HH:mm")</p>
+            <p><b>Phương thức thanh toán:</b> @Model.PhuongThucThanhToan</p>
+        </div>
+    </div>
+
+    <!-- 🕑 TIMELINE -->
+    <partial name="~/Views/Shared/Timeline_TrangThai.cshtml" model="Model" />
+
+
+    <!-- 📝 FORM UPDATE -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body">
+
+            <form method="post" action="/GiaoHang/CapNhatTrangThai">
+                <input type="hidden" name="id" value="@Model.MaDh" />
+
+                <label class="fw-bold mb-2">Trạng thái mới:</label>
+                <select name="trangThai" id="trangThai" class="form-select fw-semibold shadow-sm mb-4" style="border-radius: 12px;">
+                    <option value="Chờ giao" selected="@(Model.TrangThai == "Chờ giao")">Chờ giao</option>
+                    <option value="Đang giao" selected="@(Model.TrangThai == "Đang giao")">Đang giao</option>
+                    <option value="Hoàn tất" selected="@(Model.TrangThai == "Hoàn tất")">Hoàn tất</option>
+                    <option value="Đã hủy" selected="@(Model.TrangThai == "Đã hủy")">Đã hủy</option>
+                </select>
+
+
+                <!-- 💵 THU TIỀN COD -->
+                @if (Model.PhuongThucThanhToan == "COD")
+                {
+                    <div id="codBox" style="display:none;">
+                        <label class="fw-semibold mb-2">Hình thức thu tiền COD:</label>
+
+                        <select name="thanhToanThucTe" id="thanhToanThucTe"
+                                class="form-select mb-3 shadow-sm" style="border-radius:12px;">
+                            @foreach (var item in (List<HinhThucThanhToanThucTe>)ViewBag.DanhSachHTTT)
+                            {
+                                <option value="@item.MaHTTT">@item.TenHinhThuc</option>
+                            }
+                        </select>
+
+                    </div>
+                }
+
+
+                <button class="btn btn-danger px-4 py-2 fw-bold rounded-pill mt-2">
+                    <i class="fa-solid fa-save me-1"></i> Lưu trạng thái
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+
+<!-- JS logic -->
+<script>
+    const trangThai = document.getElementById("trangThai");
+    const codBox = document.getElementById("codBox");
+
+    function checkCOD() {
+        if (trangThai.value === "Hoàn tất") {
+            codBox.style.display = "block";   // Hiện lựa chọn thu tiền
+        } else {
+            codBox.style.display = "none";
+        }
+    }
+
+    trangThai.addEventListener("change", checkCOD);
+
+    // chạy ngay khi mở trang
+    checkCOD();
+</script>

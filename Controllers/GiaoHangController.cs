@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebPetShop.Data;
 using Microsoft.EntityFrameworkCore;
+using WebPetShop.Data;
+using WebPetShop.Models;
+
 public class GiaoHangController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -9,45 +11,205 @@ public class GiaoHangController : Controller
     {
         _context = context;
     }
+
+    // ===================== TRANG CHÍNH =====================
     public IActionResult Index()
     {
-        // ✅ Kiểm tra vai trò
         var role = HttpContext.Session.GetString("Role");
         if (role != "GiaoHang" && role != "Admin")
-        {
             return RedirectToAction("Login", "Auth");
-        }
 
-        ViewData["Title"] = "Trang Nhân Viên Giao Hàng";
         return View();
     }
+
+    // ===================== DANH SÁCH ĐƠN GIAO =====================
     public IActionResult DanhSachGiaoHang()
     {
         var ds = _context.DonHangs
-            .Where(d => d.TrangThai == "Đang giao" || d.TrangThai == "Chờ giao")
             .Include(d => d.MaNguoiDungNavigation)
+            .Where(d =>
+                d.TrangThai == "Chờ giao" ||
+                d.TrangThai == "Chờ lấy hàng" ||
+                d.TrangThai == "Đang giao" ||
+                d.TrangThai == "Hoàn tất")
+            .OrderByDescending(d => d.NgayDat)
             .ToList();
 
         return View(ds);
     }
 
-    public IActionResult CapNhatTrangThai(int id)
+    // ===================== CHI TIẾT ĐƠN =====================
+    public IActionResult ChiTiet(int id)
     {
-        var don = _context.DonHangs.Find(id);
+        var don = _context.DonHangs
+            .Include(d => d.MaNguoiDungNavigation)
+            .Include(d => d.ChiTietDonHangs).ThenInclude(ct => ct.MaSpNavigation)
+            .FirstOrDefault(d => d.MaDh == id);
+
         if (don == null) return NotFound();
 
         return View(don);
     }
 
-    [HttpPost]
-    public IActionResult CapNhatTrangThai(int id, string trangThai)
+    // ===================== BẮT ĐẦU GIAO =====================
+    public IActionResult BatDauGiao(int id)
     {
         var don = _context.DonHangs.Find(id);
-        if (don != null)
+        if (don == null) return NotFound();
+
+        don.TrangThai = "Đang giao";
+        _context.SaveChanges();
+
+        return RedirectToAction("ChiTiet", new { id });
+    }
+
+    // ===================== VIEW CẬP NHẬT TRẠNG THÁI =====================
+    public IActionResult CapNhatTrangThai(int id)
+    {
+        var don = _context.DonHangs
+            .Include(d => d.HinhThucThanhToanThucTeNavigation)
+            .FirstOrDefault(d => d.MaDh == id);
+
+        if (don == null) return NotFound();
+
+        ViewBag.DanhSachHTTT = _context.HinhThucThanhToanThucTes.ToList();
+        return View(don);
+    }
+
+    // ===================== POST CẬP NHẬT TRẠNG THÁI =====================
+    [HttpPost]
+    public IActionResult CapNhatTrangThai(int id, string trangThai, int? thanhToanThucTe)
+    {
+        var don = _context.DonHangs
+            .Include(d => d.HinhThucThanhToanThucTeNavigation)
+            .FirstOrDefault(d => d.MaDh == id);
+
+        if (don == null) return NotFound();
+
+        string trangThaiCu = don.TrangThai;
+        don.TrangThai = trangThai;
+
+        // =====================================================
+        // XỬ LÝ THANH TOÁN COD KHI GIAO HÀNG HOÀN TẤT
+        // =====================================================
+        if (don.PhuongThucThanhToan == "COD" && trangThai == "Hoàn tất")
         {
-            don.TrangThai = trangThai;
-            _context.SaveChanges();
+            if (thanhToanThucTe == null)
+            {
+                TempData["Error"] = "Bạn phải chọn hình thức thu tiền COD!";
+                return RedirectToAction("CapNhatTrangThai", new { id });
+            }
+
+            don.MaHTTT = thanhToanThucTe;
+            string hinhThuc = thanhToanThucTe == 1 ? "Tiền mặt" : "Chuyển khoản";
+
+            TaoHoaDonTuDong(don, hinhThuc);
         }
+
+        // =====================================================
+        // THANH TOÁN ONLINE – TỰ TẠO HÓA ĐƠN KHI HOÀN TẤT
+        // =====================================================
+        if (don.PhuongThucThanhToan == "Online" && trangThai == "Hoàn tất")
+        {
+            TaoHoaDonTuDong(don, "Online");
+        }
+
+        // =====================================================
+        // LƯU LỊCH SỬ TRẠNG THÁI
+        // =====================================================
+        _context.LichSuTrangThaiDonHangs.Add(new LichSuTrangThaiDonHang
+        {
+            MaDh = don.MaDh,
+            TrangThaiCu = trangThaiCu,
+            TrangThaiMoi = trangThai,
+            NgayCapNhat = DateTime.Now,
+            NguoiThucHien = HttpContext.Session.GetInt32("UserId")
+        });
+
+        _context.SaveChanges();
+
+        TempData["Success"] = "Cập nhật trạng thái thành công!";
         return RedirectToAction("DanhSachGiaoHang");
+    }
+
+    // ===================== HÀM TẠO HÓA ĐƠN TỰ ĐỘNG =====================
+    private void TaoHoaDonTuDong(DonHang don, string hinhThuc)
+    {
+        bool daCo = _context.HoaDons.Any(h => h.MaDh == don.MaDh);
+        if (daCo) return; // Không tạo trùng hóa đơn
+
+        var hd = new HoaDon
+        {
+            MaDh = don.MaDh,
+            MaKeToan = 2, // hoặc lấy Session
+            SoTien = don.TongTien ?? 0,
+            HinhThuc = hinhThuc,
+            NgayLap = DateTime.Now,
+            GhiChu = "Tự tạo khi giao hàng hoàn tất"
+        };
+
+        _context.HoaDons.Add(hd);
+        _context.SaveChanges();
+    }
+
+    // ===================== HOÀN TẤT =====================
+    public IActionResult HoanTat(int id)
+    {
+        var don = _context.DonHangs.Find(id);
+        if (don == null) return NotFound();
+
+        don.TrangThai = "Hoàn tất";
+        _context.SaveChanges();
+
+        return RedirectToAction("ChiTiet", new { id });
+    }
+
+    // ===================== BÁO CÁO GIAO HÀNG =====================
+    public IActionResult BaoCaoGiaoHang()
+    {
+        ViewBag.TongGiao = _context.DonHangs.Count(d =>
+            d.TrangThai == "Chờ giao" ||
+            d.TrangThai == "Đang chuẩn bị" ||
+            d.TrangThai == "Hoàn tất" ||
+            d.TrangThai == "Đang giao");
+
+        ViewBag.DangGiao = _context.DonHangs.Count(d =>
+            d.TrangThai == "Đang chuẩn bị" ||
+            d.TrangThai == "Chờ giao");
+
+        ViewBag.ThanhCong = _context.DonHangs.Count(d => d.TrangThai == "Hoàn tất");
+
+        ViewBag.ThatBai = _context.DonHangs.Count(d => d.TrangThai == "Đã hủy");
+
+        // ======= 6 THÁNG GẦN NHẤT =======
+        var thongKe = new List<dynamic>();
+
+        for (int i = 5; i >= 0; i--)
+        {
+            var t = DateTime.Now.AddMonths(-i).Month;
+            var y = DateTime.Now.AddMonths(-i).Year;
+
+            var tong = _context.DonHangs.Count(d =>
+                d.NgayDat.HasValue &&
+                d.NgayDat.Value.Month == t &&
+                d.NgayDat.Value.Year == y);
+
+            var thanhCong = _context.DonHangs.Count(d =>
+                d.NgayDat.HasValue &&
+                d.NgayDat.Value.Month == t &&
+                d.NgayDat.Value.Year == y &&
+                d.TrangThai == "Hoàn tất");
+
+            var thatBai = _context.DonHangs.Count(d =>
+                d.NgayDat.HasValue &&
+                d.NgayDat.Value.Month == t &&
+                d.NgayDat.Value.Year == y &&
+                d.TrangThai == "Đã hủy");
+
+            thongKe.Add(new { Thang = t, Tong = tong, ThanhCong = thanhCong, ThatBai = thatBai });
+        }
+
+        ViewBag.ThongKeGiaoHang = thongKe;
+        return View();
     }
 }

@@ -1,0 +1,126 @@
+﻿@model WebPetShop.Models.HoaDon
+
+@{
+    Layout = "~/Views/Shared/_LayoutKeToan.cshtml";
+    ViewData["Title"] = "Chi tiết hóa đơn";
+}
+
+<div class="container mt-4">
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-danger text-white">
+            <h4 class="m-0">
+                <i class="fa-solid fa-file-invoice-dollar me-2"></i>
+                Chi tiết hóa đơn #@Model.MaHd
+            </h4>
+        </div>
+
+        <div class="card-body">
+
+            <!-- ==================================
+                  THÔNG TIN HÓA ĐƠN
+            ==================================== -->
+            <h5 class="fw-bold mb-3">Thông tin hóa đơn</h5>
+
+            <table class="table table-bordered">
+                <tr>
+                    <th width="220">Mã hóa đơn</th>
+                    <td>@Model.MaHd</td>
+                </tr>
+                <tr>
+                    <th>Ngày lập</th>
+                    <td>@(Model.NgayLap.HasValue? Model.NgayLap.Value.ToString("dd/MM/yyyy HH:mm") : "")</td>
+                </tr>
+                <tr>
+                    <th>Người lập</th>
+                    <td>@Model.MaKeToanNavigation?.HoTen</td>
+                </tr>
+                <tr>
+                    <th>Số tiền</th>
+                    <td class="fw-bold text-danger">
+                        @String.Format("{0:N0} ₫", Model.SoTien)
+                    </td>
+                </tr>
+                <tr>
+                    <th>Hình thức</th>
+                    <td>@Model.HinhThuc</td>
+                </tr>
+                <tr>
+                    <th>Ghi chú</th>
+                    <td>@Model.GhiChu</td>
+                </tr>
+            </table>
+
+            <hr />
+
+            <!-- ==================================
+                  NẾU LÀ HÓA ĐƠN ĐƠN HÀNG
+            ==================================== -->
+            @if (Model.MaDhNavigation != null)
+            {
+                <h5 class="fw-bold mt-4">Chi tiết đơn hàng</h5>
+
+                <p>
+                    <strong>Khách hàng:</strong> @Model.MaDhNavigation.MaNguoiDungNavigation?.HoTen <br />
+                    <strong>Ngày đặt:</strong> @Model.MaDhNavigation.NgayDat?.ToString("dd/MM/yyyy HH:mm") <br />
+                    <strong>Trạng thái:</strong> @Model.MaDhNavigation.TrangThai
+                </p>
+
+                <table class="table table-striped">
+                    <thead class="table-danger">
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th width="100">SL</th>
+                            <th width="150">Đơn giá</th>
+                            <th width="150">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ct in Model.MaDhNavigation.ChiTietDonHangs)
+                        {
+                            <tr>
+                                <td>@ct.MaSpNavigation?.TenSp</td>
+                                <td>@ct.SoLuong</td>
+                                <td>@String.Format("{0:N0} ₫", ct.DonGia)</td>
+                                <td>@String.Format("{0:N0} ₫", ct.SoLuong * ct.DonGia)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            <!-- ==================================
+                  NẾU LÀ HÓA ĐƠN KÝ GỬI
+            ==================================== -->
+            @if (Model.MaKyGuiNavigation != null)
+            {
+                <h5 class="fw-bold mt-4">Chi tiết ký gửi</h5>
+
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Khách hàng</th>
+                        <td>@Model.MaKyGuiNavigation.MaKhNavigation?.HoTen</td>
+                    </tr>
+                    <tr>
+                        <th>Thú cưng</th>
+                        <td>@Model.MaKyGuiNavigation.TenThuCung</td>
+                    </tr>
+                    <tr>
+                        <th>Ngày gửi</th>
+                        <td>@Model.MaKyGuiNavigation.NgayGui?.ToString("dd/MM/yyyy")</td>
+                    </tr>
+                    <tr>
+                        <th>Ngày hết hạn</th>
+                        <td>@Model.MaKyGuiNavigation.NgayHetHan?.ToString("dd/MM/yyyy")</td>
+                    </tr>
+                </table>
+            }
+
+            <a href="/KeToan/HoaDon" class="btn btn-secondary mt-3">
+                <i class="fa-solid fa-arrow-left me-2"></i> Quay lại
+            </a>
+
+        </div>
+    </div>
+
+</div>

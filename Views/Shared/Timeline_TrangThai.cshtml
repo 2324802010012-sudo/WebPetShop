@@ -1,0 +1,139 @@
+﻿@model WebPetShop.Models.DonHang
+
+<style>
+    .timeline-container {
+        padding: 30px 20px;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+
+    .step-wizard {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+
+    .step-item {
+        text-align: center;
+        flex: 1;
+        position: relative;
+    }
+
+        .step-item:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            top: 22px;
+            right: -50%;
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            z-index: -1;
+        }
+
+    .step-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        margin: 0 auto;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .active-step .step-icon {
+        background: #d62828;
+        box-shadow: 0 0 10px rgba(214, 40, 40, 0.5);
+    }
+
+    .inactive-step .step-icon {
+        background: #bdbdbd;
+    }
+
+    .step-item .step-title {
+        margin-top: 8px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .active-step .step-title {
+        color: #d62828;
+    }
+</style>
+
+
+@{
+    // 🟢 Xác định bước hiện tại
+    Dictionary<string, int> stepIndex = new()
+    {
+        { "Chờ duyệt", 1 },
+        { "Chờ xác nhận", 1 },
+
+        { "Đã xác nhận", 2 },
+
+        { "Đang chuẩn bị", 3 },
+
+        { "Chờ giao", 4 },
+
+        { "Đang giao", 5 },
+
+        { "Hoàn tất", 6 },
+
+        { "Đã hủy", 99 }
+    };
+
+    int current = stepIndex.ContainsKey(Model.TrangThai) ? stepIndex[Model.TrangThai] : 1;
+}
+
+<div class="timeline-container">
+
+    <h5 class="fw-bold text-danger mb-3">
+        <i class="fa-solid fa-timeline me-2"></i> Trạng thái đơn hàng
+    </h5>
+
+    @if (current == 99)
+    {
+        <div class="alert alert-danger fw-bold text-center">
+            <i class="fa-solid fa-xmark-circle me-2"></i> Đơn hàng đã bị hủy
+        </div>
+    }
+    else
+    {
+        <div class="step-wizard">
+
+            <div class="step-item @(current >= 1 ? "active-step" : "inactive-step")">
+                <div class="step-icon"><i class="fa-solid fa-receipt"></i></div>
+                <div class="step-title">Chờ duyệt</div>
+            </div>
+
+            <div class="step-item @(current >= 2 ? "active-step" : "inactive-step")">
+                <div class="step-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="step-title">Xác nhận</div>
+            </div>
+
+            <div class="step-item @(current >= 3 ? "active-step" : "inactive-step")">
+                <div class="step-icon"><i class="fa-solid fa-box-open"></i></div>
+                <div class="step-title">Chuẩn bị hàng</div>
+            </div>
+
+            <div class="step-item @(current >= 4 ? "active-step" : "inactive-step")">
+                <div class="step-icon"><i class="fa-solid fa-people-carry-box"></i></div>
+                <div class="step-title">Chờ giao</div>
+            </div>
+
+            <div class="step-item @(current >= 5 ? "active-step" : "inactive-step")">
+                <div class="step-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                <div class="step-title">Đang giao</div>
+            </div>
+
+            <div class="step-item @(current >= 6 ? "active-step" : "inactive-step")">
+                <div class="step-icon"><i class="fa-solid fa-check-double"></i></div>
+                <div class="step-title">Hoàn tất</div>
+            </div>
+
+        </div>
+    }
+</div>
