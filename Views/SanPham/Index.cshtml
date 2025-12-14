@@ -1,7 +1,10 @@
 ﻿@model IEnumerable<WebPetShop.Models.SanPham>
+@using System.Globalization
+
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Sản phẩm";
+    var kmList = ViewBag.KhuyenMai as List<WebPetShop.Models.KhuyenMai>;
 }
 
 @if (Model == null || !Model.Any())
@@ -13,6 +16,10 @@ else
     <div class="row g-4">
         @foreach (var item in Model)
         {
+            // Lấy thông tin khuyến mãi cho sản phẩm hiện tại
+            var km = kmList?.FirstOrDefault(x => x.MaSP == item.MaSp);
+            var giaSauGiam = km != null ? item.Gia - (item.Gia * km.PhanTramGiam / 100) : item.Gia;
+
             <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                 <div class="card product-card shadow-sm text-center">
 
@@ -24,8 +31,48 @@ else
 
                     <!-- 💬 Thông tin sản phẩm -->
                     <div class="card-body px-2">
+
+                        <!-- Tên SP -->
                         <p class="fw-semibold text-dark text-truncate mb-1">@item.TenSp</p>
-                        <p class="text-danger fw-bold mb-2">@String.Format("{0:N0} đ", item.Gia)</p>
+
+                        <!-- ⭐ HIỂN THỊ ĐÁNH GIÁ -->
+                        @{
+                            var soDanhGia = item.DanhGia?.Count() ?? 0;
+                            double diemTrungBinh = soDanhGia > 0
+                                ? item.DanhGia.Average(d => d.Diem) ?? 0
+                                : 0;
+                        }
+
+                        @if (soDanhGia > 0)
+                        {
+                            <div class="mb-1">
+                                <span class="text-warning fw-bold">
+                                    @for (int i = 0; i < Math.Round(diemTrungBinh); i++)
+                                    {
+                                        <i class="fa-solid fa-star"></i>
+                                    }
+                                </span>
+
+                                <span class="text-muted" style="font-size:13px;">
+                                    (@soDanhGia đánh giá)
+                                </span>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted" style="font-size:13px;">Chưa có đánh giá</p>
+                        }
+
+                        <!-- Giá -->
+                        <p class="text-danger fw-bold mb-2">
+                            @String.Format("{0:N0} đ", giaSauGiam)
+                            @if (km != null)
+                            {
+                                <span class="text-decoration-line-through text-secondary fs-6">
+                                    @String.Format("{0:N0} đ", item.Gia)
+                                </span>
+                            }
+                        </p>
 
                         <!-- 🛍️ Nút Mua ngay -->
                         <button class="btn btn-sm btn-danger rounded-pill px-3 fw-semibold shadow-sm"
@@ -33,10 +80,11 @@ else
                                 data-bs-target="#buyNowModal"
                                 data-id="@item.MaSp"
                                 data-name="@item.TenSp"
-                                data-price="@item.Gia"
+                                data-price="@giaSauGiam"
                                 data-image="/ImagesWWeb/@item.HinhAnh">
                             🛍️ Mua ngay
                         </button>
+
                     </div>
                 </div>
             </div>
@@ -83,8 +131,7 @@ else
 </div>
 
 <!-- 💅 CSS -->
- <style>
-    /* 🐾 CARD SẢN PHẨM */
+<style>
     .product-card {
         border-radius: 16px;
         padding: 10px;
@@ -92,67 +139,51 @@ else
         transition: all 0.3s ease;
     }
 
-        .product-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 8px 18px rgba(217, 54, 54, 0.2);
-        }
+    .product-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 8px 18px rgba(217, 54, 54, 0.2);
+    }
 
-        .product-card img {
-            transition: transform 0.4s ease;
-        }
+    .product-card img {
+        transition: transform 0.4s ease;
+    }
 
-        .product-card:hover img {
-            transform: scale(1.05);
-        }
+    .product-card:hover img {
+        transform: scale(1.05);
+    }
 
-    /* 🔴 Nút Mua ngay */
     .btn-danger {
         background-color: #D93636;
         border: none;
         transition: all 0.3s ease;
     }
 
-        .btn-danger:hover {
-            background-color: #c22f2f;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(217, 54, 54, 0.3);
-        }
+    .btn-danger:hover {
+        background-color: #c22f2f;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(217, 54, 54, 0.3);
+    }
 
-    /* 🧾 Modal */
     #buyNowModal .modal-content {
         border-radius: 20px;
         overflow: hidden;
     }
 
-    #buyNowModal .modal-header {
-        border-bottom: none;
-    }
-
-    #buyNowModal .modal-footer {
-        border-top: none;
-    }
-
-    #buyNowModal .btn {
-        min-width: 130px;
-    }
-
-    /* 🧭 Khoảng trống khi có navbar cố định */
     body {
         padding-top: 140px;
     }
 </style>
 
 <!-- ⚙️ SCRIPT XỬ LÝ MODAL -->
- <script>
+<script>
     const buyNowModal = document.getElementById('buyNowModal');
     buyNowModal.addEventListener('show.bs.modal', event => {
         const button = event.relatedTarget;
         const id = button.getAttribute('data-id');
         const name = button.getAttribute('data-name');
-        const price = button.getAttribute('data-price');
+        const price = Number(button.getAttribute('data-price')); // convert sang number
         const image = button.getAttribute('data-image');
 
-        // Gán dữ liệu vào modal
         document.getElementById('modalName').textContent = name;
         document.getElementById('modalPrice').textContent = new Intl.NumberFormat().format(price) + ' đ';
         document.getElementById('modalImage').src = image;
@@ -161,18 +192,14 @@ else
         const btnAddToCart = document.getElementById('btnAddToCart');
         const btnBuyNow = document.getElementById('btnBuyNow');
 
-        // Hàm cập nhật link động
         const updateLinks = () => {
             const qty = quantityInput.value || 1;
-            btnAddToCart.href = `/GioHang/Them/${id}?soLuong=${qty}`;
-    btnBuyNow.href = `/GioHang/MuaNgay/${id}?soLuong=${qty}`;
-
+            // truyền giá khuyến mãi trong query string nếu cần
+            btnAddToCart.href = `/GioHang/Them/${id}?soLuong=${qty}&gia=${price}`;
+            btnBuyNow.href = `/GioHang/MuaNgay/${id}?soLuong=${qty}&gia=${price}`;
         };
 
-        // Cập nhật lần đầu
         updateLinks();
-
-        // Khi thay đổi số lượng thì cập nhật lại link
         quantityInput.addEventListener('input', updateLinks);
     });
 </script>

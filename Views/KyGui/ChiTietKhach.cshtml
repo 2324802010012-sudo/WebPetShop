@@ -1,0 +1,357 @@
+﻿@model KyGuiThuCung
+@{
+    ViewData["Title"] = "Chi tiết ký gửi";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<div class="container py-5">
+
+    <div class="card shadow-lg border-0 rounded-4" style="max-width: 900px; margin: 0 auto;">
+
+        <!-- HEADER -->
+        <div class="card-header bg-danger text-white text-center py-4 rounded-top-4">
+            <h2 class="fw-bold mb-2"><i class="fas fa-paw me-2"></i> Chi tiết ký gửi</h2>
+            <h4 class="text-warning">Boss: @Model.TenThuCung</h4>
+        </div>
+
+        <div class="card-body p-4">
+
+            <!-- THÔNG TIN BOSS -->
+            <div class="bg-light p-4 rounded-3 border-start border-danger border-5 mb-4">
+                <p><strong>Giống loài:</strong> @Model.GiongLoai</p>
+                <p><strong>Tuổi:</strong> @(Model.Tuoi ?? 0) tuổi</p>
+                <p><strong>Ngày gửi:</strong> @Model.NgayGui?.ToString("dd/MM/yyyy")</p>
+                <p><strong>Ngày nhận lại:</strong> @Model.NgayHetHan?.ToString("dd/MM/yyyy")</p>
+                <p><strong>Ghi chú của bạn:</strong> @Model.GhiChu</p>
+            </div>
+
+            <!-- TRẠNG THÁI -->
+            <div class="alert alert-primary text-center fs-5 rounded-pill">
+                <i class="fas fa-heart me-2"></i>
+                Trạng thái: <strong>@Model.TrangThai</strong>
+            </div>
+
+            <!-- NHẬT KÝ CHĂM SÓC -->
+            <h4 class="text-center text-danger mt-4 mb-3"><i class="fas fa-book-heart me-2"></i> Nhật ký chăm sóc</h4>
+
+            @if (!Model.ChiTietChamSocs.Any())
+            {
+                <div class="text-center p-4 bg-light rounded-3">
+                    <i class="fas fa-cat fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Chưa có nhật ký nào được cập nhật.</p>
+                </div>
+            }
+            else
+            {
+                foreach (var log in Model.ChiTietChamSocs.OrderByDescending(x => x.NgayCapNhat))
+                {
+                    <div class="card shadow-sm mb-3 border-start border-danger border-5">
+                        <div class="card-body">
+                            <small class="text-danger fw-bold">
+                                <i class="fas fa-clock me-2"></i> @log.NgayCapNhat?.ToString("dd/MM/yyyy HH:mm")
+                            </small>
+                            <p class="mt-2 fs-5">@log.GhiChu</p>
+                        </div>
+                    </div>
+                }
+            }
+
+            <!-- BUTTON ROW -->
+            <div class="text-center mt-4">
+                <a asp-action="LichSuKyGui" class="btn btn-outline-danger rounded-pill px-4 py-2 me-2">
+                    <i class="fas fa-arrow-left me-2"></i> Trở về lịch sử
+                </a>
+
+                <button class="btn btn-success rounded-pill px-4 py-2"
+                        data-bs-toggle="modal" data-bs-target="#modalGiaHan">
+                    <i class="fas fa-calendar-plus me-2"></i> Gia hạn ký gửi
+                </button>
+            </div>
+
+        </div>
+
+        <div class="card-footer text-center small py-3 bg-light">
+            Mã ký gửi: #@Model.MaKyGui
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- MODAL GIA HẠN KÝ GỬI -->
+    <!-- ========================= -->
+    <div class="modal fade" id="modalGiaHan" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content rounded-4">
+
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="fa-solid fa-calendar-plus me-2"></i> Gia hạn ký gửi
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <form method="post" action="/KyGuiThuCung/GiaHan">
+                    <div class="modal-body p-4">
+                        <input type="hidden" name="MaKyGui" value="@Model.MaKyGui" />
+
+                        <label class="fw-semibold mb-2">Chọn ngày nhận lại mới:</label>
+                        <input type="date" name="NgayHetHanMoi" class="form-control" required />
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Đóng
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa-solid fa-check me-1"></i> Xác nhận gia hạn
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-lg p-0 mt-5 border-0 chat-container">
+
+        <!-- Header -->
+        <div class="chat-header d-flex align-items-center px-4 py-3">
+            <img src="/images/avatar-staff.png" class="chat-header-avatar">
+            <div class="ms-3">
+                <h5 class="mb-0 fw-bold text-white">Nhân viên chăm sóc</h5>
+                <small class="text-light opacity-75">Đang hoạt động</small>
+            </div>
+        </div>
+
+        <!-- Chat box -->
+        <div id="chatBox" class="chat-body"></div>
+
+        <!-- Input -->
+        <div class="chat-input-area d-flex align-items-center px-3 py-3">
+            <input type="text" id="chatInput" class="chat-input form-control" placeholder="Nhập tin nhắn...">
+            <button class="btn-send" onclick="sendChat()">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+    <style>
+        /* =============================
+           🔵 KHUNG CHAT
+        ============================= */
+        .chat-container {
+            border-radius: 18px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+        }
+
+        /* HEADER */
+        .chat-header {
+            background: linear-gradient(90deg, #2e89ff, #5ab2ff);
+            color: white;
+        }
+
+        .chat-header-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.8);
+        }
+
+        /* CHAT BODY */
+        .chat-body {
+            height: 420px;
+            background: #eef3f7;
+            padding: 18px;
+            overflow-y: auto;
+        }
+
+        /* Dòng chat */
+        .msg-row {
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 14px;
+        }
+
+        /* Căn trái / phải */
+        .msg-left {
+            justify-content: flex-start;
+        }
+
+        .msg-right {
+            justify-content: flex-end;
+        }
+
+        /* Bong bóng tin nhắn */
+        .bubble {
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 15px;
+            max-width: 70%;
+            line-height: 1.4;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+        }
+
+        /* Tin của khách */
+        .bubble-me {
+            background: #2e89ff;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        /* Tin của nhân viên */
+        .bubble-other {
+            background: #ffffff;
+            color: #222;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e4e4e4;
+        }
+
+        /* Avatar */
+        .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            margin: 0 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        /* Thời gian */
+        .msg-time {
+            font-size: 11px;
+            color: #7a7a7a;
+            margin-top: 4px;
+        }
+
+        /* INPUT CHAT */
+        .chat-input-area {
+            background: #ffffff;
+            padding: 12px;
+            border-top: 1px solid #dcdcdc;
+        }
+
+        .chat-input {
+            border-radius: 50px;
+            background: #f3f5f7;
+            padding: 12px 20px;
+            border: 1px solid #d7d7d7;
+        }
+
+        .btn-send {
+            margin-left: 10px;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: #2e89ff;
+            color: white;
+            border: none;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(46,137,255,0.3);
+            transition: 0.2s;
+        }
+
+            .btn-send:hover {
+                transform: scale(1.08);
+            }
+
+    </style>
+    <script>
+        const chatBox = document.getElementById("chatBox");
+        const input = document.getElementById("chatInput");
+
+        let messages = [];
+        let isSending = false; // ⛔ Chặn gửi trùng
+
+        /* ============================
+           🎯 HIỂN THỊ TIN NHẮN
+        ============================ */
+        function renderChat() {
+            chatBox.innerHTML = messages.map(m => {
+                const isMe = m.sender === "me";
+                return `
+                    <div class="msg-row ${isMe ? "msg-right" : "msg-left"}">
+
+                        ${!isMe ? `<img src="/images/avatar-staff.png" class="avatar">` : ""}
+
+                        <div>
+                            <div class="bubble ${isMe ? "bubble-me" : "bubble-other"}">
+                                ${m.text}
+                            </div>
+                            <div class="msg-time ${isMe ? "text-end" : "text-start"}">
+                                ${m.time}
+                            </div>
+                        </div>
+
+                        ${isMe ? `<img src="/images/avatar-user.png" class="avatar">` : ""}
+                    </div>
+                `;
+            }).join("");
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function addMessage(sender, text) {
+            messages.push({
+                sender: sender,
+                text: text,
+                time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            });
+            renderChat();
+        }
+
+        /* ============================
+           🤖 GỬI TIN & NHẬN TRẢ LỜI
+        ============================ */
+        async function sendChat() {
+            let text = input.value.trim();
+            if (!text) return;
+
+            if (isSending) return; // ⛔ CHẶN GỬI KHI API ĐANG XỬ LÝ
+            isSending = true;
+
+            // 1️⃣ Tin nhắn của KH
+            addMessage("me", text);
+            input.value = "";
+
+            // 2️⃣ Xóa loading cũ (nếu tồn tại)
+            messages = messages.filter(m => m.text !== "<i>Nhân viên đang soạn trả lời...</i>");
+
+            // 3️⃣ Thêm loading mới
+            addMessage("bot", "<i>Nhân viên đang soạn trả lời...</i>");
+
+            // 4️⃣ Gọi API
+            const response = await fetch("/api/chat/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: text })
+            });
+
+            // Xóa loading
+            messages = messages.filter(m => m.text !== "<i>Nhân viên đang soạn trả lời...</i>");
+
+            if (!response.ok) {
+                addMessage("bot", "Xin lỗi, hệ thống đang bận. Bé chờ em thêm chút nha ❤️");
+                isSending = false;
+                return;
+            }
+
+            const data = await response.json();
+
+            // 5️⃣ Trả lời từ AI
+            addMessage("bot", data.reply);
+
+            isSending = false;
+        }
+
+        /* ENTER để gửi */
+        input.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault(); // Ngăn gửi 2 lần
+                sendChat();
+            }
+        });
+    </script>

@@ -5,6 +5,8 @@ namespace WebPetShop.Models
     public class ThuCungNhanNuoiView
     {
         public int MaBaiDang { get; set; }
+        public int MaNhanNuoi { get; set; }       // thêm
+        public int MaKyGui { get; set; }
         public string TenThuCung { get; set; }
         public string GiongLoai { get; set; }
         public int? Tuoi { get; set; }

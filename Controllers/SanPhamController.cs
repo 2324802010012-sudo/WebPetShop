@@ -32,8 +32,17 @@ namespace WebPetShop.Controllers
                 query = query.Where(s => s.TenSp.Contains(searchString));
             }
 
-            // ✅ Truyền danh mục cho Sidebar Filter
+            // ✅ Danh mục cho sidebar
             ViewBag.DanhMuc = _context.DanhMucs.ToList();
+
+            // ✅ Danh sách khuyến mãi đang active
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            ViewBag.KhuyenMai = _context.KhuyenMais
+                .Include(k => k.SanPham)
+                .Where(k => k.TrangThai == true &&
+                            k.NgayBatDau <= today &&
+                            k.NgayKetThuc >= today)
+                .ToList();
 
             return View(query.ToList());
         }
@@ -49,6 +58,8 @@ namespace WebPetShop.Controllers
 
             return View(sp);
         }
+
+        // ✅ Danh mục
         public IActionResult DanhMuc(int id)
         {
             var sanPhams = _context.SanPhams
@@ -60,8 +71,16 @@ namespace WebPetShop.Controllers
 
             ViewBag.TenDanhMuc = danhMuc?.TenDanhMuc ?? "Sản phẩm";
 
+            // ✅ Danh sách khuyến mãi đang active
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            ViewBag.KhuyenMai = _context.KhuyenMais
+                .Include(k => k.SanPham)
+                .Where(k => k.TrangThai == true &&
+                            k.NgayBatDau <= today &&
+                            k.NgayKetThuc >= today)
+                .ToList();
+
             return View("Index", sanPhams); // tái sử dụng view danh sách sản phẩm
         }
-
     }
 }

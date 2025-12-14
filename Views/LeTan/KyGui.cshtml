@@ -1,13 +1,272 @@
-﻿@{
+﻿@model IEnumerable<WebPetShop.Models.KyGuiThuCung>
+@{
     ViewData["Title"] = "Quản lý ký gửi";
     Layout = "~/Views/Shared/_LayoutLeTan.cshtml";
 }
 
-<div class="container py-4">
-    <h2 class="fw-bold text-danger">🐕 Quản lý ký gửi thú cưng</h2>
-    <p class="text-muted">Tạo – tiếp nhận – xác nhận – bàn giao thú cưng</p>
+<!-- TOKEN AJAX -->
+<form id="tokenForm">
+    @Html.AntiForgeryToken()
+</form>
 
-    <hr />
+@{
+    KyGuiThuCung? donVuaGiaHan = null;
+    int? soNgayGiaHan = null;
 
-    <p class="text-muted">Hiện chưa có dữ liệu mẫu. Bạn có thể thêm CRUD sau.</p>
+    foreach (var x in Model.Where(m => m.NgayGui.HasValue && m.NgayHetHan.HasValue))
+    {
+        var ngayGui = x.NgayGui.Value.ToDateTime(TimeOnly.MinValue);
+        var ngayHetHan = x.NgayHetHan.Value.ToDateTime(TimeOnly.MinValue);
+        var soNgay = (ngayHetHan - ngayGui).Days;
+
+        if (soNgay > 40 && (DateTime.Today - ngayHetHan.Date).Days <= 1)
+        {
+            donVuaGiaHan = x;
+            soNgayGiaHan = soNgay;
+            break;
+        }
+    }
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+<div class="container py-5">
+
+    <!-- THÔNG BÁO GIA HẠN -->
+    <div class="text-center mb-5">
+        @if (donVuaGiaHan != null)
+        {
+            <div class="alert alert-success border-0 rounded-4 shadow-lg mb-4 text-center">
+                <i class="fa-solid fa-bell fa-2x text-success mb-2"></i>
+                <h5 class="fw-bold">
+                    Khách hàng <span class="text-danger">@donVuaGiaHan.MaKhNavigation?.HoTen</span>
+                    đã GIA HẠN đơn ký gửi!
+                </h5>
+                <p>
+                    Thú cưng: <strong>@donVuaGiaHan.TenThuCung</strong><br />
+                    Hết hạn mới:
+                    <strong class="text-danger">
+                        @donVuaGiaHan.NgayHetHan?.ToString("dd/MM/yyyy")
+                    </strong>
+                </p>
+            </div>
+        }
+
+        <h2 class="display-5 fw-bold text-danger">Quản lý ký gửi thú cưng</h2>
+        <p class="text-muted fs-5">Tạo – tiếp nhận – xác nhận – bàn giao thú cưng</p>
+    </div>
+
+    <hr class="border-danger border-2" />
+
+    <!-- KHÔNG CÓ ĐƠN -->
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center py-5 rounded-4 shadow-lg">
+            <i class="fa-solid fa-heart fa-5x text-muted mb-4 opacity-75"></i>
+            <h4 class="text-muted fw-bold">Hiện chưa có đơn ký gửi nào</h4>
+            <p class="lead text-muted">Khi khách hàng đăng ký, đơn sẽ hiện ngay tại đây!</p>
+        </div>
+    }
+    else
+    {
+        <!-- BẢNG DANH SÁCH -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle shadow-lg rounded-4 overflow-hidden">
+                <thead class="bg-gradient text-white text-center"
+                       style="background: linear-gradient(135deg, #d32f2f, #f44336);">
+                    <tr>
+                        <th>#</th>
+                        <th>Khách hàng</th>
+                        <th>Thú cưng</th>
+                        <th>Giống / Loại</th>
+                        <th>Ngày gửi</th>
+                        <th>Hết hạn</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th width="280">Thao tác</th>
+                    </tr>
+                </thead>
+
+                <tbody class="bg-light">
+                    @foreach (var item in Model.OrderByDescending(x => x.MaKyGui))
+                    {
+                        /* ------------ KIỂM TRA GIA HẠN ----------- */
+                        bool vuaGiaHan = false;
+
+                        if (item.NgayHetHan.HasValue)
+                        {
+                            var ngayHet = item.NgayHetHan.Value.ToDateTime(TimeOnly.MinValue);
+                            vuaGiaHan = (DateTime.Today - ngayHet.Date).TotalDays <= 1;
+                        }
+
+                        /* ------------ TRẠNG THÁI ----------- */
+                        var trangThai = item.TrangThaiDon ?? "ChoXacNhan";
+
+                        var badgeClass = trangThai switch
+                        {
+                            "ChoXacNhan" => "bg-warning text-dark",
+                            "DangChamSoc" => "bg-primary text-white",
+                            "HoanThanh" => "bg-success text-white",
+                            _ => "bg-secondary text-white"
+                        };
+
+                        var badgeText = trangThai switch
+                        {
+                            "ChoXacNhan" => "Chờ xác nhận thanh toán",
+                            "DangChamSoc" => "Đang ký gửi",
+                            "HoanThanh" => "Đã hoàn thành",
+                            _ => trangThai
+                        };
+
+                        <tr class="text-center align-middle">
+                            <td class="fw-bold text-danger fs-5">#@item.MaKyGui</td>
+                            <td>@item.MaKhNavigation?.HoTen</td>
+                            <td class="fw-bold fs-5 text-primary">@item.TenThuCung</td>
+                            <td>@item.GiongLoai / @item.LoaiThuCung</td>
+                            <td>@item.NgayGui?.ToString("dd/MM/yyyy")</td>
+
+                            <!-- NGÀY HẾT HẠN + BADGE GIA HẠN -->
+                            <td class="fw-bold text-danger">
+                                @item.NgayHetHan?.ToString("dd/MM/yyyy")
+                                @if (vuaGiaHan)
+                                {
+                                    <span class="badge bg-danger ms-2 px-3 py-2 rounded-pill shadow-sm">
+                                        Gia hạn mới
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="text-success fw-bold fs-5">@item.TongTien.ToString("N0") ₫</td>
+
+                            <td>
+                                <span class="badge @badgeClass px-4 py-2 rounded-pill shadow-sm fs-6">
+                                    @badgeText
+                                </span>
+                            </td>
+
+                            <td class="text-center">
+
+                                <!-- XEM -->
+                                <a asp-controller="LeTan" asp-action="ChiTiet" asp-route-id="@item.MaKyGui"
+                                   class="btn btn-info btn-sm rounded-pill mb-1">
+                                    Xem chăm sóc
+                                </a>
+
+                                <!-- XÁC NHẬN KÝ GỬI -->
+                                @if (trangThai == "ChoXacNhan")
+                                {
+                                    <button type="button" class="btn btn-success btn-sm rounded-pill px-4 mb-1"
+                                            data-bs-toggle="modal" data-bs-target="#modalXacNhan_@item.MaKyGui">
+                                        Xác nhận ký gửi
+                                    </button>
+                                }
+
+                                <!-- TRẢ THÚ -->
+                                @if (trangThai == "DangChamSoc" || vuaGiaHan)
+
+                                {
+                                    <button type="button"
+                                            class="btn btn-warning btn-sm rounded-pill text-white px-4"
+                                            onclick="traThu(@item.MaKyGui)">
+                                        Trả thú
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+
+                        <!-- MODAL XÁC NHẬN -->
+                        @if (trangThai == "ChoXacNhan")
+                        {
+                            <div class="modal fade" id="modalXacNhan_@item.MaKyGui" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-success text-white">
+                                            <h5 class="modal-title fw-bold">Xác nhận tiếp nhận thú cưng</h5>
+                                            <button type="button" class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal"></button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <div class="row">
+                                                <div class="col-6"><strong>Khách hàng:</strong></div>
+                                                <div class="col-6">@item.MaKhNavigation?.HoTen</div>
+
+                                                <div class="col-6"><strong>Thú cưng:</strong></div>
+                                                <div class="col-6">@item.TenThuCung (@item.LoaiThuCung)</div>
+
+                                                <div class="col-6"><strong>Ngày gửi:</strong></div>
+                                                <div class="col-6">@item.NgayGui?.ToString("dd/MM/yyyy")</div>
+
+                                                <div class="col-6"><strong>Tổng tiền:</strong></div>
+                                                <div class="col-6 text-success fw-bold">
+                                                    @item.TongTien.ToString("N0") ₫
+                                                </div>
+                                            </div>
+
+                                            <hr />
+                                            <p class="fw-bold text-success text-center">
+                                                Bạn đã nhận thú cưng và thanh toán chưa?
+                                            </p>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">
+                                                Hủy
+                                            </button>
+
+                                            <form asp-controller="LeTan" asp-action="XacNhanKyGui"
+                                                  method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@item.MaKyGui" />
+
+                                                <button type="submit"
+                                                        class="btn btn-success btn-lg px-5 fw-bold">
+                                                    Đã nhận thú → Bắt đầu ký gửi
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 </div>
+
+
+<!-- AJAX TRẢ THÚ -->
+<script>
+    function traThu(maKyGui) {
+
+        if (!confirm("Khách đã đến nhận thú cưng và thanh toán đầy đủ chưa?"))
+            return;
+
+        const token = document.querySelector('#tokenForm input[name="__RequestVerificationToken"]').value;
+
+        fetch("/LeTan/TraThuKyGui", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "RequestVerificationToken": token
+            },
+            body: `id=${maKyGui}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("✅ Trả thú thành công!");
+                location.reload();
+            } else {
+                alert("❌ Lỗi: " + data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Không thể kết nối máy chủ!");
+        });
+    }
+</script>

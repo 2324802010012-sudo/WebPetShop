@@ -1,0 +1,258 @@
+﻿@model IEnumerable<WebPetShop.Models.KhuyenMai>
+@{
+    ViewData["Title"] = "Quản lý Khuyến Mãi";
+    Layout = "~/Views/Shared/_LayoutKeToan.cshtml";
+    var searchValue = Context.Request.Query["search"].ToString();
+}
+
+<style>
+    .km-wrapper {
+        background: #fff;
+        padding: 28px;
+        border-radius: 18px;
+        margin-top: 14px;
+        box-shadow: 0 6px 22px rgba(0,0,0,0.08);
+        animation: fadeIn .35s ease;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Title */
+    .km-title {
+        font-size: 28px;
+        font-weight: 800;
+        color: #d32f2f;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .km-title i {
+        color: #ff5252;
+        font-size: 28px;
+    }
+
+    /* Add button */
+    .btn-add {
+        background: linear-gradient(90deg, #ff7043, #ff5722);
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: .25s;
+    }
+
+    .btn-add:hover {
+        background: linear-gradient(90deg, #ff5722, #e64a19);
+        transform: translateY(-2px);
+        color: #fff;
+        box-shadow: 0 6px 20px rgba(255,87,34,0.35);
+    }
+
+    /* Search + filter */
+    .search-input {
+        width: 250px;
+        border-radius: 10px;
+        padding: 8px 12px;
+        transition: .25s;
+        border: 1px solid #ddd;
+    }
+
+    .search-input:focus {
+        border-color: #ff5252;
+        box-shadow: 0 0 0 3px rgba(255,82,82,0.25);
+    }
+
+    .filter-select {
+        width: 180px;
+        border-radius: 10px;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+    }
+
+    /* Table style */
+    .table-km {
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .table-km thead {
+        background: #ffecec;
+        color: #c62828;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .table-km tbody tr {
+        transition: .25s;
+    }
+
+    .table-km tbody tr:hover {
+        background: #fff5f5 !important;
+    }
+
+    .badge-percent {
+        background: #ff5252;
+        padding: 6px 14px;
+        border-radius: 20px;
+        color: white;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .badge-active {
+        background: #c8e6c9;
+        color: #2e7d32;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    .badge-inactive {
+        background: #ffcdd2;
+        color: #b71c1c;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    .btn-edit, .btn-del {
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-weight: 600;
+        border: none;
+    }
+
+    .btn-edit {
+        background: #ffca28;
+        color: #000;
+    }
+
+    .btn-edit:hover {
+        background: #ffb300;
+    }
+
+    .btn-del {
+        background: #ef5350;
+        color: white;
+    }
+
+    .btn-del:hover {
+        background: #d32f2f;
+    }
+</style>
+
+
+<div class="km-wrapper">
+
+    <!-- Title -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="km-title">
+            <i class="fa-solid fa-tags"></i> @ViewData["Title"]
+        </div>
+
+        <a class="btn-add" href="/KeToan/KhuyenMaiThem">
+            <i class="fa-solid fa-plus"></i> Thêm khuyến mãi
+        </a>
+    </div>
+
+    <!-- Search + Filter -->
+    <div class="d-flex mb-3 gap-2">
+        <form method="get" class="d-flex gap-2">
+
+            <input type="text" name="search"
+                   value="@searchValue"
+                   class="form-control search-input"
+                   placeholder="🔍 Tìm mã code, mô tả..." />
+
+
+            <select name="status" class="form-select filter-select">
+                <option value="">-- Trạng thái --</option>
+
+                <option value="true"
+                        selected="@(Context.Request.Query["status"] == "true")">
+                    Active
+                </option>
+
+                <option value="false"
+                        selected="@(Context.Request.Query["status"] == "false")">
+                    Inactive
+                </option>
+            </select>
+
+            <button class="btn btn-danger fw-bold">
+                <i class="fa-solid fa-filter"></i> Lọc
+            </button>
+        </form>
+
+        <!-- Reset filter -->
+        <a href="/KeToan/KhuyenMai" class="btn btn-secondary fw-bold">
+            <i class="fa-solid fa-rotate-right"></i>
+        </a>
+    </div>
+
+
+    <!-- Table -->
+    <table class="table table-km text-center">
+        <thead>
+            <tr>
+                <th>Mã Code</th>
+                <th>Mô tả</th>
+                <th>% Giảm</th>
+                <th>Giá trị tối đa</th>
+                <th>Ngày bắt đầu</th>
+                <th>Ngày kết thúc</th>
+                <th>Số lần dùng</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td><strong>@item.MaCode</strong></td>
+                    <td>@item.MoTa</td>
+
+                    <td><span class="badge-percent">@item.PhanTramGiam %</span></td>
+
+                    <td>@string.Format("{0:N0} đ", item.GiaTriToiDa)</td>
+
+                    <td>@item.NgayBatDau?.ToString("dd/MM/yyyy")</td>
+                    <td>@item.NgayKetThuc?.ToString("dd/MM/yyyy")</td>
+
+                    <td>@item.SoLanSuDungToiDa</td>
+
+                    <td>
+                        @if (item.TrangThai)
+                        {
+                            <span class="badge-active">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge-inactive">Inactive</span>
+                        }
+                    </td>
+
+
+                    <td>
+                        <a href="/KeToan/KhuyenMaiSua/@item.MaKm" class="btn-edit me-1">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+
+                        <a href="/KeToan/KhuyenMaiXoa/@item.MaKm"
+                           onclick="return confirm('Xác nhận xoá khuyến mãi?')"
+                           class="btn-del">
+                            <i class="fa-solid fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>

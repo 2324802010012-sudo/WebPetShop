@@ -1,0 +1,113 @@
+﻿@model IEnumerable<WebPetShop.Models.KyGuiThuCung>
+
+@{
+    ViewData["Title"] = "Danh sách ký gửi thú cưng";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-danger">
+            DANH SÁCH THÚ CƯNG ĐANG KÝ GỬI
+        </h1>
+        <p class="lead text-muted">Quản lý toàn bộ khách hàng ký gửi tại PetShop</p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 bg-light rounded-4 shadow-sm">
+            <i class="fas fa-dog fa-5x text-muted mb-4"></i>
+            <h3 class="text-muted">Chưa có boss nào đang ký gửi</h3>
+            <p>Hệ thống sẽ tự động cập nhật khi có khách đăng ký!</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive shadow-lg rounded-4 overflow-hidden">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-danger text-white text-center">
+                    <tr>
+                        <th>#</th>
+                        <th>Tên Boss</th>
+                        <th>Chủ nhân</th>
+                        <th>SĐT</th>
+                        <th>Giống loài</th>
+                        <th>Ngày gửi</th>
+                        <th>Nhận lại</th>
+                        <th>Phí (₫)</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.OrderByDescending(x => x.NgayGui))
+                    {
+                        var badge = item.TrangThai switch
+                        {
+                            "Đang ký gửi" => "bg-warning text-dark",
+                            "Hoàn tất" => "bg-success",
+                            "Đã hủy" => "bg-danger",
+                            "Trả thú" => "bg-info",
+                            _ => "bg-secondary"
+                        };
+
+                        <tr class="table-light align-middle">
+                            <td class="text-center fw-bold">@item.MaKyGui</td>
+                            <td>
+                                <strong class="text-danger">@item.TenThuCung</strong><br />
+                                <small class="text-muted">@item.GiongLoai</small>
+                            </td>
+                            <td>
+                                <strong>@item.MaKhNavigation?.HoTen</strong>
+                            </td>
+                            <td>@item.MaKhNavigation?.SoDienThoai</td>
+                            <td>@item.GiongLoai</td>
+                            <td class="text-center">
+                                @item.NgayGui?.ToString("dd/MM/yyyy")
+                            </td>
+                            <td class="text-center">
+                                @item.NgayHetHan?.ToString("dd/MM/yyyy")
+                            </td>
+                            <td class="text-end fw-bold text-danger">
+                                @(item.PhiKyGui?.ToString("N0") ?? "0") ₫
+                            </td>
+                            <td class="text-center">
+                                <span class="badge rounded-pill @badge px-3 py-2 fw-bold">
+                                    @item.TrangThai
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="Details" asp-route-id="@item.MaKyGui"
+                                   class="btn btn-sm btn-primary rounded-pill me-1" title="Xem chi tiết">
+                                    Xem
+                                </a>
+                                <a asp-action="ThemNhatKy" asp-route-id="@item.MaKyGui"
+                                   class="btn btn-sm btn-success rounded-pill" title="Thêm nhật ký">
+                                    Nhật ký
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <div class="text-center mt-5">
+        <a asp-action="DanhSach" class="btn btn-outline-danger btn-lg rounded-pill px-5">
+            Chỉ xem "Đang ký gửi"
+        </a>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary btn-lg rounded-pill px-5 ms-3">
+            Về trang chủ
+        </a>
+    </div>
+</div>
+
+<style>
+    .table tbody tr:hover {
+        background-color: #fff5f5 !important;
+        transform: scale(1.01);
+        transition: all 0.3s ease;
+    }
+</style>

@@ -1,0 +1,204 @@
+﻿@model List<WebPetShop.Models.VDanhSachThuCungNhanNuoi>
+@{
+    ViewData["Title"] = "Thú cưng cần tìm chủ mới";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var userId = Context.Session.GetString("UserId");
+    var role = Context.Session.GetString("Role");
+}
+
+<style>
+    .pet-card {
+        border-radius: 14px;
+        overflow: hidden;
+        transition: 0.25s;
+        background: #fff;
+    }
+
+        .pet-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+        }
+
+    .pet-img {
+        height: 250px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .badge-age {
+        background: #ff6f61;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 5px;
+        font-size: 12px;
+    }
+
+    .btn-adopt-now {
+        background: #ff4d4d;
+        color: white;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: 0.2s;
+    }
+
+        .btn-adopt-now:hover {
+            background: #e63b3b;
+            color: white;
+            transform: scale(1.03);
+        }
+
+    .btn-login-adopt {
+        border-radius: 10px;
+        background: white;
+        border: 2px solid #ff4d4d;
+        color: #ff4d4d;
+        font-weight: 600;
+    }
+
+        .btn-login-adopt:hover {
+            background: #ff4d4d;
+            color: white;
+        }
+
+    .pet-title {
+        font-weight: bold;
+        font-size: 1.25rem;
+        color: #4caf50;
+    }
+
+    .pet-desc {
+        font-size: 14px;
+        color: #555;
+    }
+</style>
+
+<div class="container py-5">
+
+    <!-- TIÊU ĐỀ TRANG -->
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-primary">
+            <i class="fas fa-heart text-danger"></i> Thú cưng đang tìm chủ mới
+        </h1>
+        <p class="text-muted">Mỗi bé đều đang chờ một mái nhà yêu thương ❤️</p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-paw fa-5x text-muted mb-3"></i>
+            <h3 class="text-secondary">Hiện chưa có bé nào cần tìm chủ</h3>
+            <p class="text-muted">Bạn hãy quay lại sau nhé!</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="pet-card shadow-sm">
+
+                        <!-- HÌNH ẢNH -->
+                        <img src="@item.HinhAnh" class="pet-img" />
+
+                        <div class="p-3 d-flex flex-column">
+
+                            <!-- TÊN & GIỐNG LOÀI -->
+                            <h4 class="pet-title">@item.TenThuCung</h4>
+                            <p class="text-muted small mb-1">
+                                <i class="fas fa-paw"></i> @item.GiongLoai •
+                                <span class="badge-age">@item.Tuoi tuổi</span>
+                            </p>
+
+                            <!-- TIÊU ĐỀ BÀI ĐĂNG -->
+                            <h6 class="text-primary mt-2">@item.TieuDe</h6>
+
+                            <!-- MÔ TẢ -->
+                            <p class="pet-desc flex-grow-1">
+                                @(item.MoTa.Length > 120 ? item.MoTa.Substring(0, 120) + "..." : item.MoTa)
+                            </p>
+
+                            <!-- NÚT GỬI YÊU CẦU -->
+                            <div class="mt-auto">
+
+                                @if (!string.IsNullOrEmpty(userId) && role == "KhachHang")
+                                {
+                                    <button class="btn btn-adopt-now btn-lg w-100 mb-2"
+                                            onclick="guiYeuCau(@item.MaBaiDang)"
+                                            id="btn-@item.MaBaiDang">
+                                        ❤️ Nhận nuôi bé này
+                                    </button>
+                                }
+                                else
+                                {
+                                    <a href="/Auth/Login" class="btn btn-login-adopt btn-lg w-100 mb-2">
+                                        Đăng nhập để gửi yêu cầu nhận nuôi
+                                    </a>
+                                    <p class="text-center text-muted small">Bạn cần đăng nhập để gửi yêu cầu</p>
+                                }
+
+                                <p class="text-muted text-center small mt-1">
+                                    🗓 Đăng ngày @item.NgayDang?.ToString("dd/MM/yyyy")
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    }
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function guiYeuCau(maBaiDang) {
+        Swal.fire({
+            title: 'Xác nhận?',
+            text: "Bạn chắc chắn muốn nhận nuôi bé này chứ?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Có, tôi muốn nhận nuôi!',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+
+            fetch('/NhanNuoi/GuiYeuCauNhanNuoi', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': token
+                },
+                body: 'maBaiDang=' + maBaiDang
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('Lỗi mạng');
+                return r.json();
+            })
+            .then(res => {
+                if (res.success) {
+                    Swal.fire('Thành công!', res.message, 'success');
+                    const btn = document.getElementById('btn-' + maBaiDang);
+                    if (btn) {
+                        btn.innerHTML = 'Đã gửi yêu cầu';
+                        btn.disabled = true;
+                        btn.classList.remove('btn-adopt-now');
+                        btn.classList.add('btn-success');
+                    }
+                } else {
+                    Swal.fire('Oops!', res.message || 'Có lỗi xảy ra', 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Lỗi', 'Không thể gửi yêu cầu. Vui lòng thử lại.', 'error');
+            });
+        });
+    }
+</script>
+
+

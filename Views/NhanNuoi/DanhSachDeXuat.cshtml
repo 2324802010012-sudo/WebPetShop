@@ -1,0 +1,66 @@
+﻿@model List<WebPetShop.Models.ThuCungNhanNuoiView>
+@{
+    ViewData["Title"] = "Thú cưng quá hạn - Đề xuất nhận nuôi";
+    Layout = "~/Views/Shared/_LayoutLeTan.cshtml";
+}
+
+<div class="container mt-4">
+    <h2 class="text-danger mb-4">
+        <i class="fas fa-exclamation-triangle"></i> Đề xuất thú cưng cần nhận nuôi
+    </h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">Không có thú cưng nào quá hạn 30 ngày.</div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <img src="/images/default-pet.jpg" class="card-img-top" style="height:200px; object-fit:cover;">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title text-primary">@item.TenThuCung</h5>
+                            <p class="card-text">
+                                <strong>Giống:</strong> @item.GiongLoai<br />
+                                <strong>Tuổi:</strong> @(item.Tuoi ?? 0) tuổi<br />
+                                <strong>Trạng thái:</strong> <span class="badge bg-warning">@item.TrangThaiKyGui</span>
+                            </p>
+                            <div class="mt-auto">
+                                <button class="btn btn-success btn-sm w-100 chuyen-nhan-nuoi"
+                                        data-id="@item.MaBaiDang">
+                                    <i class="fas fa-heart"></i> Chuyển sang nhận nuôi
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+@section Scripts {
+    <script>
+        $(document).on('click', '.chuyen-nhan-nuoi', function () {
+            let maKyGui = $(this).data('id');
+
+            if (confirm('Xác nhận chuyển thú cưng này sang danh sách nhận nuôi?')) {
+                $.post('/NhanNuoi/ChuyenSangNhanNuoi', { maKyGui: maKyGui })
+                    .done(function (res) {
+                        if (res.success) {
+                            toastr.success(res.message || 'Đã chuyển thành công!');
+
+                            // ⭐⭐ CHUYỂN TRANG NGAY SAU KHI CHUYỂN THÀNH CÔNG ⭐⭐
+                            setTimeout(() => {
+                                window.location.href = '/NhanNuoi/ChoTaoBaiDang';
+                            }, 800);
+                        } else {
+                            toastr.error(res.message);
+                        }
+                    });
+            }
+        });
+    </script>
+}

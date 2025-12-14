@@ -170,16 +170,48 @@
                 </span>
             }
         </a>
+        <a asp-controller="LeTan" asp-action="KyGui"
+           class="@(ViewContext.RouteData.Values["action"]?.ToString() == "KyGui" ? "active" : "") d-flex align-items-center">
 
-        <a asp-controller="LeTan" asp-action="KyGui" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "KyGui" ? "active" : "")">
-            <i class="fa-solid fa-dog"></i> Ký gửi
+            <i class="fa-solid fa-dog"></i>
+            <span class="ms-2">Ký gửi</span>
+
+            <!-- Badge thông báo -->
+            <span id="badgeGiaHan" class="badge bg-danger ms-2" style="display:none;"></span>
         </a>
-        <a asp-controller="LeTan" asp-action="BaiNhanNuoi" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "BaiNhanNuoi" ? "active" : "")">
+
+        <a href="#" class="dropdown-toggle text-white" data-bs-toggle="dropdown">
             <i class="fa-solid fa-heart"></i> Nhận nuôi
         </a>
-        <a asp-controller="LeTan" asp-action="HoTroKhachHang" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "HoTroKhachHang" ? "active" : "")">
-            <i class="fa-solid fa-comments"></i> Hỗ trợ KH
-        </a>
+        <ul class="dropdown-menu dropdown-menu-dark">
+            <li>
+                <a class="dropdown-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "ThuCungNhanNuoi" && ViewContext.RouteData.Values["action"]?.ToString() == "DanhSachDeXuat" ? "active" : "")"
+                   asp-controller="NhanNuoi" asp-action="DanhSachDeXuat">
+                    Quá hạn 30 ngày (chuyển)
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "ThuCungNhanNuoi" && ViewContext.RouteData.Values["action"]?.ToString() == "ChoTaoBaiDang" ? "active" : "")"
+                   asp-controller="NhanNuoi" asp-action="ChoTaoBaiDang">
+                    Chờ tạo bài đăng
+                </a>
+            </li>
+            <!-- THÊM DÒNG NÀY -->
+            <li>
+                <a class="dropdown-item @(ViewContext.RouteData.Values["action"]?.ToString() == "LichSuNhanNuoi" ? "active bg-danger" : "")"
+                   asp-controller="NhanNuoi" asp-action="LichSuNhanNuoi">
+                    Duyệt yêu cầu nhận nuôi
+                </a>
+
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a class="dropdown-item" asp-controller="NhanNuoi" asp-action="DanhSachNhanNuoi" target="_blank">
+                    Xem trang công khai (khách)
+                </a>
+            </li>
+        </ul>
+      
 
         <div class="mt-4 text-center">
             <form asp-controller="Auth" asp-action="Logout" method="post">
@@ -187,6 +219,7 @@
                     <i class="fa-solid fa-right-from-bracket me-1"></i> Đăng xuất
                 </button>
             </form>
+
         </div>
     </div>
 
@@ -203,7 +236,49 @@
     <main class="content">
         @RenderBody()
     </main>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+    @RenderSection("Scripts", required: false)
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+<script>
+    function loadGiaHanCount() {
+        fetch('/LeTan/GetCountGiaHanMoi')
+            .then(res => res.json())
+            .then(count => {
+                let badge = document.getElementById("badgeGiaHan");
+
+                if (count > 0) {
+                    badge.innerText = count;
+                    badge.style.display = "inline-block";
+                    badge.style.animation = "pulse 1.2s infinite";
+                } else {
+                    badge.style.display = "none";
+                }
+            });
+    }
+
+
+    loadGiaHanCount();                   // chạy khi vào trang
+    setInterval(loadGiaHanCount, 8000);  // cập nhật mỗi 8 giây
+</script>
+
+<style>
+    @@keyframes pulse {
+        0%
+
+    {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.25);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+
+    }
+</style>

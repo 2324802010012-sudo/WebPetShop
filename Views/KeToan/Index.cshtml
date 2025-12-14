@@ -6,45 +6,139 @@
     var doanhThu = ViewBag.DoanhThuThang;
     var cod = ViewBag.DonCODChuaThu;
     var chiPhi = ViewBag.TongChiPhiNhap;
+
+    var tangTruongDoanhThu = ViewBag.TangTruongDT ?? "+12.5%";
+    var tangTruongChiPhi = ViewBag.TangTruongCP ?? "-3%";
 }
+<style>
+    body {
+        background: #f8f9fc;
+    }
+
+    /* ===== CARD KPI HIGH-END ===== */
+    .kpi-card {
+        padding: 25px;
+        border-radius: 18px;
+        background: white;
+        border: 0;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        transition: 0.3s ease;
+    }
+
+        .kpi-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        }
+
+    /* gradient viền phía trái */
+    .kpi-border {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 6px;
+        height: 100%;
+        border-radius: 6px 0 0 6px;
+    }
+
+    .kpi-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #6c757d;
+    }
+
+    .kpi-value {
+        font-size: 2.3rem;
+        font-weight: 700;
+        margin: 5px 0;
+    }
+
+    .kpi-growth {
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 5px;
+        padding: 3px 10px;
+        border-radius: 12px;
+    }
+
+    .kpi-up {
+        background: rgba(46, 125, 50, 0.15);
+        color: #1b5e20;
+    }
+
+    .kpi-down {
+        background: rgba(198, 40, 40, 0.15);
+        color: #b71c1c;
+    }
+
+    .section-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 30px;
+        color: #c62828;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+</style>
 
 <div class="container py-4">
 
-    <h2 class="fw-bold text-danger mb-4">
-        <i class="fa-solid fa-calculator me-2"></i>Dashboard kế toán
+    <h2 class="section-title">
+        <i class="fa-solid fa-calculator"></i> Dashboard kế toán
     </h2>
 
     <div class="row g-4">
 
         <!-- Tổng hóa đơn -->
         <div class="col-md-3">
-            <div class="card shadow-sm p-3 border-0" style="border-left:5px solid #c62828;">
-                <h6 class="text-muted">Tổng hóa đơn</h6>
-                <h2 class="fw-bold text-danger">@tongHoaDon</h2>
+            <div class="kpi-card">
+                <div class="kpi-border" style="background: linear-gradient(#d32f2f, #ff5252);"></div>
+
+                <div class="kpi-title">Tổng hóa đơn</div>
+                <div class="kpi-value text-danger">@tongHoaDon</div>
             </div>
         </div>
 
         <!-- Doanh thu tháng -->
         <div class="col-md-3">
-            <div class="card shadow-sm p-3 border-0" style="border-left:5px solid #2e7d32;">
-                <h6 class="text-muted">Doanh thu tháng</h6>
-                <h2 class="fw-bold text-success">@doanhThu.ToString("N0") ₫</h2>
+            <div class="kpi-card">
+                <div class="kpi-border" style="background: linear-gradient(#2e7d32, #66bb6a);"></div>
+
+                <div class="kpi-title">Doanh thu tháng</div>
+                <div class="kpi-value text-success">@doanhThu.ToString("N0") ₫</div>
+
+                <div class="kpi-growth kpi-up">
+                    <i class="fa-solid fa-arrow-up"></i> @tangTruongDoanhThu
+                </div>
             </div>
         </div>
 
         <!-- COD chưa thu -->
         <div class="col-md-3">
-            <div class="card shadow-sm p-3 border-0" style="border-left:5px solid #ff8f00;">
-                <h6 class="text-muted">COD chưa thu</h6>
-                <h2 class="fw-bold text-warning">@cod</h2>
+            <div class="kpi-card">
+                <div class="kpi-border" style="background: linear-gradient(#ff8f00, #ffca28);"></div>
+
+                <div class="kpi-title">COD chưa thu</div>
+                <div class="kpi-value text-warning">@cod</div>
             </div>
         </div>
 
-        <!-- Chi phí nhập -->
+        <!-- Chi phí nhập hàng -->
         <div class="col-md-3">
-            <div class="card shadow-sm p-3 border-0" style="border-left:5px solid #0277bd;">
-                <h6 class="text-muted">Chi phí nhập hàng</h6>
-                <h2 class="fw-bold text-primary">@chiPhi.ToString("N0") ₫</h2>
+            <div class="kpi-card">
+                <div class="kpi-border" style="background: linear-gradient(#0277bd, #29b6f6);"></div>
+
+                <div class="kpi-title">Chi phí nhập hàng</div>
+                <div class="kpi-value text-primary">@chiPhi.ToString("N0") ₫</div>
+
+                <div class="kpi-growth kpi-down">
+                    <i class="fa-solid fa-arrow-down"></i> @tangTruongChiPhi
+                </div>
             </div>
         </div>
 
@@ -58,5 +152,14 @@
             <i class="fa-solid fa-chart-line me-2"></i>Báo cáo tài chính
         </a>
     </div>
+    <div class="row mt-3">
+        <div class="col-md-3">
+            <a href="/KeToan/KhuyenMai" class="card shadow-sm text-center p-3 text-decoration-none">
+                <i class="fa-solid fa-tag fa-2x text-danger mb-2"></i>
+                <h6>Set giảm giá sản phẩm</h6>
+            </a>
+        </div>
+    </div>
+
 
 </div>

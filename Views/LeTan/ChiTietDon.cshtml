@@ -62,13 +62,16 @@
         </div>
 
         <div>
-            @if (Model.TrangThai == "Chờ duyệt")
+            @if (Model.TrangThai == "Chờ xác nhận")
+
             {
-                <form asp-action="XacNhanDon" asp-route-id="@Model.MaDh" method="post" class="d-inline">
+                <form asp-controller="LeTan" asp-action="XacNhanDon" asp-route-id="@Model.MaDh" method="post">
+                    @Html.AntiForgeryToken()
                     <button type="submit" class="btn btn-success">
                         <i class="fa-solid fa-check me-1"></i> Xác nhận đơn hàng
                     </button>
                 </form>
+
             }
 
             <a href="/LeTan/DonHang" class="btn btn-outline-danger">

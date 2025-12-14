@@ -73,11 +73,39 @@
 
                                 <!-- Hidden Address -->
                                 <input type="hidden" name="DiaChiGiao" id="diaChiHoanChinh" />
-
-                                <!-- Hidden phí ship -->
                                 <input type="hidden" name="MaPhi" id="maPhi" />
+                                <!-- Hình thức giao hàng -->
+                                <div class="mt-3">
+                                    <label class="form-label fw-semibold">Hình thức giao hàng</label>
+
+                                    <div class="border rounded-4 p-3 bg-light">
+
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="LoaiShip" value="tietkiem" checked>
+                                            <label class="form-check-label">
+                                                📦 Giao hàng tiết kiệm (rẻ nhất)
+                                            </label>
+                                        </div>
+
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="radio" name="LoaiShip" value="nhanh">
+                                            <label class="form-check-label">
+                                                🚀 Giao hàng nhanh (nhận sớm)
+                                            </label>
+                                        </div>
+
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- MUA NGAY -->
+                        @if (Model.SanPhamMuaNgay != null)
+                        {
+                            <input type="hidden" name="IsMuaNgay" value="true" />
+                            <input type="hidden" name="MaSp" value="@Model.SanPhamMuaNgay.MaSp" />
+                            <input type="hidden" name="SoLuong" value="@Model.SoLuong" />
+                        }
 
                         <!-- Mã giảm giá -->
                         <div class="mt-3">
@@ -89,7 +117,6 @@
                             <small id="discountInfo" class="text-success"></small>
                         </div>
 
-                        <!-- HIDDEN discount + total -->
                         <input type="hidden" name="GiamGia" id="GiamGiaHidden" value="0" />
                         <input type="hidden" name="TongTien" id="TongTienHidden" value="@Model.TienHang" />
 
@@ -119,7 +146,6 @@
                             </div>
                         </div>
 
-                        <!-- Button -->
                         <div class="text-end mt-4">
                             <a href="/GioHang" class="btn btn-outline-secondary me-2">
                                 <i class="fa-solid fa-arrow-left"></i> Quay lại giỏ hàng
@@ -145,20 +171,44 @@
 
                 <div class="card-body">
 
-                    @foreach (var item in Model.GioHang)
+                    @if (Model.SanPhamMuaNgay != null)
                     {
+                        // GIÁ SAU GIẢM = Model.TienHang / Số lượng
+                        var giaBan = Model.TienHang / Model.SoLuong;
+
                         <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-                            <img src="~/ImagesWWeb/@item.MaSpNavigation.HinhAnh" width="60" class="rounded me-3">
+                            <img src="~/ImagesWWeb/@Model.SanPhamMuaNgay.HinhAnh" width="60" class="rounded me-3">
 
                             <div class="flex-fill">
-                                <div>@item.MaSpNavigation.TenSp</div>
-                                <small class="text-muted">Số lượng: @item.SoLuong</small>
+                                <div class="fw-bold">@Model.SanPhamMuaNgay.TenSp</div>
+                                <small class="text-muted">Số lượng: @Model.SoLuong</small>
                             </div>
 
                             <div class="text-danger fw-semibold">
-                                @item.MaSpNavigation.Gia.ToString("N0") đ
+                                @Model.TienHang.ToString("N0") đ
                             </div>
                         </div>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.GioHang)
+                        {
+                            // giỏ hàng thì Model.TienHang đã là tổng sau giảm
+                            var giaBan = item.MaSpNavigation.Gia;
+
+                            <div class="d-flex align-items-center mb-3 border-bottom pb-2">
+                                <img src="~/ImagesWWeb/@item.MaSpNavigation.HinhAnh" width="60" class="rounded me-3">
+
+                                <div class="flex-fill">
+                                    <div>@item.MaSpNavigation.TenSp</div>
+                                    <small>Số lượng: @item.SoLuong</small>
+                                </div>
+
+                                <div class="text-danger fw-semibold">
+                                    @(giaBan.ToString("N0")) đ
+                                </div>
+                            </div>
+                        }
                     }
 
                     <div class="d-flex justify-content-between mt-3">
@@ -184,30 +234,40 @@
                     </div>
 
                 </div>
+
+                </div>
             </div>
         </div>
 
     </div>
-</div>
 
 
-<!-- STYLE -->
-<style>
-    input, textarea, select {
-        border-radius: 10px !important;
+<!-- ============================= -->
+<!-- JS xử lý tổng tiền + mã giảm -->
+<!-- ============================= -->
+<script>
+    let phiShipGoc = 0;
+
+    function loadPhiShip() {
+        let tinh = document.getElementById("tinh").value;
+        let huyen = document.getElementById("huyen").value;
+
+        if (!tinh || !huyen) return;
+
+        fetch(`/GioHang/GetPhiShip?tinh=${tinh}&huyen=${huyen}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data) {
+                    phiShipGoc = data.phiCoDinh ?? data.phi ?? 0;
+                    apDungLoaiShip();
+                }
+            });
     }
 
-    .card {
-        border-radius: 16px !important;
-    }
-
-    .btn-danger:hover {
-        background: #c22f2f !important;
-    }
-</style>
-
-
-<!-- TỈNH / HUYỆN / XÃ -->
+    // Gọi khi thay đổi tỉnh/huyện
+    document.getElementById("tinh").addEventListener("change", loadPhiShip);
+    document.getElementById("huyen").addEventListener("change", loadPhiShip);
+</script>
 <script>
     fetch("https://provinces.open-api.vn/api/?depth=3")
         .then(res => res.json())
@@ -216,35 +276,46 @@
             const huyen = document.getElementById("huyen");
             const xa = document.getElementById("xa");
 
+            // Load danh sách tỉnh
             data.forEach(t => {
                 tinh.innerHTML += `<option value="${t.name}" data-id="${t.code}">${t.name}</option>`;
             });
 
+            // Khi chọn tỉnh
             tinh.onchange = () => {
                 huyen.innerHTML = `<option value="">-- Chọn Quận/Huyện --</option>`;
                 xa.innerHTML = `<option value="">-- Chọn Phường/Xã --</option>`;
+
                 let selected = data.find(x => x.code == tinh.selectedOptions[0].dataset.id);
+
                 selected.districts.forEach(h => {
                     huyen.innerHTML += `<option value="${h.name}" data-id="${h.code}">${h.name}</option>`;
                 });
+
                 updateAddress();
                 autoPhiShip();
             };
 
+            // Khi chọn huyện
             huyen.onchange = () => {
                 xa.innerHTML = `<option value="">-- Chọn Phường/Xã --</option>`;
+
                 let t = data.find(x => x.code == tinh.selectedOptions[0].dataset.id);
                 let h = t.districts.find(d => d.code == huyen.selectedOptions[0].dataset.id);
+
                 h.wards.forEach(w => {
                     xa.innerHTML += `<option value="${w.name}">${w.name}</option>`;
                 });
+
                 updateAddress();
                 autoPhiShip();
             };
 
+            // Khi chọn xã hoặc nhập số nhà
             xa.onchange = updateAddress;
             document.getElementById("soNha").oninput = updateAddress;
 
+            // Hàm cập nhật địa chỉ hoàn chỉnh
             function updateAddress() {
                 let full = `${document.getElementById("soNha").value}, ${xa.value}, ${huyen.value}, ${tinh.value}`;
                 document.getElementById("diaChiHoanChinh").value = full;
@@ -252,8 +323,37 @@
         });
 </script>
 
+<script>
+    function apDungLoaiShip() {
+        let loai = document.querySelector("input[name='LoaiShip']:checked").value;
 
-<!-- AUTO PHÍ SHIP -->
+        if (loai === "tietkiem") {
+            phiShip = phiShipGoc;
+        } else {
+            phiShip = Math.round(phiShipGoc * 1.5); // ship nhanh +50%
+        }
+
+        updateTotal();
+    }
+
+    // Khi đổi loại ship → cập nhật
+    document.querySelectorAll("input[name='LoaiShip']").forEach(x =>
+        x.addEventListener("change", apDungLoaiShip)
+    );
+</script>
+<script>
+    function updateDiaChi() {
+        let dc = `${document.getElementById("soNha").value},
+                  ${document.getElementById("xa").value},
+                  ${document.getElementById("huyen").value},
+                  ${document.getElementById("tinh").value}`;
+        document.getElementById("diaChiHoanChinh").value = dc;
+    }
+
+    document.getElementById("soNha").addEventListener("input", updateDiaChi);
+    document.getElementById("xa").addEventListener("change", updateDiaChi);
+</script>
+
 <script>
     let tienHang = @Model.TienHang;
     let giamGia = 0;
@@ -261,7 +361,6 @@
 
     function updateTotal() {
         let tong = tienHang - giamGia + phiShip;
-
         document.getElementById("giamGia").innerText = giamGia.toLocaleString("vi-VN") + " đ";
         document.getElementById("phiShip").innerText = phiShip.toLocaleString("vi-VN") + " đ";
         document.getElementById("tongCong").innerText = tong.toLocaleString("vi-VN") + " đ";
@@ -270,28 +369,6 @@
         document.getElementById("TongTienHidden").value = tong;
     }
 
-    function autoPhiShip() {
-        const tinh = document.getElementById("tinh").value;
-        const huyen = document.getElementById("huyen").value;
-        if (!tinh || !huyen) return;
-
-        fetch(`/GioHang/GetPhiShip?tinh=${tinh}&huyen=${huyen}`)
-            .then(res => res.json())
-            .then(data => {
-                if (!data) return;
-                phiShip = data.phiCoDinh;
-
-                document.getElementById("phiShip").innerText = phiShip.toLocaleString("vi-VN") + " đ";
-                document.getElementById("maPhi").value = data.maPhi;
-
-                updateTotal();
-            });
-    }
-</script>
-
-
-<!-- MÃ GIẢM GIÁ -->
-<script>
     document.getElementById("applyCode").onclick = () => {
         let code = document.getElementById("maCode").value.trim();
         if (code === "PETSHOP10") {
@@ -305,8 +382,6 @@
     };
 </script>
 
-
-<!-- BANK INFO -->
 <script>
     const bankOption = document.getElementById("bank");
     const bankInfo = document.querySelector(".bank-info");

@@ -1,0 +1,205 @@
+﻿@{
+    ViewData["Title"] = "Quản lý yêu cầu nhận nuôi";
+    Layout = "~/Views/Shared/_LayoutLeTan.cshtml";
+    <!-- nếu bạn dùng layout lễ tân -->
+}
+
+@model List<WebPetShop.Models.YeuCauNhanNuoi>
+
+<h2 class="mb-4">
+    Danh sách yêu cầu nhận nuôi
+    <span class="badge bg-danger fs-6">@Model.Count</span>
+</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Chưa có yêu cầu nào!</div>
+}
+else
+{
+    <table class="table table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Ảnh</th>
+                <th>Tên thú cưng</th>
+                <th>Người gửi</th>
+                <th>SĐT / Email</th>
+                <th>Ngày gửi</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr id="row-@item.MaYeuCau">
+                    <td>
+                        <img src="@(item.BaiDangNavigation?.HinhAnh ?? "/images/no-image.jpg")"
+                             width="80" class="rounded" onerror="this.src='/images/no-image.jpg'" />
+                    </td>
+                    <td>
+                        <strong>@item.BaiDangNavigation?.MaThuCungNhanNuoiNavigation?.MaKyGuiNavigation?.TenThuCung</strong>
+                    </td>
+                    <td>@item.NguoiDungNavigation?.HoTen</td>
+                    <td>
+                        @item.NguoiDungNavigation?.SoDienThoai<br />
+                        <small class="text-muted">@item.NguoiDungNavigation?.Email</small>
+                    </td>
+                    <td>@item.NgayYeuCau.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="trangThai">
+                        @if (item.TrangThai == "Chờ xác nhận")
+                        {
+                            <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                        }
+                        else if (item.TrangThai == "Đã xác nhận")
+                        {
+                            <span class="badge bg-success">Đã nhận nuôi</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@item.TrangThai</span>
+                        }
+                    </td>
+                    <td class="hanhDong">
+                        @if (item.TrangThai == "Chờ xác nhận")
+                        {
+                            <button class="btn btn-success btn-sm"
+                                    onclick="xacNhan(@item.MaYeuCau)">
+                                Xác nhận
+                            </button>
+                            <button class="btn btn-danger btn-sm"
+                                    onclick="tuChoi(@item.MaYeuCau)">
+                                Từ chối
+                            </button>
+                        }
+                    </td>
+                </tr>
+
+            }
+        </tbody>
+    </table>
+
+}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+@section Scripts {
+    <script>
+        // Lấy token
+        function getToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        }
+
+        // Lưu trạng thái vào localStorage
+        function luuTrangThai(maYeuCau, trangThai) {
+            localStorage.setItem('ycnn_' + maYeuCau, trangThai);
+        }
+
+        function layTrangThai(maYeuCau) {
+            return localStorage.getItem('ycnn_' + maYeuCau);
+        }
+
+        // CẬP NHẬT TOÀN BỘ GIAO DIỆN (badge + nút hành động)
+        function capNhatGiaoDien(maYeuCau, trangThai) {
+            const row = document.getElementById('row-' + maYeuCau);
+            if (!row) return;
+
+            const badgeCell = row.querySelector('.trangThai');
+            const actionCell = row.querySelector('.hanhDong');
+
+            if (trangThai === "Đã xác nhận") {
+                badgeCell.innerHTML = '<span class="badge bg-success fs-6">Đã nhận nuôi</span>';
+                actionCell.innerHTML = ''; // XÓA HẾT NÚT
+            } else if (trangThai === "Đã từ chối" || trangThai === "Đã hủy") {
+                badgeCell.innerHTML = `<span class="badge bg-secondary fs-6">${trangThai}</span>`;
+                actionCell.innerHTML = ''; // XÓA HẾT NÚT
+            }
+        }
+
+        // Xác nhận
+        async function xacNhan(maYeuCau) {
+            const result = await Swal.fire({
+                title: 'Xác nhận nhận nuôi?', text: "Bé sẽ chính thức có chủ mới!", icon: 'question',
+                showCancelButton: true, confirmButtonColor: '#28a745', confirmButtonText: 'Đồng ý!', cancelButtonText: 'Hủy'
+            });
+            if (!result.isConfirmed) return;
+
+            const token = getToken();
+            if (!token) return;
+
+            try {
+                const res = await (await fetch('@Url.Action("XacNhanNhanNuoi", "NhanNuoi")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                    body: 'maYeuCau=' + maYeuCau + '&xacNhan=true'
+                })).json();
+
+                if (res.success) {
+                    Swal.fire('Thành công!', 'Đã xác nhận nhận nuôi!', 'success');
+                    capNhatGiaoDien(maYeuCau, "Đã xác nhận");
+                    luuTrangThai(maYeuCau, "Đã xác nhận");
+                }
+            } catch {
+                capNhatGiaoDien(maYeuCau, "Đã xác nhận");
+                luuTrangThai(maYeuCau, "Đã xác nhận");
+                Swal.fire('Đang xử lý...', 'Đã lưu tạm, sẽ đồng bộ khi có mạng!', 'warning');
+            }
+        }
+
+        // Từ chối
+        async function tuChoi(maYeuCau) {
+            const result = await Swal.fire({
+                title: 'Từ chối yêu cầu?', icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#dc3545', confirmButtonText: 'Từ chối', cancelButtonText: 'Hủy'
+            });
+            if (!result.isConfirmed) return;
+
+            const token = getToken();
+            if (!token) return;
+
+            try {
+                const res = await (await fetch('@Url.Action("XacNhanNhanNuoi", "NhanNuoi")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                    body: 'maYeuCau=' + maYeuCau + '&xacNhan=false'
+                })).json();
+
+                if (res.success) {
+                    Swal.fire('Đã từ chối!', '', 'info');
+                    capNhatGiaoDien(maYeuCau, "Đã từ chối");
+                    luuTrangThai(maYeuCau, "Đã từ chối");
+                }
+            } catch {
+                capNhatGiaoDien(maYeuCau, "Đã từ chối");
+                luuTrangThai(maYeuCau, "Đã từ chối");
+            }
+        }
+
+        // REALTIME + KHÔI PHỤC KHI LOAD TRANG
+        document.addEventListener('DOMContentLoaded', function () {
+            const rows = document.querySelectorAll('[id^="row-"]');
+            rows.forEach(row => {
+                const maYeuCau = row.id.replace('row-', '');
+                const saved = layTrangThai(maYeuCau);
+
+                // Nếu đã từng xác nhận/từ chối → khôi phục ngay, dù server chưa cập nhật
+                if (saved === "Đã xác nhận" || saved === "Đã từ chối" || saved === "Đã hủy") {
+                    capNhatGiaoDien(maYeuCau, saved);
+                }
+
+                // Vẫn kiểm tra realtime từ server
+                const poll = () => {
+                    fetch('@Url.Action("LayTrangThaiYeuCau", "NhanNuoi")?maYeuCau=' + maYeuCau + '&_=' + Date.now())
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success && data.trangThai && data.trangThai !== saved) {
+                                capNhatGiaoDien(maYeuCau, data.trangThai);
+                                luuTrangThai(maYeuCau, data.trangThai);
+                            }
+                        });
+                };
+                poll();
+                setInterval(poll, 4000);
+            });
+        });
+    </script>
+}

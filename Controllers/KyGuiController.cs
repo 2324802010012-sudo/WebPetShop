@@ -5,76 +5,176 @@ using WebPetShop.Models;
 
 namespace WebPetShop.Controllers
 {
-    public class KyGuiController : Controller
+    public class KyGuiThuCungController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public KyGuiController(ApplicationDbContext context)
+
+        public KyGuiThuCungController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        public IActionResult DanhSach()
+        // ===============================
+        //  Danh sách tất cả (Admin)
+        // ===============================
+        public async Task<IActionResult> Index()
         {
-            var data = _context.KyGuiThuCungs
-                .Include(x => x.MaKhNavigation)
-                .Where(x => x.TrangThai == "Đang ký gửi")
-                .OrderByDescending(x => x.MaKyGui)
-                .ToList();
-
+            var data = await _context.KyGuiThuCungs
+                .Include(k => k.MaKhNavigation)
+                .Include(k => k.ChiTietChamSocs)
+                .OrderByDescending(k => k.NgayGui)
+                .ToListAsync();
             return View(data);
         }
-        public IActionResult TheoDoi(int id)
+
+        // ===============================
+        //  Danh sách đang ký gửi
+        // ===============================
+        public async Task<IActionResult> DanhSach()
         {
-            var userId = HttpContext.Session.GetInt32("MaNguoiDung");
-            if (userId == null)
+            var data = await _context.KyGuiThuCungs
+                .Include(k => k.MaKhNavigation)
+                .Where(k => k.TrangThai == "Đang ký gửi")
+                .OrderByDescending(k => k.NgayGui)
+                .ToListAsync();
+            return View(data);
+        }
+
+        // ===============================
+        //  Chi tiết – Nhật ký ký gửi
+        // ===============================
+        public async Task<IActionResult> Details(int id)
+        {
+            var item = await _context.KyGuiThuCungs
+                .Include(k => k.MaKhNavigation)
+                .Include(k => k.ChiTietChamSocs)
+                .FirstOrDefaultAsync(k => k.MaKyGui == id);
+
+            if (item == null)
+                return NotFound();
+
+            // 🔥 Quan trọng: trả về view ChiTiet.cshtml
+            return View("/Views/KyGui/ChiTiet.cshtml", item);
+        }
+        public async Task<IActionResult> ChiTietKhach(int id)
+        {
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr))
                 return RedirectToAction("Login", "Auth");
 
-            var thu = _context.KyGuiThuCungs
-                    .Include(x => x.ChiTietChamSocs)
-                    .FirstOrDefault(x => x.MaKyGui == id && x.MaKh == userId);
+            int userId = int.Parse(userIdStr);
 
-            if (thu == null) return NotFound();
+            var item = await _context.KyGuiThuCungs
+                .Include(k => k.ChiTietChamSocs)
+                .Include(k => k.MaKhNavigation)
+                .FirstOrDefaultAsync(k => k.MaKyGui == id && k.MaKh == userId);
 
-            return View(thu);
+            if (item == null)
+                return NotFound();
+
+            return View("/Views/KyGui/ChiTietKhach.cshtml", item);
         }
-        [HttpGet]
-        public IActionResult NhatKy(int id)
+
+        // ===============================
+        //  LỊCH SỬ KÝ GỬI CỦA KHÁCH
+        // ===============================
+        public async Task<IActionResult> LichSuKyGui()
         {
-            var model = new ChiTietChamSoc { MaKyGui = id };
-            return View(model);
+            // Lấy UserId từ Session
+            var userIdStr = HttpContext.Session.GetString("UserId");
+
+            // Nếu chưa đăng nhập → quay về Login
+            if (string.IsNullOrEmpty(userIdStr))
+                return RedirectToAction("Login", "Auth");
+
+            int userId = int.Parse(userIdStr);
+
+            // Lấy danh sách ký gửi của khách
+            var data = await _context.KyGuiThuCungs
+                .Include(k => k.ChiTietChamSocs)
+                .Where(k => k.MaKh == userId)
+                .OrderByDescending(k => k.NgayGui)
+                .ToListAsync();
+
+            return View("/Views/KyGui/LichSuKyGui.cshtml", data);
         }
 
         [HttpPost]
-        public IActionResult NhatKy(ChiTietChamSoc log)
+        public async Task<IActionResult> GiaHan(int MaKyGui, DateTime NgayHetHanMoi)
         {
-            log.NgayCapNhat = DateTime.Now;
-            _context.ChiTietChamSocs.Add(log);
-            _context.SaveChanges();
+            var item = await _context.KyGuiThuCungs
+                .FirstOrDefaultAsync(x => x.MaKyGui == MaKyGui);
 
-            TempData["msg"] = "Đã cập nhật!";
-            return RedirectToAction("NhatKy", new { id = log.MaKyGui });
-        }
-        public IActionResult TraThu(int id)
-        {
-            var thu = _context.KyGuiThuCungs.Find(id);
-            if (thu == null) return NotFound();
+            if (item == null)
+                return NotFound();
 
-            thu.TrangThai = "Đã trả";
-            _context.SaveChanges();
+            if (item.NgayHetHan.HasValue &&
+                NgayHetHanMoi.Date <= item.NgayHetHan.Value.ToDateTime(TimeOnly.MinValue))
+            {
+                TempData["Error"] = "Ngày nhận lại mới phải sau ngày hiện tại!";
+                return RedirectToAction("ChiTietKhach", new { id = MaKyGui });
+            }
 
-            // Tạo hóa đơn
+            // Số ngày gia hạn
+            int soNgayThem = (NgayHetHanMoi.Date -
+                              item.NgayHetHan.Value.ToDateTime(TimeOnly.MinValue).Date).Days;
+
+            decimal donGia = 500000; // tuỳ bạn
+            decimal thanhTien = soNgayThem * donGia;
+
+            // Cập nhật
+            item.NgayHetHan = DateOnly.FromDateTime(NgayHetHanMoi);
+            item.PhiKyGui = (item.PhiKyGui ?? 0) + thanhTien;
+            item.TrangThaiDon = "GiaHanMoi";
+            // Lưu hóa đơn
             var hd = new HoaDon
             {
-                MaKyGui = id,
-                MaKeToan = 1, // tạm cứng
-                SoTien = 0,  // sẽ tính sau
-                NgayLap = DateTime.Now
+                MaKyGui = MaKyGui,
+                MaKeToan = 2,
+                NgayLap = DateTime.Now,
+                SoTien = thanhTien,
+                HinhThuc = "Tiền mặt",
+                GhiChu = $"Gia hạn thêm {soNgayThem} ngày"
             };
-            _context.HoaDons.Add(hd);
-            _context.SaveChanges();
 
-            TempData["msg"] = "✅ Đã trả thú và tạo hóa đơn";
-            return RedirectToAction("DanhSach");
+            _context.HoaDons.Add(hd);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Gia hạn thành công thêm {soNgayThem} ngày!";
+            return RedirectToAction("ChiTietKhach", new { id = MaKyGui });
+        }
+
+
+        // ===============================
+        //  Form thêm nhật ký
+        // ===============================
+        [HttpGet]
+        public IActionResult ThemNhatKy(int id)
+        {
+            ViewBag.MaKyGui = id;
+            return View();
+        }
+
+
+        // ===============================
+        //  Nhận dữ liệu nhật ký
+        // ===============================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ThemNhatKy(int MaKyGui, string GhiChu)
+        {
+            if (!string.IsNullOrWhiteSpace(GhiChu))
+            {
+                _context.ChiTietChamSocs.Add(new ChiTietChamSoc
+                {
+                    MaKyGui = MaKyGui,
+                    GhiChu = GhiChu.Trim(),
+                    NgayCapNhat = DateTime.Now
+                });
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Details", new { id = MaKyGui });
         }
 
     }

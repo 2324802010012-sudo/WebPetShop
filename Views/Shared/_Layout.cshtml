@@ -207,8 +207,26 @@
         .footer .btn-warning {
             border-radius: 0 0 8px 8px !important;
         }
-
+        
         }
+
+        .bo-cong-thuong-logo {
+            height: 100px; /* ≈ 1.5 cm trên màn hình */
+            width: auto; /* tự co tỉ lệ */
+
+            padding: 4px 6px;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(4px);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+            .bo-cong-thuong-logo:hover {
+                transform: scale(1.05);
+                box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+            }
     </style>
 </head>
 
@@ -256,18 +274,43 @@
                                 <a class="nav-link dropdown-toggle text-white" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     👤 @hoTen
                                 </a>
+
                                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+
+                                    <!-- Lịch sử đơn hàng -->
                                     <li>
                                         <a class="dropdown-item" href="/DonHang/LichSu">
-                                            <i class="fa-solid fa-clock-rotate-left me-2 text-danger"></i> Lịch sử đơn hàng
+                                            <i class="fa-solid fa-clock-rotate-left me-2 text-danger"></i>
+                                            Lịch sử đơn hàng
                                         </a>
                                     </li>
+
+                                    <!-- ⭐ Lịch sử ký gửi -->
+                                    <li>
+                                        <a class="dropdown-item" href="/KyGuiThuCung/LichSuKyGui">
+                                            <i class="fa-solid fa-paw me-2 text-danger"></i> Lịch sử ký gửi
+                                        </a>
+                                    </li>
+
+
+                                    <!-- ❤️ Lịch sử nhận nuôi -->
+                                    <li>
+                                        <a class="dropdown-item" href="/NhanNuoi/LichSuCuaToi">
+                                            <i class="fa-solid fa-heart me-2 text-danger"></i>
+                                            Lịch sử nhận nuôi
+                                        </a>
+                                    </li>
+
                                     <li><hr class="dropdown-divider" /></li>
+
+                                    <!-- Đăng xuất -->
                                     <li>
                                         <a class="dropdown-item text-danger fw-semibold" href="/Auth/Logout">
-                                            <i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất
+                                            <i class="fa-solid fa-right-from-bracket me-2"></i>
+                                            Đăng xuất
                                         </a>
                                     </li>
+
                                 </ul>
                             </li>
                         }
@@ -291,6 +334,22 @@
                                 }
                             </a>
                         </li>
+                        <!-- 🔔 Chuông thông báo -->
+                        <li class="nav-item dropdown me-3">
+                            <a class="nav-link position-relative" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-solid fa-bell"></i>
+                                <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle d-none">
+                                    <span class="visually-hidden">Có thông báo mới</span>
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3" aria-labelledby="notificationDropdown" style="width: 300px;">
+                                <li class="dropdown-header fw-bold">Thông báo</li>
+                                <li><hr class="dropdown-divider"></li>
+                                <div id="notificationList">
+                                <li class="dropdown-item text-center text-muted">Không có thông báo</li>
+                </div>
+                </ul>
+                </li>
 
                     </ul>
                 </div>
@@ -355,6 +414,10 @@
     border-top: 1px solid #FAD4D4;
     border-bottom: 1px solid #FAD4D4;
     }
+        /* Chấm đỏ thông báo */
+        #notificationBadge {
+            font-size: 0.6rem;
+        }
 
     .scrolling-text {
     display: inline-block;
@@ -408,13 +471,16 @@
                         </ul>
                     </div>
 
-                    <!-- 💌 Đăng ký nhận tin -->
+                
+                    <!-- 💬 Gửi tư vấn -->
                     <div class="col-md-4">
-                        <h5 class="fw-bold mb-3 text-uppercase">Đăng ký nhận tin</h5>
-                        <p>Nhận ưu đãi và cập nhật sản phẩm mới nhất mỗi tuần 💌</p>
+                        <h5 class="fw-bold mb-3 text-uppercase">Gửi tư vấn</h5>
+                        <p>Để lại số điện thoại, PetShop sẽ liên hệ tư vấn miễn phí 📞</p>
+
                         <form class="d-flex">
-                            <input type="email" class="form-control rounded-start" placeholder="Nhập email của bạn" required>
-                            <button class="btn btn-warning text-white fw-bold rounded-end">Gửi</button>
+                            <input type="text" class="form-control rounded-start"
+                                   placeholder="Nhập số điện thoại" required>
+                            <button class="btn btn-warning text-white fw-bold rounded-end">Liên hệ</button>
                         </form>
 
                         <div class="social-icons mt-4">
@@ -423,6 +489,13 @@
                             <a href="#"><i class="fa-brands fa-tiktok"></i></a>
                             <a href="#"><i class="fa-brands fa-youtube"></i></a>
                         </div>
+                        <!-- 🏛️ Logo Bộ Công Thương -->
+                        <div class="mt-3 d-flex justify-content-start">
+                            <img src="/ImagesWWeb/logobct.png"
+                                 alt="Đã thông báo Bộ Công Thương"
+                                 class="bo-cong-thuong-logo">
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -433,9 +506,10 @@
             <p class="mb-0">© 2025 <b>PetShop</b> – Giao hàng nhanh, chính hãng, yêu thương thú cưng 🐶🐱</p>
         </div>
     </footer>
-
-
+   
+   
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @RenderSection("Scripts", required: false)
+    
 </body>
 </html>

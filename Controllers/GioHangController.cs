@@ -20,10 +20,7 @@ namespace WebPetShop.Controllers
         {
             string? userId = HttpContext.Session.GetString("UserId");
             if (string.IsNullOrEmpty(userId))
-            {
-                TempData["Error"] = "⚠️ Vui lòng đăng nhập để tiếp tục!";
                 return RedirectToAction("Login", "Auth");
-            }
 
             int maNguoiDung = int.Parse(userId);
 
@@ -33,10 +30,32 @@ namespace WebPetShop.Controllers
                 .FirstOrDefault(g => g.MaNguoiDung == maNguoiDung);
 
             if (gioHang == null || !gioHang.ChiTietGioHangs.Any())
-                return View(new List<ChiTietGioHang>());
+                return View(new CheckoutVM());
 
-            return View(gioHang.ChiTietGioHangs);
+            decimal tongTien = 0;
+
+            foreach (var ct in gioHang.ChiTietGioHangs)
+            {
+                var sp = ct.MaSpNavigation;
+
+                ct.GiaGoc = sp.Gia;
+                ct.GiaSauGiam = GiaSauGiam(sp);
+
+                tongTien += (ct.SoLuong ?? 1) * ct.GiaSauGiam;
+            }
+
+            var vm = new CheckoutVM
+            {
+                GioHang = gioHang.ChiTietGioHangs.ToList(),
+                TienHang = tongTien,
+                TongTien = tongTien,
+                PhiVanChuyen = 0
+            };
+
+            return View(vm);
         }
+
+
 
         // 📝 CẬP NHẬT SỐ LƯỢNG
         [HttpPost]
@@ -117,22 +136,29 @@ namespace WebPetShop.Controllers
         }
 
         // ⚡ MUA NGAY
-        [HttpGet]
-        public IActionResult MuaNgay(int id, int soLuong = 1)
+        public IActionResult MuaNgay(int id, int soLuong = 1, decimal gia = 0)
         {
             string? userId = HttpContext.Session.GetString("UserId");
             if (string.IsNullOrEmpty(userId))
-            {
-                TempData["Error"] = "⚠️ Vui lòng đăng nhập để mua hàng!";
-                return RedirectToAction("Login", "Auth",
-                    new { returnUrl = Url.Action("MuaNgay", "GioHang", new { id, soLuong }) });
-            }
+                return RedirectToAction("Login", "Auth");
 
             var sp = _context.SanPhams.Find(id);
             if (sp == null) return NotFound();
 
-            ViewBag.SoLuong = soLuong;
-            return View("~/Views/ThanhToan/Index.cshtml", sp);
+            // Nếu có giá giảm từ URL thì dùng giá đó
+            var giaBan = gia > 0 ? gia : GiaSauGiam(sp);
+
+            var vm = new CheckoutVM
+            {
+                SanPhamMuaNgay = sp,
+                SoLuong = soLuong,
+                TienHang = giaBan * soLuong,
+                TongTien = giaBan * soLuong,
+                GioHang = new List<ChiTietGioHang>(),
+                PhiVanChuyen = 0
+            };
+
+            return View("~/Views/GioHang/Checkout.cshtml", vm);
         }
 
         // ❌ XÓA SẢN PHẨM
@@ -176,18 +202,32 @@ namespace WebPetShop.Controllers
                 return RedirectToAction("Index");
             }
 
+            decimal tong = 0;
+
+            // TÍNH GIÁ GIẢM ✓
+            foreach (var ct in gioHang.ChiTietGioHangs)
+            {
+                var sp = ct.MaSpNavigation;
+
+                ct.GiaGoc = sp.Gia;
+                ct.GiaSauGiam = GiaSauGiam(sp);
+
+                tong += (ct.SoLuong ?? 1) * ct.GiaSauGiam;
+            }
+
             var vm = new CheckoutVM
             {
                 GioHang = gioHang.ChiTietGioHangs.ToList(),
                 PhiGiaoHangList = _context.PhiGiaoHangs.ToList(),
-                TienHang = gioHang.ChiTietGioHangs.Sum(ct => (ct.SoLuong ?? 1) * ct.MaSpNavigation.Gia),
+                TienHang = tong,
                 GiamGia = 0,
                 PhiVanChuyen = 0,
-                TongTien = gioHang.ChiTietGioHangs.Sum(ct => (ct.SoLuong ?? 1) * ct.MaSpNavigation.Gia)
+                TongTien = tong
             };
 
             return View("~/Views/GioHang/Checkout.cshtml", vm);
         }
+
 
         // ✅ XÁC NHẬN ĐẶT HÀNG (THEO CHECKOUTVM)
         [HttpPost]
@@ -200,15 +240,15 @@ namespace WebPetShop.Controllers
 
             int maNguoiDung = int.Parse(userId);
 
-            var gioHang = _context.GioHangs
-                .Include(g => g.ChiTietGioHangs)
-                    .ThenInclude(ct => ct.MaSpNavigation)
-                .FirstOrDefault(g => g.MaNguoiDung == maNguoiDung);
+            // ⭐ KIỂM TRA MUA NGAY
+            bool isMuaNgay = Request.Form["IsMuaNgay"] == "true";
+            int maSp = 0;
+            int soLuong = 0;
 
-            if (gioHang == null || !gioHang.ChiTietGioHangs.Any())
+            if (isMuaNgay)
             {
-                TempData["Error"] = "⚠️ Giỏ hàng trống!";
-                return RedirectToAction("Index");
+                maSp = Convert.ToInt32(Request.Form["MaSp"]);
+                soLuong = Convert.ToInt32(Request.Form["SoLuong"]);
             }
 
             var donHang = new DonHang
@@ -219,36 +259,73 @@ namespace WebPetShop.Controllers
                 HoTenNhan = model.HoTenNhan,
                 SoDienThoai = model.SDTNhan,
                 DiaChiGiao = model.DiaChiGiao,
-                PhuongThucThanhToan = model.PhuongThuc,
+                PhuongThucThanhToan = model.PhuongThuc
             };
             _context.DonHangs.Add(donHang);
             _context.SaveChanges();
 
             decimal tongTien = 0;
 
-            foreach (var ct in gioHang.ChiTietGioHangs)
+            // -------------------------
+            // ⭐ 1. XỬ LÝ MUA NGAY
+            // -------------------------
+            if (isMuaNgay)
             {
+                var sp = _context.SanPhams.Find(maSp);
+                if (sp == null) return RedirectToAction("Index", "SanPham");
+
                 _context.ChiTietDonHangs.Add(new ChiTietDonHang
                 {
                     MaDh = donHang.MaDh,
-                    MaSp = ct.MaSp,
-                    SoLuong = ct.SoLuong ?? 1,
-                    DonGia = ct.MaSpNavigation.Gia
+                    MaSp = sp.MaSp,
+                    SoLuong = soLuong,
+                    DonGia = GiaSauGiam(sp)
+
                 });
 
-                ct.MaSpNavigation.SoLuongTon -= (ct.SoLuong ?? 1);
-                _context.Update(ct.MaSpNavigation);
+                sp.SoLuongTon -= soLuong;
+                _context.Update(sp);
 
-                tongTien += (ct.SoLuong ?? 1) * ct.MaSpNavigation.Gia;
+                tongTien = sp.Gia * soLuong;
+            }
+            else
+            {
+                // -------------------------
+                // ⭐ 2. XỬ LÝ CHECKOUT GIỎ HÀNG
+                // -------------------------
+                var gioHang = _context.GioHangs
+                    .Include(g => g.ChiTietGioHangs)
+                        .ThenInclude(ct => ct.MaSpNavigation)
+                    .FirstOrDefault(g => g.MaNguoiDung == maNguoiDung);
+
+                if (gioHang == null || !gioHang.ChiTietGioHangs.Any())
+                {
+                    TempData["Error"] = "⚠️ Giỏ hàng trống!";
+                    return RedirectToAction("Index");
+                }
+
+                foreach (var ct in gioHang.ChiTietGioHangs)
+                {
+                    _context.ChiTietDonHangs.Add(new ChiTietDonHang
+                    {
+                        MaDh = donHang.MaDh,
+                        MaSp = ct.MaSp,
+                        SoLuong = ct.SoLuong ?? 1,
+                        DonGia = GiaSauGiam(ct.MaSpNavigation)
+
+                    });
+
+                    ct.MaSpNavigation.SoLuongTon -= (ct.SoLuong ?? 1);
+                    _context.Update(ct.MaSpNavigation);
+
+                    tongTien += (ct.SoLuong ?? 1) * ct.MaSpNavigation.Gia;
+                }
+
+                _context.ChiTietGioHangs.RemoveRange(gioHang.ChiTietGioHangs);
+                HttpContext.Session.SetInt32("CartCount", 0);
             }
 
-            // ✅ Xóa giỏ hàng sau khi đặt
-            _context.ChiTietGioHangs.RemoveRange(gioHang.ChiTietGioHangs);
-            _context.SaveChanges();
-
-            // 🧹 Làm trống session giỏ hàng
-            HttpContext.Session.SetInt32("CartCount", 0);
-
+            // Lịch sử
             _context.LichSuTrangThaiDonHangs.Add(new LichSuTrangThaiDonHang
             {
                 MaDh = donHang.MaDh,
@@ -257,21 +334,8 @@ namespace WebPetShop.Controllers
                 NguoiThucHien = maNguoiDung,
                 NgayCapNhat = DateTime.Now
             });
-            _context.SaveChanges();
 
-            if (model.PhuongThuc == "Online")
-            {
-                var thanhToan = new ThanhToanTrucTuyen
-                {
-                    MaDh = donHang.MaDh,
-                    MaGiaoDich = "GD" + DateTime.Now.Ticks,
-                    PhuongThuc = "Online",
-                    SoTien = tongTien,
-                    TrangThai = "Đang xử lý"
-                };
-                _context.ThanhToanTrucTuyens.Add(thanhToan);
-                _context.SaveChanges();
-            }
+            _context.SaveChanges();
 
             TempData["Success"] = "🎉 Đặt hàng thành công!";
             return RedirectToAction("ThanhToanThanhCong", new { maDh = donHang.MaDh });
@@ -316,6 +380,33 @@ namespace WebPetShop.Controllers
             var qc = _context.PhiGiaoHangs.FirstOrDefault(x => x.KhuVuc == "Toàn quốc");
             return Json(qc);
         }
+
+        // ⭐ Hàm tính giá sau giảm — phiên bản đúng nhất
+        private decimal GiaSauGiam(SanPham sp)
+        {
+            DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+
+            decimal giaGoc = sp.Gia;
+
+            var km = _context.KhuyenMais
+                .Where(x =>
+                    x.TrangThai == true &&
+                    x.MaSP == sp.MaSp &&
+                    x.NgayBatDau <= today &&
+                    x.NgayKetThuc >= today
+                )
+                .FirstOrDefault();
+
+            if (km == null)
+                return giaGoc;
+
+            decimal phanTram = km.PhanTramGiam ?? 0;
+
+            decimal mucGiam = giaGoc * (phanTram / 100m);
+
+            return giaGoc - mucGiam;
+        }
+
 
     }
 }

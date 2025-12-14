@@ -1,66 +1,164 @@
 ﻿@model WebPetShop.Models.KyGuiThuCung
 @{
     var lichSu = ViewBag.LichSu as List<WebPetShop.Models.ChiTietChamSoc>;
+    Layout = "_ChamSocLayout";
 }
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    .section-title {
+        font-weight: bold;
+        color: #d32f2f;
+        border-left: 5px solid #ff5252;
+        padding-left: 12px;
+        margin-bottom: 18px;
+        font-size: 1.4rem;
+    }
+
+    .timeline {
+        border-left: 3px solid #d32f2f;
+        margin-left: 20px;
+        padding-left: 20px;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 25px;
+        padding-left: 20px;
+    }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: #d32f2f;
+            border-radius: 50%;
+            left: -28px;
+            top: 4px;
+            border: 3px solid #fff;
+            box-shadow: 0 0 5px rgba(0,0,0,.2);
+        }
+</style>
+
 <div class="container py-4">
-    <h2 class="fw-bold text-danger mb-3">
-        <i class="fa-solid fa-dog me-2"></i> Chi tiết ký gửi: @Model.TenThuCung
+
+    <!-- TIÊU ĐỀ -->
+    <h2 class="fw-bold text-danger mb-4">
+        🐾 Chi tiết ký gửi – <span class="text-dark">@Model.TenThuCung</span>
     </h2>
 
-    <div class="card shadow-sm p-4 mb-4">
-        <h5 class="fw-bold mb-3">Thông tin thú cưng</h5>
+    <div class="row">
 
-        <p><b>Khách gửi:</b> @Model.MaKhNavigation?.HoTen</p>
-        <p><b>Giống:</b> @Model.GiongLoai</p>
-        <p><b>Tuổi:</b> @Model.Tuoi</p>
-        <p><b>Ngày gửi:</b> @Model.NgayGui?.ToString("dd/MM/yyyy")</p>
-    </div>
+        <!-- ===================== THÔNG TIN KHÁCH + THÚ ===================== -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm p-4 mb-4">
+                <div class="section-title">👤 Thông tin khách hàng</div>
 
-    <div class="card shadow-sm p-4 mb-4">
-        <h5 class="fw-bold mb-3">Cập nhật chăm sóc</h5>
-
-        <form asp-action="ThemChamSoc" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="maKyGui" value="@Model.MaKyGui" />
-
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Tình trạng</label>
-                <input type="text" class="form-control" name="tinhTrang" required />
+                <p><b>Họ tên:</b> @Model.MaKhNavigation?.HoTen</p>
+                <p><b>SĐT:</b> @Model.MaKhNavigation?.SoDienThoai</p>
+                <p><b>Địa chỉ:</b> @Model.MaKhNavigation?.DiaChi</p>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Ghi chú</label>
-                <textarea class="form-control" name="ghiChu" rows="3"></textarea>
+            <div class="card shadow-sm p-4 mb-4">
+                <div class="section-title">🐶 Thông tin thú cưng</div>
+
+                <p><b>Tên thú cưng:</b> @Model.TenThuCung</p>
+                <p><b>Giống:</b> @Model.GiongLoai</p>
+                <p><b>Loại:</b> @Model.LoaiThuCung</p>
+                <p><b>Tuổi:</b> @Model.Tuoi</p>
+
+                <hr />
+                <p><b>Ngày gửi:</b> @Model.NgayGui?.ToString("dd/MM/yyyy")</p>
+                <p><b>Ngày nhận dự kiến:</b> @Model.NgayHetHan?.ToString("dd/MM/yyyy")</p>
+                <p><b>Ghi chú khách:</b> @Model.GhiChu</p>
+
+                <p class="mt-2">
+                    <b class="text-success">Tổng tiền:</b>
+                    <span class="fw-bold text-success">@Model.TongTien.ToString("N0") ₫</span>
+                </p>
+
+                <p>
+                    <b>Trạng thái:</b>
+                    <span class="badge bg-info text-dark px-3 py-2">@Model.TrangThaiDon</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- ===================== FORM CẬP NHẬT CHĂM SÓC ===================== -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm p-4 mb-4">
+                <div class="section-title">📝 Cập nhật chăm sóc</div>
+
+                <form asp-action="ThemChamSoc" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="maKyGui" value="@Model.MaKyGui" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tình trạng</label>
+                        <input type="text" class="form-control" name="tinhTrang" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ghi chú</label>
+                        <textarea class="form-control" name="ghiChu" rows="3"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Hình ảnh</label>
+                        <input type="file" class="form-control" name="hinhAnh" />
+                    </div>
+
+                    <button class="btn btn-danger fw-bold px-4">
+                        <i class="fa-solid fa-plus"></i> Cập nhật chăm sóc
+                    </button>
+                </form>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Hình ảnh</label>
-                <input type="file" class="form-control" name="hinhAnh" />
-            </div>
+            <!-- ===================== LỊCH SỬ CHĂM SÓC ===================== -->
+            <div class="card shadow-sm p-4">
+                <div class="section-title">📚 Nhật ký chăm sóc</div>
 
-            <button class="btn btn-danger px-4 fw-bold" type="submit">
-                <i class="fa-solid fa-plus"></i> Cập nhật
-            </button>
-        </form>
-    </div>
-
-    <h4 class="fw-bold text-danger mt-4">📌 Lịch sử chăm sóc</h4>
-    <div class="row mt-3">
-        @foreach (var c in lichSu)
-        {
-            <div class="col-md-4">
-                <div class="card shadow-sm mb-3">
-                    <div class="card-body">
-                        <p><b>Ngày:</b> @(c.NgayCapNhat?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa cập nhật")</p>
-                        <p><b>Tình trạng:</b> @c.TinhTrang</p>
-                        <p><b>Ghi chú:</b> @c.GhiChu</p>
-
-                        @if (!string.IsNullOrEmpty(c.HinhAnh))
+                @if (lichSu == null || !lichSu.Any())
+                {
+                    <p class="text-muted text-center py-3">
+                        <i class="fa-solid fa-cat fa-2x mb-2"></i><br />
+                        Chưa có bản ghi chăm sóc nào.
+                    </p>
+                }
+                else
+                {
+                    <div class="timeline">
+                        @foreach (var c in lichSu)
                         {
-                            <img src="~/ImagesChamSoc/@c.HinhAnh" class="img-fluid rounded" />
+                            <div class="timeline-item">
+                                <p>
+                                    <b>⏱ Ngày:</b> @c.NgayCapNhat?.ToString("dd/MM/yyyy HH:mm")
+                                </p>
+                                <p><b>Tình trạng:</b> @c.TinhTrang</p>
+                                <p><b>Ghi chú:</b> @c.GhiChu</p>
+
+                                @if (!string.IsNullOrEmpty(c.HinhAnh))
+                                {
+                                    <img src="~/ImagesChamSoc/@c.HinhAnh"
+                                         class="img-fluid rounded shadow-sm mb-2"
+                                         style="max-height:180px;" />
+                                }
+
+                                <hr />
+                            </div>
                         }
                     </div>
-                </div>
+                }
             </div>
-        }
+        </div>
+
     </div>
+
+    <div class="text-center mt-4">
+        <a href="/ChamSoc" class="btn btn-secondary px-4">
+            ← Quay lại danh sách
+        </a>
+    </div>
+
+</div>

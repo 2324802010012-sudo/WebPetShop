@@ -24,12 +24,14 @@ namespace WebPetShop.Controllers
 
             var list = _context.KyGuiThuCungs
                 .Include(k => k.MaKhNavigation)
-                .Where(k => k.TrangThai.Contains("ký gửi"))
+                .Where(k => k.TrangThaiDon == "DangChamSoc")   // CHỈ LẤY ĐANG KÝ GỬI
                 .OrderByDescending(k => k.NgayGui)
                 .ToList();
 
             return View(list);
         }
+
+
 
         // =============== CHI TIẾT MỘT THÚ KÝ GỬI ===============
         public IActionResult ChiTiet(int id)
@@ -86,5 +88,20 @@ namespace WebPetShop.Controllers
             TempData["Success"] = "Đã cập nhật chăm sóc cho thú cưng!";
             return RedirectToAction("ChiTiet", new { id = maKyGui });
         }
+        public IActionResult LoadChat(int maKyGui)
+        {
+            var chat = _context.ChiTietChamSocs
+                .Where(x => x.MaKyGui == maKyGui && x.TinhTrang.StartsWith("chat"))
+                .OrderBy(x => x.NgayCapNhat)
+                .Select(x => new {
+                    x.GhiChu,
+                    x.TinhTrang,
+                    x.NgayCapNhat
+                })
+                .ToList();
+
+            return Json(chat);
+        }
+
     }
 }

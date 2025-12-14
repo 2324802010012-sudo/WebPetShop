@@ -1,14 +1,46 @@
-﻿@model WebPetShop.Models.ChiTietChamSoc
-
-<h2 class="section-title">📝 Nhật ký chăm sóc</h2>
-
-<form method="post">
-    <input type="hidden" name="MaKyGui" value="@Model.MaKyGui" />
-    <textarea name="TinhTrang" placeholder="Tình trạng thú cưng" required></textarea>
-    <button class="btn-small" type="submit">Lưu nhật ký</button>
-</form>
-
-@if (TempData["msg"] != null)
-{
-    <p style="color:green;font-weight:bold;">@TempData["msg"]</p>
+﻿@model WebPetShop.Models.KyGuiThuCung
+@{
+    ViewData["Title"] = "Thêm nhật ký chăm sóc";
+    int maKyGui = ViewBag.MaKyGui ?? 0;
 }
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h3 class="fw-bold text-success display-6">
+            THÊM NHẬT KÝ CHĂM SÓC
+        </h3>
+    </div>
+
+    <div class="card shadow mx-auto" style="max-width: 700px;">
+        <div class="card-body p-5">
+            <form method="post" asp-action="ThemNhatKy">
+                <!-- DÙNG INPUT THƯỜNG, KHÔNG DÙNG Html.Hidden -->
+                <input type="hidden" name="MaKyGui" value="@maKyGui" />
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-primary">
+                        Nội dung chăm sóc hôm nay
+                    </label>
+                    <textarea name="GhiChu"
+                              class="form-control"
+                              rows="6"
+                              placeholder="Ví dụ: Boss ăn 2 bữa, tắm thơm tho, chơi rất vui, ngủ ngon lành..."
+                              required></textarea>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-success btn-lg px-5 rounded-pill shadow">
+                        Lưu nhật ký
+                    </button>
+                    <a asp-action="Details"
+                       asp-route-id="@maKyGui"
+                       class="btn btn-secondary btn-lg px-5 rounded-pill ms-3 shadow">
+                        Hủy bỏ
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

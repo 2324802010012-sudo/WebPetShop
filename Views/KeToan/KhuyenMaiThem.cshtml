@@ -1,0 +1,172 @@
+﻿@model WebPetShop.Models.KhuyenMai
+@{
+    var spList = ViewBag.SanPham as List<WebPetShop.Models.SanPham>;
+    Layout = "~/Views/Shared/_LayoutKeToan.cshtml";
+}
+
+<style>
+    /* ==== CARD FORM ==== */
+    .km-card {
+        max-width: 650px;
+        margin: 30px auto;
+        padding: 35px;
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        border-top: 6px solid #ff4d4f;
+        animation: fadeIn 0.5s ease;
+    }
+
+    /* fade in */
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .km-title {
+        font-size: 26px;
+        font-weight: 800;
+        color: #d63031;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .km-title i {
+            font-size: 26px;
+            color: #ff7675;
+        }
+
+    /* input + select đẹp */
+    .form-control, .form-select {
+        border-radius: 10px;
+        padding: 10px 14px;
+        border: 1px solid #ddd;
+        transition: 0.2s;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #ff4d4f;
+            box-shadow: 0 0 0 3px rgba(255,77,79,0.15);
+        }
+
+    label.form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 6px;
+    }
+
+    /* button đẹp */
+    .btn-save {
+        width: 100%;
+        padding: 12px;
+        font-size: 17px;
+        border-radius: 12px;
+        background: linear-gradient(90deg, #ff4d4f, #ff6b6b);
+        border: none;
+        color: white;
+        font-weight: 700;
+        transition: 0.25s;
+    }
+
+        .btn-save:hover {
+            background: linear-gradient(90deg, #ff3b3d, #ff5252);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255,0,0,0.25);
+        }
+
+    .text-danger {
+        font-size: 14px;
+    }
+</style>
+
+<div class="km-card">
+
+    <h3 class="km-title">
+        <i class="fa-solid fa-tags"></i>
+        Thêm Khuyến Mãi
+    </h3>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <form asp-action="KhuyenMaiThem" method="post">
+        @Html.AntiForgeryToken()
+
+        <!-- Sản phẩm -->
+        <div class="mb-3">
+            <label asp-for="MaSP" class="form-label">Sản phẩm</label>
+            <select asp-for="MaSP" asp-items="@(new SelectList(spList, "MaSp", "TenSp"))" class="form-select">
+                <option value="">-- Chọn sản phẩm --</option>
+            </select>
+            <span asp-validation-for="MaSP" class="text-danger"></span>
+        </div>
+
+        <!-- Mã Code -->
+        <div class="mb-3">
+            <label asp-for="MaCode" class="form-label">Mã Code</label>
+            <input asp-for="MaCode" class="form-control" />
+            <span asp-validation-for="MaCode" class="text-danger"></span>
+        </div>
+
+        <!-- % Giảm -->
+        <div class="mb-3">
+            <label asp-for="PhanTramGiam" class="form-label">% Giảm</label>
+            <input asp-for="PhanTramGiam" type="number" min="0" max="100" class="form-control" />
+            <span asp-validation-for="PhanTramGiam" class="text-danger"></span>
+        </div>
+
+        <!-- Giá trị tối đa -->
+        <div class="mb-3">
+            <label asp-for="GiaTriToiDa" class="form-label">Giá trị tối đa</label>
+            <input asp-for="GiaTriToiDa" type="number" min="0" class="form-control" />
+            <span asp-validation-for="GiaTriToiDa" class="text-danger"></span>
+        </div>
+
+        <!-- Ngày bắt đầu -->
+        <div class="mb-3">
+            <label asp-for="NgayBatDau" class="form-label">Ngày bắt đầu</label>
+            <input asp-for="NgayBatDau" type="date" class="form-control" />
+            <span asp-validation-for="NgayBatDau" class="text-danger"></span>
+        </div>
+
+        <!-- Ngày kết thúc -->
+        <div class="mb-3">
+            <label asp-for="NgayKetThuc" class="form-label">Ngày kết thúc</label>
+            <input asp-for="NgayKetThuc" type="date" class="form-control" />
+            <span asp-validation-for="NgayKetThuc" class="text-danger"></span>
+        </div>
+
+        <!-- Trạng thái -->
+        <div class="mb-3">
+            <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+            <select asp-for="TrangThai" class="form-select">
+                <option value="True">Active</option>
+                <option value="False">Inactive</option>
+            </select>
+            <span asp-validation-for="TrangThai" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn-save">
+            <i class="fa-solid fa-floppy-disk me-2"></i> Lưu khuyến mãi
+        </button>
+    </form>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

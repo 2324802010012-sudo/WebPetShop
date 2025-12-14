@@ -30,16 +30,17 @@
     <div class="card shadow-sm border-0 rounded-4 mb-4">
         <div class="card-body">
 
-            <form method="post" action="/GiaoHang/CapNhatTrangThai">
+            <form method="post" action="/GiaoHang/CapNhatTrangThai/@Model.MaDh">
                 <input type="hidden" name="id" value="@Model.MaDh" />
 
                 <label class="fw-bold mb-2">Trạng thái mới:</label>
-                <select name="trangThai" id="trangThai" class="form-select fw-semibold shadow-sm mb-4" style="border-radius: 12px;">
-                    <option value="Chờ giao" selected="@(Model.TrangThai == "Chờ giao")">Chờ giao</option>
-                    <option value="Đang giao" selected="@(Model.TrangThai == "Đang giao")">Đang giao</option>
-                    <option value="Hoàn tất" selected="@(Model.TrangThai == "Hoàn tất")">Hoàn tất</option>
-                    <option value="Đã hủy" selected="@(Model.TrangThai == "Đã hủy")">Đã hủy</option>
+                <select name="trangThai" id="trangThai" class="form-select fw-semibold shadow-sm mb-4">
+                    <option value="Chờ giao">Chờ giao</option>
+                    <option value="Đang giao">Đang giao</option>
+                    <option value="Hoàn tất">Hoàn tất</option>
+                    <option value="Đã hủy">Đã hủy</option>
                 </select>
+
 
 
                 <!-- 💵 THU TIỀN COD -->
@@ -72,14 +73,13 @@
 </div>
 
 
-<!-- JS logic -->
 <script>
     const trangThai = document.getElementById("trangThai");
     const codBox = document.getElementById("codBox");
 
     function checkCOD() {
         if (trangThai.value === "Hoàn tất") {
-            codBox.style.display = "block";   // Hiện lựa chọn thu tiền
+            codBox.style.display = "block";
         } else {
             codBox.style.display = "none";
         }
@@ -87,6 +87,9 @@
 
     trangThai.addEventListener("change", checkCOD);
 
-    // chạy ngay khi mở trang
+    // 🔥 Set trạng thái đã lưu từ DB
+    trangThai.value = "@Model.TrangThai";
+
+    // 🔥 Kiểm tra ngay khi mở trang
     checkCOD();
 </script>

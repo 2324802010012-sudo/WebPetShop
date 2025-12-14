@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebPetShop.Models;
 
@@ -25,7 +26,7 @@ public partial class SanPham
 
     public virtual ICollection<ChiTietPhieuNhap> ChiTietPhieuNhaps { get; set; } = new List<ChiTietPhieuNhap>();
 
-    public virtual ICollection<DanhGium> DanhGia { get; set; } = new List<DanhGium>();
+    public virtual ICollection<DanhGia> DanhGia { get; set; } = new List<DanhGia>();
 
     public virtual ICollection<KhoHang> KhoHangs { get; set; } = new List<KhoHang>();
 
@@ -33,4 +34,9 @@ public partial class SanPham
 
     public virtual ICollection<YeuThich> YeuThiches { get; set; } = new List<YeuThich>();
     public virtual ICollection<ChiTietPhieuXuat> ChiTietPhieuXuats { get; set; } = new List<ChiTietPhieuXuat>();
+    public virtual ICollection<KhuyenMai> KhuyenMais { get; set; }
+    public decimal GiaGoc { get; set; }
+    [NotMapped]
+    public decimal GiaSauGiam { get; set; }
+
 }

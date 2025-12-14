@@ -1,16 +1,23 @@
 ﻿@model WebPetShop.Models.DonHang
 @{
     ViewData["Title"] = "Chi tiết đơn hàng";
+    int? userId = Context.Session.GetInt32("MaNguoiDung");
 }
 
 <div class="container py-5">
+
     <h3 class="fw-bold text-danger mb-4">
         <i class="fa-solid fa-receipt me-2"></i> Chi tiết đơn hàng #@Model.MaDh
     </h3>
+
     <partial name="~/Views/Shared/Timeline_TrangThai.cshtml" model="Model" />
 
     <p><b>Ngày đặt:</b> @Model.NgayDat?.ToString("dd/MM/yyyy HH:mm")</p>
-    <p><b>Trạng thái:</b> <span class="badge bg-warning text-dark">@Model.TrangThai</span></p>
+    <p>
+        <b>Trạng thái:</b>
+        <span class="badge bg-warning text-dark">@Model.TrangThai</span>
+    </p>
+
     <hr />
 
     <table class="table table-bordered text-center align-middle shadow-sm">
@@ -23,11 +30,26 @@
                 <th>Thành tiền</th>
             </tr>
         </thead>
+
         <tbody>
+
             @foreach (var ct in Model.ChiTietDonHangs)
             {
+                <!-- =========================== -->
+                <!-- TÍNH XEM USER ĐÃ ĐÁNH GIÁ? -->
+                <!-- =========================== -->
+                var daDanhGia = ct.MaSpNavigation.DanhGia?
+                .Any(d => d.MaNguoiDung == userId) ?? false;
+
+                <!-- ============================= -->
+                <!--        THÔNG TIN SẢN PHẨM     -->
+                <!-- ============================= -->
                 <tr>
-                    <td><img src="~/ImagesWWeb/@ct.MaSpNavigation.HinhAnh" width="70" height="70" style="object-fit:cover"></td>
+                    <td>
+                        <img src="~/ImagesWWeb/@ct.MaSpNavigation.HinhAnh"
+                             width="70" height="70" style="object-fit:cover" />
+                    </td>
+
                     <td>@ct.MaSpNavigation.TenSp</td>
                     <td>@ct.DonGia.ToString("N0") ₫</td>
                     <td>@ct.SoLuong</td>
@@ -35,12 +57,129 @@
                         @((ct.SoLuong * ct.DonGia).ToString("N0")) ₫
                     </td>
                 </tr>
+
+                <!-- ============================= -->
+                <!--        KHỐI ĐÁNH GIÁ          -->
+                <!-- ============================= -->
+                @if (Model.TrangThai == "Hoàn tất")
+                {
+                    <tr>
+                        <td colspan="5">
+                            <div class="rating-box p-3 rounded-3 shadow-sm bg-white">
+
+                                <h5 class="fw-bold text-primary mb-3">
+                                    <i class="fa-solid fa-star"></i> Đánh giá sản phẩm
+                                </h5>
+
+                                <!-- ⭐ NẾU ĐÃ ĐÁNH GIÁ -->
+                                @if (daDanhGia)
+                                {
+                                    <div class="alert alert-success fw-semibold mb-3">
+                                        ⭐ Bạn đã đánh giá sản phẩm này!
+                                    </div>
+                                }
+                                else
+                                {
+                                    <!-- ⭐ FORM ĐÁNH GIÁ -->
+                                    <form method="post"
+                                          action="/DonHang/LuuDanhGia"
+                                          enctype="multipart/form-data"
+                                          class="mt-3">
+
+                                        <input type="hidden" name="MaDh" value="@Model.MaDh" />
+                                        <input type="hidden" name="MaSp" value="@ct.MaSp" />
+
+                                        <!-- chọn sao -->
+                                        <div class="rating-stars mb-3">
+                                            <input type="radio" id="s5_@ct.MaSp" name="Diem" value="5" checked />
+                                            <label for="s5_@ct.MaSp">⭐</label>
+
+                                            <input type="radio" id="s4_@ct.MaSp" name="Diem" value="4" />
+                                            <label for="s4_@ct.MaSp">⭐</label>
+
+                                            <input type="radio" id="s3_@ct.MaSp" name="Diem" value="3" />
+                                            <label for="s3_@ct.MaSp">⭐</label>
+
+                                            <input type="radio" id="s2_@ct.MaSp" name="Diem" value="2" />
+                                            <label for="s2_@ct.MaSp">⭐</label>
+
+                                            <input type="radio" id="s1_@ct.MaSp" name="Diem" value="1" />
+                                            <label for="s1_@ct.MaSp">⭐</label>
+                                        </div>
+
+                                        <!-- nội dung -->
+                                        <textarea name="NoiDung" class="form-control mb-3"
+                                      placeholder="Hãy chia sẻ cảm nhận của bạn..."></textarea>
+
+                                        <!-- ảnh -->
+                                        <div class="mb-3">
+                                            <label class="fw-semibold">Thêm ảnh mô tả:</label>
+                                            <input type="file" name="AnhDanhGia" class="form-control" accept="image/*">
+                                        </div>
+
+                                        <button type="submit" class="btn btn-danger w-100 fw-bold">
+                                            Gửi đánh giá
+                                        </button>
+                                    </form>
+                                }
+
+                                <hr />
+
+                                <!-- ⭐ DANH SÁCH ĐÁNH GIÁ -->
+                                <h6 class="fw-bold mb-2">📢 Đánh giá từ người mua</h6>
+
+                                @{
+                                    var danhGiaSp = ct.MaSpNavigation.DanhGia?
+                                    .OrderByDescending(d => d.NgayDanhGia);
+                                }
+
+                                @if (danhGiaSp != null && danhGiaSp.Any())
+                                {
+                                    foreach (var dg in danhGiaSp)
+                                    {
+                                        <div class="border-bottom pb-2 mb-2">
+
+                                            <span class="text-warning">
+                                                @for (int i = 0; i < dg.Diem; i++)
+                                                {
+                                                    <i class="fa-solid fa-star"></i>
+                                                }
+                                            </span>
+
+                                            <p class="mb-1">@dg.NoiDung</p>
+
+                                            <small class="text-muted">
+                                                @dg.NgayDanhGia?.ToString("dd/MM/yyyy HH:mm")
+                                            </small>
+
+                                            @if (!string.IsNullOrEmpty(dg.HinhAnh))
+                                            {
+                                                <div class="mt-2">
+                                                    <img src="/ImagesDanhGia/@dg.HinhAnh"
+                                                         style="width:120px;height:120px;object-fit:cover;border-radius:8px" />
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-muted fst-italic">Chưa có đánh giá nào.</p>
+                                }
+
+                            </div>
+                        </td>
+                    </tr>
+                }
             }
         </tbody>
     </table>
 
     <div class="text-end fs-5 fw-bold mt-3">
-        Tổng cộng: <span class="text-danger">@Model.ChiTietDonHangs.Sum(c => c.SoLuong * c.DonGia).ToString("N0") ₫</span>
+        Tổng cộng:
+        <span class="text-danger">
+            @Model.ChiTietDonHangs.Sum(c => c.SoLuong * c.DonGia).ToString("N0") ₫
+        </span>
     </div>
 
     <div class="text-end mt-4">
@@ -49,3 +188,24 @@
         </a>
     </div>
 </div>
+
+<style>
+    .rating-box {
+        border: 1px solid #eee;
+    }
+
+    .rating-stars input {
+        display: none;
+    }
+
+    .rating-stars label {
+        font-size: 28px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+        .rating-stars label:hover,
+        .rating-stars input:checked ~ label {
+            color: gold;
+        }
+</style>

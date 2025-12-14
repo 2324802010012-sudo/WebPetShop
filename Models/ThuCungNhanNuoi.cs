@@ -12,6 +12,12 @@ public partial class ThuCungNhanNuoi
     public DateOnly? NgayChuyen { get; set; }
 
     public string? TrangThai { get; set; }
+    public enum TrangThaiBaiDang
+    {
+        DangHienThi,
+        DaCoChu,
+        DaHuy
+    }
 
     public virtual ICollection<BaiDangNhanNuoi> BaiDangNhanNuois { get; set; } = new List<BaiDangNhanNuoi>();
 

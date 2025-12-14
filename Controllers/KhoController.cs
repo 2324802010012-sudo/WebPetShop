@@ -73,26 +73,41 @@ namespace WebPetShop.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ChinhSua(int MaSp, string TenSp, decimal Gia, int MaDanhMuc, int SoLuongTon)
+        public IActionResult ChinhSua(SanPham model)
         {
-            var existing = _context.SanPhams.FirstOrDefault(x => x.MaSp == MaSp);
-            if (existing == null)
+            ModelState.Remove("KhuyenMais");
+            ModelState.Remove("MaDanhMucNavigation");
+
+            if (!ModelState.IsValid)
             {
-                TempData["Error"] = "❌ Không tìm thấy sản phẩm.";
+                // Xem lỗi bind
+                var errors = string.Join(" | ", ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage));
+
+                TempData["Error"] = "Lỗi nhập liệu: " + errors;
+
+                ViewBag.DanhMucs = _context.DanhMucs.ToList();
+                return View(model);
+            }
+
+            var sp = _context.SanPhams.FirstOrDefault(s => s.MaSp == model.MaSp);
+            if (sp == null)
+            {
+                TempData["Error"] = "❌ Không tìm thấy sản phẩm!";
                 return RedirectToAction("HangHoa");
             }
 
-            existing.TenSp = TenSp;
-            existing.Gia = Gia;
-            existing.MaDanhMuc = MaDanhMuc;
-            existing.SoLuongTon = SoLuongTon;
+            sp.TenSp = model.TenSp;
+            sp.Gia = model.Gia;
+            sp.MaDanhMuc = model.MaDanhMuc;
+            sp.SoLuongTon = model.SoLuongTon;
 
             _context.SaveChanges();
 
             TempData["Success"] = "✅ Cập nhật sản phẩm thành công!";
             return RedirectToAction("HangHoa");
         }
-
         // ==========================================================
         // ➕ THÊM SẢN PHẨM MỚI
         // ==========================================================
@@ -407,70 +422,59 @@ namespace WebPetShop.Controllers
 
             if (don == null) return NotFound();
 
-            // Chuyển trạng thái
-            don.TrangThai = "Đang chuẩn bị";
-            _context.DonHangs.Update(don);
+            // ✔ Cập nhật trạng thái
+            _context.Database.ExecuteSqlRaw(
+                "UPDATE DonHang SET TrangThai = N'Đang chuẩn bị' WHERE MaDH = {0}", id);
 
-            // Tự tạo phiếu xuất nếu chưa có
+            // ✔ Nếu chưa có phiếu xuất → tạo bằng SQL Raw để tránh trigger OUTPUT
             if (!_context.PhieuXuats.Any(px => px.MaDh == id))
             {
-                var px = new PhieuXuat
-                {
-                    MaDh = id,
-                    MaKhachHang = don.MaNguoiDung,
-                    NgayXuat = DateTime.Now,
-                    MaNhanVien = HttpContext.Session.GetInt32("UserId"),
-                    TongTien = don.TongTien ?? 0
-                };
+                int userId = HttpContext.Session.GetInt32("UserId") ?? 1;
 
-                _context.PhieuXuats.Add(px);
-                _context.SaveChanges();
+                _context.Database.ExecuteSqlRaw(
+                    @"INSERT INTO PhieuXuat (MaDH, MaKhachHang, NgayXuat, MaNhanVien, TongTien)
+              VALUES ({0}, {1}, GETDATE(), {2}, {3})",
+                    don.MaDh, don.MaNguoiDung, userId, don.TongTien ?? 0);
 
-                // Thêm chi tiết phiếu xuất + trừ tồn kho
+                // 🔎 Lấy mã phiếu xuất mới nhất
+                int maPx = _context.PhieuXuats
+                    .OrderByDescending(x => x.MaPx)
+                    .Select(x => x.MaPx)
+                    .FirstOrDefault();
+
+                // ✔ Thêm chi tiết phiếu xuất + trừ tồn kho bằng raw SQL
                 foreach (var ct in don.ChiTietDonHangs)
                 {
-                    _context.ChiTietPhieuXuats.Add(new ChiTietPhieuXuat
-                    {
-                        MaPx = px.MaPx,
-                        MaSp = ct.MaSp,
-                        SoLuong = ct.SoLuong,
-                        DonGia = ct.DonGia
-                    });
+                    _context.Database.ExecuteSqlRaw(
+                        @"INSERT INTO ChiTietPhieuXuat (MaPX, MaSP, SoLuong, DonGia)
+                  VALUES ({0}, {1}, {2}, {3})",
+                        maPx, ct.MaSp, ct.SoLuong, ct.DonGia);
 
-                    // trừ tồn kho
-                    var sp = _context.SanPhams.Find(ct.MaSp);
-                    if (sp != null)
-                    {
-                        sp.SoLuongTon -= ct.SoLuong;
-                    }
+                    _context.Database.ExecuteSqlRaw(
+                        @"UPDATE SanPham 
+                  SET SoLuongTon = SoLuongTon - {0}
+                  WHERE MaSP = {1}",
+                        ct.SoLuong, ct.MaSp);
                 }
             }
 
-            _context.SaveChanges();
             return RedirectToAction("DonChoXuLy");
         }
-
         public IActionResult GiaoChoVanChuyen(int id)
         {
             var don = _context.DonHangs.Find(id);
             if (don == null) return NotFound();
 
-            // Cập nhật trạng thái đơn
-            don.TrangThai = "Chờ giao";
+            // ✔ Cập nhật trạng thái đơn
+            _context.Database.ExecuteSqlRaw(
+                "UPDATE DonHang SET TrangThai = N'Chờ giao' WHERE MaDH = {0}", id);
 
-            // Tạo bản ghi giao hàng
-            var gh = new GiaoHang
-            {
-                MaDh = id,
-                DonViGiao = "Nội bộ PetShop",
-                TrangThai = "Chờ giao",
-                NgayGiao = DateTime.Now,
-                MaNhanVienGiao = null
-            };
+            // ✔ Tạo bản ghi giao hàng bằng RAW SQL
+            _context.Database.ExecuteSqlRaw(
+                @"INSERT INTO GiaoHang (MaDH, DonViGiao, TrangThai, NgayGiao, MaNhanVienGiao)
+          VALUES ({0}, N'Nội bộ PetShop', N'Chờ giao', GETDATE(), NULL)",
+                id);
 
-            _context.GiaoHangs.Add(gh);
-
-            _context.SaveChanges();
             return RedirectToAction("DonChoXuLy");
         }
 

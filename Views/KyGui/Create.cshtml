@@ -1,0 +1,124 @@
+﻿@model WebPetShop.Models.KyGuiThuCung
+
+@{
+    ViewData["Title"] = "Đăng ký dịch vụ ký gửi";
+}
+
+<div class="container py-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-danger">🐶 ĐĂNG KÝ DỊCH VỤ KÝ GỬI</h2>
+    </div>
+
+    <div class="card shadow mx-auto" style="max-width: 700px;">
+        <div class="card-body p-4">
+
+            <form asp-action="Create" method="post">
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Tên thú cưng *</label>
+                    <input asp-for="TenThuCung" class="form-control" placeholder="VD: Miu Miu" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Giống loài</label>
+                    <input asp-for="GiongLoai" class="form-control" placeholder="VD: Poodle, Mèo Anh lông ngắn..." />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Tuổi *</label>
+                    <input asp-for="Tuoi" type="number" class="form-control" placeholder="Số tuổi" min="0" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Ngày bắt đầu gửi *</label>
+                    <input asp-for="NgayGui" type="date" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Ngày nhận thú (kết thúc) *</label>
+                    <input asp-for="NgayHetHan" type="date" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Ghi chú thêm</label>
+                    <textarea asp-for="GhiChu" class="form-control" rows="3"
+                              placeholder="VD: Bé kén ăn, cần chải lông mỗi ngày..."></textarea>
+                </div>
+
+                <!-- KHU VỰC NÚT -->
+                <div class="text-center mt-4">
+
+                    <!-- NÚT MỞ ĐIỀU KHOẢN -->
+                    <button type="button"
+                            class="btn btn-outline-danger px-5 py-2 rounded-pill mb-3"
+                            data-bs-toggle="modal" data-bs-target="#termsModal">
+                        📋 Điều khoản dịch vụ
+                    </button>
+
+                    <br />
+
+                    <!-- NÚT SUBMIT BỊ KHÓA BAN ĐẦU -->
+                    <button type="submit" id="btnSubmit"
+                            class="btn btn-secondary px-5 py-2 rounded-pill"
+                            disabled>
+                        ✔ Vui lòng đọc điều khoản
+                    </button>
+
+                    <a asp-action="Index" class="btn btn-light px-4 py-2 rounded-pill ms-2">
+                        Quay lại
+                    </a>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- ================= MODAL ĐIỀU KHOẢN ================= -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content rounded-4">
+
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">ĐIỀU KHOẢN DỊCH VỤ</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <ol class="list-group list-group-numbered">
+                    <li>Phòng riêng sạch sẽ, điều hòa 24/24.</li>
+                    <li>Ăn uống đúng giờ theo yêu cầu.</li>
+                    <li>Tắm rửa – chải lông – cắt móng miễn phí.</li>
+                    <li>Gửi hình ảnh/video cập nhật mỗi ngày.</li>
+                    <li>Chi phí dịch vụ: <b>500.000đ/ngày</b>.</li>
+                    <li>Trường hợp khẩn cấp sẽ liên hệ chủ ngay lập tức.</li>
+                </ol>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-danger px-5 py-2 rounded-pill"
+                        data-bs-dismiss="modal"
+                        onclick="enableSubmit()">
+                    Tôi đã đọc và ĐỒNG Ý
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ================= SCRIPT KÍCH HOẠT SUBMIT ================= -->
+@section Scripts {
+    <script>
+        function enableSubmit() {
+            const btn = document.getElementById("btnSubmit");
+
+            btn.disabled = false;
+            btn.classList.remove("btn-secondary");
+            btn.classList.add("btn-danger");
+            btn.innerHTML = "✔ Xác nhận đặt dịch vụ";
+        }
+    </script>
+}

@@ -7,7 +7,7 @@
 
 <div class="container py-5" style="max-width: 600px;">
     <h2 class="fw-bold text-center text-danger mb-4">
-        🐶 ĐĂNG KÝ DỊCH VỤ KÝ GỬI
+        ĐĂNG KÝ DỊCH VỤ KÝ GỬI
     </h2>
 
     @if (TempData["Error"] != null)
@@ -15,7 +15,8 @@
         <div class="alert alert-danger text-center">@TempData["Error"]</div>
     }
 
-    <form asp-controller="DichVu" asp-action="DatKyGui" method="post" class="card shadow-sm p-4 rounded-4 border-0 bg-light">
+    <form id="kyGuiForm" asp-controller="DichVu" asp-action="DatKyGui" method="post"
+          class="card shadow-sm p-4 rounded-4 border-0 bg-light">
         @Html.AntiForgeryToken()
 
         <div class="mb-3">
@@ -33,13 +34,24 @@
             <input asp-for="Tuoi" type="number" class="form-control" placeholder="Số tuổi" required />
         </div>
 
-        <!-- 🗓️ Ngày bắt đầu ký gửi -->
+        <!-- LOẠI THÚ CƯNG -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Loại thú cưng *</label>
+            <select asp-for="LoaiThuCung" class="form-control" required>
+                <option value="">-- Chọn loại thú --</option>
+                <option value="ChoNho">Chó nhỏ (dưới 10kg)</option>
+                <option value="ChoLon">Chó lớn (trên 10kg)</option>
+                <option value="Meo">Mèo</option>
+                <option value="Khac">Thú nhỏ khác</option>
+            </select>
+        </div>
+
+        <!-- NGÀY GỬI & NHẬN -->
         <div class="mb-3">
             <label class="form-label fw-semibold">Ngày bắt đầu gửi *</label>
             <input asp-for="NgayGui" type="date" class="form-control" required />
         </div>
 
-        <!-- 🗓️ Ngày kết thúc ký gửi -->
         <div class="mb-3">
             <label class="form-label fw-semibold">Ngày nhận thú (kết thúc) *</label>
             <input asp-for="NgayHetHan" type="date" class="form-control" required />
@@ -47,16 +59,166 @@
 
         <div class="mb-3">
             <label class="form-label fw-semibold">Ghi chú thêm</label>
-            <textarea asp-for="GhiChu" class="form-control" rows="2" placeholder="VD: Bé kén ăn, cần chải lông mỗi ngày..."></textarea>
+            <textarea asp-for="GhiChu" class="form-control" rows="2"
+                      placeholder="VD: Bé kén ăn, cần chải lông mỗi ngày..."></textarea>
         </div>
 
-        <div class="text-center mt-3">
-            <button type="submit" class="btn btn-danger px-4 rounded-pill fw-bold">
-                <i class="fa-solid fa-check me-1"></i> Xác nhận đặt dịch vụ
-            </button>
-            <a href="/DichVu/KyGui" class="btn btn-outline-secondary rounded-pill ms-2">Quay lại</a>
+        <!-- PHƯƠNG THỨC THANH TOÁN -->
+        <div class="mt-4">
+            <label class="form-label fw-semibold">Phương thức thanh toán *</label>
+            <div class="border rounded p-3 bg-white">
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="HinhThucThanhToan" value="TienMat" id="tienMat" required>
+                    <label class="form-check-label" for="tienMat">
+                        Thanh toán tiền mặt khi đến nhận thú cưng
+                    </label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="HinhThucThanhToan" value="ChuyenKhoan" id="chuyenKhoan" required>
+                    <label class="form-check-label" for="chuyenKhoan">
+                        Chuyển khoản ngân hàng (Khuyến khích)
+                    </label>
+                </div>
+            </div>
+
+            <!-- THÔNG TIN NGÂN HÀNG -->
+            <div id="BankInfo" class="mt-3 p-3 border rounded bg-light" style="display:none;">
+                <h5 class="fw-bold text-primary mb-3">Thông tin chuyển khoản</h5>
+                <p><strong>Ngân hàng:</strong> Vietcombank</p>
+                <p><strong>Chủ tài khoản:</strong> CÔNG TY PETSHOP</p>
+                <p><strong>Số tài khoản:</strong> 0123 456 789</p>
+                <div class="alert alert-warning py-2 px-3 mt-3">
+                    <strong>Lưu ý:</strong><br>
+                    Nội dung chuyển khoản ghi rõ: <b>KYG - @DateTime.Now:yyyyMMdd</b>
+                </div>
+            </div>
         </div>
+
+        <!-- ==================== ĐIỀU KHOẢN – BẮT BUỘC ĐỌC TRƯỚC ==================== -->
+        <div class="mt-4 p-4 border rounded-3 bg-warning bg-opacity-10">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="agreeCheck" disabled>
+                <label class="form-check-label fw-bold text-danger" for="agreeCheck">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Tôi đã đọc và đồng ý với điều khoản ký gửi (bắt buộc)
+                </label>
+            </div>
+
+            <div class="mt-3">
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalDieuKhoan">
+                    Mở điều khoản để đọc
+                </button>
+                <small class="text-muted d-block mt-2">
+                    Bạn phải đọc hết và bấm nút <strong>“Tôi đã đọc xong”</strong> ở cuối điều khoản để được tích đồng ý.
+                </small>
+            </div>
+        </div>
+
+        <!-- NÚT SUBMIT -->
+        <div class="text-center mt-4">
+            <button id="btnSubmit" type="submit" class="btn btn-danger px-5 py-3 rounded-pill fw-bold" disabled>
+                <i class="fas fa-paper-plane"></i> Xác nhận đặt dịch vụ
+            </button>
+            <a href="/DichVu/KyGui" class="btn btn-outline-secondary rounded-pill ms-3">Quay lại</a>
+        </div>
+
+        <!-- ẨN: LƯU TỔNG TIỀN + TRẠNG THÁI -->
+        <input type="hidden" name="TongTien" id="TongTienHidden" value="0" />
+        <input type="hidden" name="TrangThaiThanhToan" id="TrangThaiThanhToanHidden" value="ChuaThanhToan" />
     </form>
+</div>
+
+
+
+<style>
+    .form-control {
+        border-radius: 8px;
+    }
+
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+</style>
+<!-- 🌟 MODAL ĐIỀU KHOẢN -->
+<div class="modal fade" id="modalDieuKhoan" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa-solid fa-file-contract me-2"></i> Điều khoản ký gửi thú cưng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" style="max-height: 420px; overflow-y: auto;">
+
+                <h5 class="fw-bold text-danger mb-3">
+                    1. Trách nhiệm cung cấp thông tin & sức khỏe thú cưng
+                </h5>
+                <p>- Chủ thú cưng cam kết cung cấp thông tin chính xác và đầy đủ.</p>
+                <p>- Thú cưng phải trong tình trạng sức khỏe ổn định hoặc có khai báo bệnh lý cụ thể.</p>
+                <p>- Trung tâm không chịu trách nhiệm đối với các bệnh lý tiềm ẩn hoặc phát sinh tự nhiên, trừ trường hợp do lỗi chăm sóc.</p>
+
+                <h5 class="fw-bold text-danger mt-4 mb-3">
+                    2. Chi phí dịch vụ & chi phí phát sinh
+                </h5>
+                <p>- Chủ thú cưng thanh toán đầy đủ chi phí ký gửi theo mức giá đã công bố.</p>
+                <p>- Các chi phí phát sinh (khám bệnh, điều trị, phụ thu, chăm sóc đặc biệt…) sẽ được thông báo trước.</p>
+
+                <h5 class="fw-bold text-danger mt-4 mb-3">
+                    3. Trách nhiệm nhận thú cưng đúng hạn
+                </h5>
+                <p>- Chủ thú cưng phải đến nhận thú đúng ngày hẹn.</p>
+                <p>- Nếu muốn gia hạn phải thông báo trước.</p>
+
+                <h5 class="fw-bold text-danger mt-4 mb-3">
+                    4. QUYỀN XỬ LÝ TRONG TRƯỜNG HỢP BỎ RƠI (QUAN TRỌNG)
+                </h5>
+                <p class="fw-bold text-uppercase text-danger">
+                    Nếu chủ thú cưng không đến nhận hoặc không liên hệ trong vòng <u>30 ngày sau khi hết hạn ký gửi</u>,
+                    trung tâm được quyền:
+                </p>
+                <ul>
+                    <li>📌 Gửi thông báo qua số điện thoại & email.</li>
+                    <li>📌 Niêm yết thông tin công khai trong trung tâm.</li>
+                    <li>
+                        📌 Sau 30 ngày không liên hệ → quyền xử lý:
+                        <ul>
+                            <li>- Đăng bài tìm chủ mới cho thú cưng.</li>
+                            <li>- Chuyển quyền sở hữu cho người nhận nuôi.</li>
+                            <li>- Chủ cũ mất quyền yêu cầu nhận lại thú.</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <p class="fst-italic">
+                    Quy định tuân theo Điều 228 Bộ luật Dân sự 2015 về tài sản bị bỏ rơi,
+                    đảm bảo phúc lợi động vật và quyền lợi thú cưng.
+                </p>
+
+                <h5 class="fw-bold text-danger mt-4 mb-3">
+                    5. Nhật ký chăm sóc
+                </h5>
+                <p>- Trung tâm cập nhật nhật ký chăm sóc mỗi ngày (ăn uống, vệ sinh, tình trạng sức khỏe).</p>
+
+                <h5 class="fw-bold text-danger mt-4 mb-3">6. Cam kết</h5>
+                <p>- Tôi đã đọc kỹ và hoàn toàn đồng ý tất cả điều khoản trên.</p>
+
+            </div>
+
+            <div class="modal-footer d-flex justify-content-between">
+               
+                <button type="button" class="btn btn-success btn-lg px-5 fw-bold" id="btnDaDocXong">
+                    Tôi đã đọc xong & hiểu rõ
+                </button>
+            </div>
+
+        </div>
+    </div>
 </div>
 
 <style>
@@ -73,18 +235,136 @@
             box-shadow: 0 6px 16px rgba(0,0,0,0.1);
         }
 </style>
+<!-- SCRIPT MỚI – CHỈ THÊM VÀO CUỐI, KHÔNG ĐỘNG GÌ CŨ -->
 <script>
-    // 🔒 Tự động kiểm tra ngày hợp lệ
-    document.addEventListener("DOMContentLoaded", () => {
-        const startInput = document.querySelector('[name="NgayGui"]');
-        const endInput = document.querySelector('[name="NgayHetHan"]');
+    document.addEventListener("DOMContentLoaded", function () {
+        const loaiSelect   = document.querySelector('[name="LoaiThuCung"]');
+        const ngayGui      = document.querySelector('[name="NgayGui"]');
+        const ngayNhan     = document.querySelector('[name="NgayHetHan"]');
+        const bankInfo     = document.getElementById("BankInfo");
+        const agreeCheck   = document.getElementById("agreeCheck");
+        const btnSubmit    = document.getElementById("btnSubmit");
+        const btnDaDocXong = document.getElementById("btnDaDocXong");   /* DÒNG MỚI */
 
+        let daDocDieuKhoan = false;
+
+        // === 1. TẠO KHUNG HIỂN THỊ TIỀN ===
+        const priceBox = document.createElement("div");
+        priceBox.className = "mt-4 p-4 bg-white border rounded-3 shadow-sm";
+        priceBox.innerHTML = `
+            <h5 class="fw-bold text-primary mb-3">Tính tiền dự kiến</h5>
+            <p><strong>Giá/ngày:</strong> <span id="giaNgay">0</span> ₫</p>
+            <p><strong>Số ngày gửi:</strong> <span id="soNgay">0</span> ngày</p>
+            <hr>
+            <p class="fs-4 fw-bold text-danger">Tổng tiền: <span id="tongTien">0</span> ₫</p>
+        `;
+        loaiSelect.parentElement.parentElement.appendChild(priceBox);
+
+        const giaSpan = document.getElementById("giaNgay");
+        const ngaySpan = document.getElementById("soNgay");
+        const tongSpan = document.getElementById("tongTien");
+
+        const bangGia = { "ChoNho": 80000, "ChoLon": 120000, "Meo": 90000, "Khac": 60000 };
+
+        function tinhSoNgay() {
+            if (!ngayGui.value || !ngayNhan.value) return 0;
+            const start = new Date(ngayGui.value);
+            const end   = new Date(ngayNhan.value);
+            if (end < start) return 0;
+            const diff = Math.abs(end - start);
+            return Math.ceil(diff / (1000*60*60*24)) + 1;
+        }
+
+        function capNhatTien() {
+            const loai = loaiSelect.value;
+            const giaNgay = bangGia[loai] || 0;
+            const soNgay = tinhSoNgay();
+            const tong = giaNgay * soNgay;
+
+            giaSpan.textContent = giaNgay.toLocaleString("vi-VN");
+            ngaySpan.textContent = soNgay;
+            tongSpan.textContent = tong.toLocaleString("vi-VN");
+
+            // Lưu vào hidden để gửi về server
+            document.getElementById("TongTienHidden").value = tong;
+        }
+
+        // === 2. CÁC SỰ KIỆN ===
+        loaiSelect.addEventListener("change", capNhatTien);
+        ngayGui.addEventListener("change", capNhatTien);
+        ngayNhan.addEventListener("change", capNhatTien);
+
+        // Ngày tối thiểu
         const today = new Date().toISOString().split("T")[0];
-        startInput.min = today;
-        endInput.min = today;
+        ngayGui.min = today;
+        ngayNhan.min = today;
+        ngayGui.addEventListener("change", () => { ngayNhan.min = ngayGui.value; capNhatTien(); });
 
-        startInput.addEventListener("change", () => {
-            endInput.min = startInput.value;
+        // Hiển thị thông tin ngân hàng
+        document.querySelectorAll('input[name="HinhThucThanhToan"]').forEach(r => {
+            r.addEventListener("change", function () {
+                bankInfo.style.display = this.value === "ChuyenKhoan" ? "block" : "none";
+
+                // Cập nhật trạng thái thanh toán gửi về server
+                const tt = this.value === "ChuyenKhoan" ? "DaThanhToan" : "ChoXacNhan";
+                document.getElementById("TrangThaiThanhToanHidden").value = tt;
+
+                capNhatTien();
+            });
+        });
+
+        // Đồng ý điều khoản → bật nút
+        // agreeCheck.addEventListener("change", () => {
+        //     btnSubmit.disabled = !agreeCheck.checked;
+        // });
+
+        // Khi submit: xác nhận nếu chọn tiền mặt
+        // document.getElementById("kyGuiForm").addEventListener("submit", function (e) {
+        //     if (!agreeCheck.checked) {
+        //         alert("Vui lòng đồng ý với điều khoản ký gửi!");
+        //         e.preventDefault();
+        //         return;
+        //     }
+       btnDaDocXong.addEventListener("click", function () {
+            daDocDieuKhoan = true;
+            agreeCheck.disabled = false;
+            agreeCheck.checked = true;
+            btnSubmit.disabled = false;
+            bootstrap.Modal.getInstance(document.getElementById('modalDieuKhoan')).hide();
+            alert("Cảm ơn bạn đã đọc kỹ điều khoản! Bây giờ bạn có thể gửi đơn.");
+        });
+
+        agreeCheck.addEventListener("change", function () {
+            btnSubmit.disabled = !this.checked;
+        });
+
+        // Submit form
+        document.getElementById("kyGuiForm").addEventListener("submit", function (e) {
+            if (!daDocDieuKhoan) {
+                alert("Bạn phải đọc hết điều khoản và bấm “Tôi đã đọc xong” trước!");
+                e.preventDefault();
+                return;
+            }
+            if (!agreeCheck.checked) {
+                alert("Vui lòng đồng ý với điều khoản ký gửi!");
+                e.preventDefault();
+                return;
+            }
+
+            const hinhThuc = document.querySelector('input[name="HinhThucThanhToan"]:checked');
+            if (!hinhThuc) {
+                alert("Vui lòng chọn phương thức thanh toán!");
+                e.preventDefault();
+                return;
+            }
+
+            if (hinhThuc.value === "TienMat") {
+                if (!confirm("Bạn chọn thanh toán tiền mặt.\nĐơn sẽ ở trạng thái “Chờ lễ tân xác nhận thanh toán”.\nTiếp tục?")) {
+                    e.preventDefault();
+                }
+            }
+
+            capNhatTien(); // đảm bảo tổng tiền mới nhất được gửi đi
         });
     });
 </script>

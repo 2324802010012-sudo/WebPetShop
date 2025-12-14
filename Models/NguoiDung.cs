@@ -31,7 +31,7 @@ public partial class NguoiDung
 
     public virtual ICollection<BaoCaoDoanhThu> BaoCaoDoanhThus { get; set; } = new List<BaoCaoDoanhThu>();
 
-    public virtual ICollection<DanhGium> DanhGia { get; set; } = new List<DanhGium>();
+    public virtual ICollection<DanhGia> DanhGia { get; set; } = new List<DanhGia>();
 
     public virtual ICollection<DeXuatNhanNuoi> DeXuatNhanNuois { get; set; } = new List<DeXuatNhanNuoi>();
 

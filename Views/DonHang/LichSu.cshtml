@@ -143,12 +143,28 @@
                         </a>
                     }
 
+
+                    <!-- ⭐ HIỆN NÚT ĐÁNH GIÁ KHI ĐƠN HOÀN TẤT -->
+                    @if (don.TrangThai == "Hoàn tất")
+                    {
+                        <!-- Lặp qua từng sản phẩm trong đơn để đánh giá -->
+                        @foreach (var ct in don.ChiTietDonHangs)
+                        {
+                            <a href="/DonHang/DanhGia?maSp=@ct.MaSp&maDh=@don.MaDh"
+                               class="btn btn-warning rounded-pill px-3 fw-semibold text-dark">
+                                <i class="fa-solid fa-star me-1"></i> Đánh giá
+                            </a>
+                        }
+                    }
+
+
                     <a href="/DonHang/ChiTiet/@don.MaDh"
                        class="btn btn-outline-danger rounded-pill px-4 fw-semibold hover-btn">
                         <i class="fa-solid fa-eye me-1"></i> Xem chi tiết
                     </a>
 
                 </div>
+
 
             </div>
         }

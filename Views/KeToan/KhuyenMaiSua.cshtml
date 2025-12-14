@@ -1,0 +1,100 @@
+﻿@model WebPetShop.Models.KhuyenMai
+@{
+    var spList = ViewBag.SanPham as List<WebPetShop.Models.SanPham>;
+    Layout = "~/Views/Shared/_LayoutKeToan.cshtml";
+}
+
+<style>
+    .km-edit-card {
+        max-width: 700px;
+        margin: auto;
+        background: #fff;
+        padding: 28px;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        animation: fadeIn .25s ease;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .km-title {
+        font-size: 26px;
+        font-weight: 800;
+        color: #d32f2f;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+        .km-title i {
+            font-size: 26px;
+            color: #ff5252;
+        }
+
+    .form-label {
+        font-weight: 600;
+    }
+</style>
+
+<div class="card shadow-sm p-4" style="max-width: 700px; margin:auto;">
+    <h3 class="mb-3 text-danger fw-bold">
+        <i class="fa-solid fa-tags me-2"></i> Sửa khuyến mãi
+    </h3>
+<form asp-action="KhuyenMaiSua" method="post">
+    <div asp-validation-summary="All" class="text-danger mb-2"></div>
+
+    <input type="hidden" asp-for="MaKm" />
+
+    <div class="mb-2">
+        <label class="form-label">Sản phẩm</label>
+        <select asp-for="MaSP" class="form-select"
+                asp-items="@(new SelectList(spList, "MaSp", "TenSp"))">
+            <option value="">-- Chọn sản phẩm --</option>
+        </select>
+    </div>
+
+    <div class="mb-2">
+        <label class="form-label">Mã Code</label>
+        <input asp-for="MaCode" class="form-control" />
+    </div>
+
+    <div class="mb-2">
+        <label class="form-label">% Giảm</label>
+        <input asp-for="PhanTramGiam" class="form-control" />
+    </div>
+
+    <div class="mb-2">
+        <label class="form-label">Giá trị tối đa</label>
+        <input asp-for="GiaTriToiDa" class="form-control" />
+    </div>
+
+    <div class="mb-2">
+        <label class="form-label">Ngày bắt đầu</label>
+        <input asp-for="NgayBatDau" type="date" class="form-control" />
+    </div>
+
+    <div class="mb-2">
+        <label class="form-label">Ngày kết thúc</label>
+        <input asp-for="NgayKetThuc" type="date" class="form-control" />
+    </div>
+
+    <div class="mb-2">
+        <label class="form-label">Số lần sử dụng</label>
+        <input asp-for="SoLanSuDungToiDa" class="form-control" />
+    </div>
+
+    <div class="mb-2">
+        <label class="form-label">Trạng thái</label>
+        <select asp-for="TrangThai" class="form-select">
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-danger mt-3">Lưu thay đổi</button>
+</form>
+</div>

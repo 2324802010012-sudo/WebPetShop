@@ -112,6 +112,7 @@ namespace WebPetShop.Controllers
             var donHang = _context.DonHangs
                 .Include(d => d.ChiTietDonHangs)
                     .ThenInclude(ct => ct.MaSpNavigation)
+                                    .ThenInclude(sp => sp.DanhGia)
                 .FirstOrDefault(d => d.MaDh == id && d.MaNguoiDung == userId);
 
             if (donHang == null)
@@ -123,6 +124,7 @@ namespace WebPetShop.Controllers
         // ============================
         // ❌ HỦY ĐƠN — TRẢ HÀNG VỀ KHO
         // ============================
+        [HttpGet]
         public IActionResult HuyDon(int id)
         {
             int? userId = GetUserId();
@@ -133,39 +135,87 @@ namespace WebPetShop.Controllers
                 .Include(d => d.ChiTietDonHangs)
                 .FirstOrDefault(x => x.MaDh == id && x.MaNguoiDung == userId);
 
-            // ⭐ Các trạng thái được phép hủy
             var trangThaiChoHuy = new[]
             {
-        "Chờ duyệt",
-        "Xác nhận",
-        "Chuẩn bị hàng",
-
+        "Chờ xác nhận",
+        "Đã xác nhận",
+        "Đang chuẩn bị"
     };
 
-            // ❌ Nếu không thuộc danh sách cho hủy → báo lỗi
             if (don == null || !trangThaiChoHuy.Contains(don.TrangThai))
             {
-                TempData["msg"] = "⚠️ Đơn hàng đã được bàn giao cho đơn vị vận chuyển, không thể hủy!";
+                TempData["msg"] = "⚠️ Đơn hàng đã bàn giao cho đơn vị vận chuyển, không thể hủy!";
                 return RedirectToAction("LichSu");
             }
 
-            // ⭐ Hoàn trả kho
+            // Trả hàng về kho
             foreach (var ct in don.ChiTietDonHangs)
             {
                 var sp = _context.SanPhams.FirstOrDefault(s => s.MaSp == ct.MaSp);
                 if (sp != null)
                 {
                     sp.SoLuongTon += ct.SoLuong;
-                    _context.SanPhams.Update(sp);
                 }
             }
 
-            // ⭐ Cập nhật trạng thái
             don.TrangThai = "Đã hủy";
             _context.SaveChanges();
 
             TempData["msg"] = "❌ Đơn hàng đã được hủy thành công!";
             return RedirectToAction("LichSu");
         }
+
+        // HIỂN THỊ FORM ĐÁNH GIÁ
+        // GET
+        public IActionResult DanhGia(int maSp, int maDh)
+        {
+            return RedirectToAction("ChiTiet", new { id = maDh });
+        }
+
+        [HttpPost]
+        public IActionResult LuuDanhGia(int MaSp, int MaDh, int Diem, string NoiDung, IFormFile? AnhDanhGia)
+        {
+            int? userId = GetUserId();
+            if (userId == null)
+                return RedirectToAction("Login", "Auth");
+
+            // Kiểm tra đánh giá 1 lần
+            bool daDanhGia = _context.DanhGia.Any(x => x.MaNguoiDung == userId && x.MaSp == MaSp);
+            if (daDanhGia)
+            {
+                TempData["Error"] = "⚠️ Bạn đã đánh giá sản phẩm này rồi!";
+                return RedirectToAction("ChiTiet", new { id = MaDh });
+            }
+
+            string fileName = null;
+            if (AnhDanhGia != null)
+            {
+                fileName = Guid.NewGuid().ToString() + Path.GetExtension(AnhDanhGia.FileName);
+                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ImagesDanhGia", fileName);
+
+                using (var stream = new FileStream(path, FileMode.Create))
+                {
+                    AnhDanhGia.CopyTo(stream);
+                }
+            }
+
+            var dg = new DanhGia
+            {
+                MaNguoiDung = userId.Value,
+                MaSp = MaSp,
+                NoiDung = NoiDung,
+                Diem = Diem,
+                HinhAnh = fileName,
+                NgayDanhGia = DateTime.Now
+            };
+
+            _context.DanhGia.Add(dg);
+            _context.SaveChanges();
+
+            TempData["Success"] = "🎉 Cảm ơn bạn đã đánh giá sản phẩm!";
+            return RedirectToAction("ChiTiet", new { id = MaDh });
+        }
+
+
     }
 }

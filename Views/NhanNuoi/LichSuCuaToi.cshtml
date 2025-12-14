@@ -1,0 +1,237 @@
+﻿@{
+    ViewData["Title"] = "Lịch sử nhận nuôi của tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@model List<WebPetShop.Models.YeuCauNhanNuoi>
+
+<div class="container py-5">
+    <!-- TIÊU ĐỀ ĐỎ TO ĐÙNG -->
+    <h1 class="text-center mb-5 fw-bold" style="color: #e74c3c; font-size: 2.8rem; letter-spacing: 1px;">
+        LỊCH SỬ NHẬN NUÔI 
+    </h1>
+
+    @if (!Model.Any())
+    {
+        <!-- TRẠNG THÁI CHƯA CÓ YÊU CẦU – ĐẸP NHƯ ẢNH BẠN GỬI -->
+        <div class="text-center py-5 bg-light rounded-4 p-5 mx-auto" style="max-width: 650px;">
+            <i class="bi bi-heartbreak" style="font-size: 5.5rem; color: #7f8c8d;"></i>
+            <h4 class="mt-4 text-secondary fw-normal">Bạn chưa gửi yêu cầu nhận nuôi bé nào</h4>
+            <p class="text-muted mb-4">Hãy chọn một bé dễ thương và gửi yêu cầu ngay hôm nay nhé!</p>
+            <a asp-controller="NhanNuoi" asp-action="DanhSachNhanNuoi"
+               class="btn btn-danger btn-lg rounded-pill px-5 shadow-sm fw-bold">
+                Nhận nuôi ngay bây giờ
+            </a>
+        </div>
+    }
+    else
+    {
+        <!-- DANH SÁCH YÊU CẦU ĐÃ GỬI -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm hover-shadow transition position-relative" id="card-@item.MaYeuCau">
+                        <div class="position-relative">
+                            <img src="@(item.BaiDangNavigation?.HinhAnh ?? "/images/no-image.jpg")"
+                                 class="card-img-top" style="height: 220px; object-fit: cover;"
+                                 onerror="this.src='/images/no-image.jpg'">
+
+                            <!-- Badge trạng thái -->
+                            @* <span class="position-absolute top-0 start-0 m-3 badge fs-6" id="badge-@item.MaYeuCau">
+                            @if (item.TrangThai == "Chờ xác nhận")
+                            {
+                                <span class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark fs-6">Đang chờ</span>
+                            }
+                            else if (item.TrangThai == "Đã xác nhận")
+                            {
+                                <span class="position-absolute top-0 start-0 m-3 badge bg-success fs-6">Đã nhận nuôi</span>
+                            }
+                            else
+                            {
+                                <span class="position-absolute top-0 start-0 m-3 badge bg-secondary fs-6">@item.TrangThai</span>
+                            }
+                            </span> *@
+                            <div class="position-absolute top-0 start-0 m-3" id="badge-@item.MaYeuCau">
+                                @if (item.TrangThai == "Chờ xác nhận")
+                                {
+                                    <span class="badge bg-warning text-dark fs-6">Đang chờ</span>
+                                }
+                                else if (item.TrangThai == "Đã xác nhận")
+                                {
+                                    <span class="badge bg-success fs-6">Đã nhận nuôi</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary fs-6">@item.TrangThai</span>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Nội dung card -->
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold text-danger mb-2">
+                                @item.BaiDangNavigation?.MaThuCungNhanNuoiNavigation?.MaKyGuiNavigation?.TenThuCung
+                            </h5>
+                            <p class="text-muted small">
+                                <i class="bi bi-clock"></i>
+                                @item.NgayYeuCau.ToString("dd/MM/yyyy HH:mm")
+                            </p>
+
+                            <div class="mt-auto">
+                                @if (item.TrangThai == "Chờ xác nhận")
+                                {
+                                    <button class="btn btn-outline-danger btn-sm w-100"
+                                            onclick="huyYeuCau(@item.MaYeuCau)">
+                                        Hủy yêu cầu nhận nuôi
+                                    </button>
+                                }
+                                else if (item.TrangThai == "Đã xác nhận")
+                                {
+                                    <div class="text-success fw-bold text-center">
+                                        Chúc mừng bạn đã nhận nuôi bé!
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="text-muted text-center fst-italic">
+                                        Yêu cầu đã @item.TrangThai.ToLower()
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@section Scripts {
+    <script>
+
+        // ==========================
+        // HỦY YÊU CẦU
+        // ==========================
+        function huyYeuCau(maYeuCau) {
+            Swal.fire({
+                title: 'Hủy yêu cầu nhận nuôi?',
+                text: "Hành động này không thể hoàn tác!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                confirmButtonText: 'Hủy luôn!',
+                cancelButtonText: 'Giữ lại'
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                fetch('@Url.Action("HuyYeuCau", "NhanNuoi")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': token
+                    },
+                    body: 'maYeuCau=' + maYeuCau
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        Swal.fire('Đã hủy!', 'Yêu cầu đã được xóa.', 'info');
+                        document.getElementById('card-' + maYeuCau)?.remove();
+                    }
+                });
+            });
+        }
+
+        // ==========================
+        // REALTIME KIỂM TRA TRẠNG THÁI
+        // ==========================
+        function kiemTraTrangThai(maYeuCau) {
+            fetch('@Url.Action("LayTrangThaiYeuCau", "NhanNuoi")?maYeuCau=' + maYeuCau + '&_=' + Date.now())
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success || !data.trangThai) return;
+
+                    const badgeContainer = document.querySelector('#badge-' + maYeuCau);
+                    const card = document.getElementById('card-' + maYeuCau);
+                    if (!badgeContainer || !card) return;
+
+                    const actionArea = card.querySelector('.mt-auto');
+                    if (!actionArea) return;
+
+                    // ==============================
+                    // CẬP NHẬT GIAO DIỆN THEO SQL
+                    // ==============================
+                    if (data.trangThai === "Đã xác nhận") {
+
+                        badgeContainer.innerHTML =
+                            '<span class="badge bg-success fs-6">Đã nhận nuôi</span>';
+
+                        actionArea.innerHTML =
+                            '<div class="text-success fw-bold text-center fs-5">Chúc mừng bạn đã nhận nuôi bé!</div>';
+
+                        // Hiệu ứng đẹp
+                        card.style.transition = 'all 0.8s ease';
+                        card.style.transform = 'scale(1.06)';
+                        card.style.boxShadow = '0 0 40px rgba(25, 135, 84, 0.9)';
+
+                        setTimeout(() => {
+                            card.style.transform = 'scale(1)';
+                            card.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+                        }, 1000);
+                    }
+                    else if (data.trangThai === "Đã từ chối" || data.trangThai === "Đã hủy") {
+
+                        badgeContainer.innerHTML =
+                            `<span class="badge bg-secondary fs-6">${data.trangThai}</span>`;
+
+                        actionArea.innerHTML =
+                            `<div class="text-muted text-center fst-italic">Yêu cầu đã ${data.trangThai.toLowerCase()}</div>`;
+                    }
+                })
+                .catch(() => { /* ignore network error */ });
+        }
+
+        // ==========================
+        // BẬT REALTIME KHI LOAD TRANG
+        // ==========================
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const cards = document.querySelectorAll('[id^="card-"]');
+            const maYeuCauList = Array.from(cards).map(c => c.id.replace('card-', ''));
+
+            console.log("Realtime đang theo dõi:", maYeuCauList);
+
+            if (maYeuCauList.length > 0) {
+
+                // Kiểm tra ngay lần đầu
+                maYeuCauList.forEach(id => kiemTraTrangThai(id));
+
+                // Kiểm tra lại mỗi 4 giây
+                setInterval(() => {
+                    maYeuCauList.forEach(id => kiemTraTrangThai(id));
+                }, 4000);
+            }
+        });
+
+    </script>
+}
+
+
+<style>
+    @@keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+        }
+
+        70% {
+            box-shadow: 0 0 0 20px rgba(40, 167, 69, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+        }
+    }
+</style>

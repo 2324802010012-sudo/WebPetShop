@@ -4,6 +4,11 @@
     Layout = "~/Views/Shared/_LayoutLeTan.cshtml";
 }
 
+<!-- Form ẩn để sinh AntiForgeryToken cho AJAX -->
+<form id="tokenForm">
+    @Html.AntiForgeryToken()
+</form>
+
 <div class="container-fluid py-4">
     <h3 class="fw-bold text-danger mb-4">
         <i class="fa-solid fa-box-open me-2"></i> Quản lý đơn hàng
@@ -22,19 +27,19 @@
         <tbody>
             @foreach (var item in Model)
             {
-                <tr>
+                <tr id="row-@item.MaDh">
                     <td class="fw-bold text-secondary">#@item.MaDh</td>
                     <td>@item.MaNguoiDungNavigation?.HoTen</td>
                     <td>@item.NgayDat?.ToString("dd/MM/yyyy HH:mm")</td>
 
-                    <td>
+                    <td class="trangthai">
                         @if (item.TrangThai == "Chờ xác nhận")
                         {
-                            <span class="badge bg-warning text-dark">@item.TrangThai</span>
+                            <span class="badge bg-warning text-dark">Chờ xác nhận</span>
                         }
                         else if (item.TrangThai == "Đã xác nhận")
                         {
-                            <span class="badge bg-success">@item.TrangThai</span>
+                            <span class="badge bg-success">Đã xác nhận</span>
                         }
                         else
                         {
@@ -43,23 +48,58 @@
                     </td>
 
                     <td class="text-center">
-                        <a href="/LeTan/ChiTietDon/@item.MaDh" class="btn btn-sm btn-outline-primary me-1" title="Xem chi tiết">
+                        <a href="/LeTan/ChiTietDon/@item.MaDh" class="btn btn-sm btn-outline-primary me-1">
                             <i class="fa-solid fa-eye"></i>
                         </a>
 
                         @if (item.TrangThai == "Chờ xác nhận")
                         {
-                            <form asp-action="XacNhanDon" method="post" style="display:inline;">
-                                <input type="hidden" name="id" value="@item.MaDh" />
-                                <button type="submit" class="btn btn-sm btn-success" title="Xác nhận đơn hàng">
-                                    <i class="fa-solid fa-check"></i> Xác nhận
-                                </button>
-                            </form>
+                            <button class="btn btn-sm btn-success btn-xacnhan"
+                                    data-id="@item.MaDh">
+                                <i class="fa-solid fa-check"></i> Xác nhận
+                            </button>
                         }
                     </td>
                 </tr>
             }
         </tbody>
     </table>
-
 </div>
+
+
+@section Scripts {
+    <script>
+        $(document).on("click", ".btn-xacnhan", function (e) {
+            e.preventDefault();
+
+            let id = $(this).data("id");
+            let button = $(this);
+
+            $.ajax({
+                url: '/LeTan/XacNhanDon',
+                type: 'POST',
+                data: {
+                    id: id,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (res) {
+                    if (res.success) {
+
+                        // cập nhật trạng thái ngay lập tức
+                        $("#row-" + id).find(".trangthai")
+                            .html('<span class="badge bg-success">Đã xác nhận</span>');
+
+                        // xóa nút xác nhận
+                        button.remove();
+                    }
+                    else {
+                        alert(res.message);
+                    }
+                },
+                error: function () {
+                    alert("Có lỗi xảy ra! Không thể cập nhật đơn hàng.");
+                }
+            });
+        });
+    </script>
+}

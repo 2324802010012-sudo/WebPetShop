@@ -1,0 +1,133 @@
+﻿@model WebPetShop.Models.KyGuiThuCung
+
+@{
+    ViewData["Title"] = "Chi tiết ký gửi";
+    Layout = "~/Views/Shared/_LayoutLeTan.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<div class="container py-5">
+
+    <!-- TIÊU ĐỀ -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-danger">
+            🐾 Chi tiết ký gửi: @Model.TenThuCung
+        </h2>
+    </div>
+
+    <!-- THÔNG TIN KHÁCH HÀNG -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-danger text-white fw-bold">
+            👤 Thông tin khách hàng
+        </div>
+        <div class="card-body">
+            <p><strong>Họ tên:</strong> @Model.MaKhNavigation?.HoTen</p>
+            <p><strong>Số điện thoại:</strong> @Model.MaKhNavigation?.SoDienThoai</p>
+            <p><strong>Địa chỉ:</strong> @Model.MaKhNavigation?.DiaChi</p>
+        </div>
+    </div>
+
+    <!-- THÔNG TIN THÚ CƯNG -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-warning fw-bold">
+            🐶 Thông tin thú cưng
+        </div>
+        <div class="card-body">
+            <p><strong>Tên thú cưng:</strong> @Model.TenThuCung</p>
+            <p><strong>Giống loại:</strong> @Model.GiongLoai</p>
+            <p><strong>Loại thú:</strong> @Model.LoaiThuCung</p>
+            <p><strong>Tuổi:</strong> @Model.Tuoi</p>
+
+            <hr />
+            <p><strong>Ngày gửi:</strong> @Model.NgayGui?.ToString("dd/MM/yyyy")</p>
+            @{
+                bool vuaGiaHan = false;
+
+                if (Model.NgayGui.HasValue && Model.NgayHetHan.HasValue)
+                {
+                    var ngayGui = Model.NgayGui.Value.ToDateTime(TimeOnly.MinValue);
+                    var ngayHetHan = Model.NgayHetHan.Value.ToDateTime(TimeOnly.MinValue);
+
+                    var soNgay = (ngayHetHan - ngayGui).Days;
+
+                    // Nếu số ngày lớn hơn 40 (gia hạn) và cập nhật trong 3 ngày gần nhất
+                    vuaGiaHan = (DateTime.Today - ngayHetHan.Date).TotalDays <= 1;
+                }
+            }
+
+            <p>
+                <strong>Ngày nhận lại:</strong>
+                <span>@Model.NgayHetHan?.ToString("dd/MM/yyyy")</span>
+
+                @if (vuaGiaHan)
+                {
+                    <span class="badge bg-danger ms-2 px-3 py-2 rounded-pill">
+                        Ngày nhận lại mới
+                    </span>
+                }
+            </p>
+
+            <p><strong>Ghi chú của khách:</strong> @Model.GhiChu</p>
+
+            <p class="mt-3">
+                <strong class="text-success">Tổng tiền:</strong>
+                <span class="fw-bold text-success">@Model.TongTien.ToString("N0") ₫</span>
+            </p>
+
+            <p>
+                <strong>Trạng thái:</strong>
+                <span class="badge bg-info text-dark px-3 py-2">
+                    @Model.TrangThaiThanhToan
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <!-- NHẬT KÝ CHĂM SÓC -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white fw-bold">
+            📒 Nhật ký chăm sóc
+        </div>
+        <div class="card-body">
+
+            @if (Model.ChiTietChamSocs == null || !Model.ChiTietChamSocs.Any())
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="fa-solid fa-cat fa-3x mb-3"></i>
+                    <p>Chưa có nhật ký chăm sóc nào được cập nhật.</p>
+                </div>
+            }
+            else
+            {
+                <ul class="list-group">
+                    @foreach (var log in Model.ChiTietChamSocs.OrderByDescending(x => x.NgayCapNhat))
+                    {
+                        <li class="list-group-item">
+                            <p>
+                                <strong>Ngày:</strong> @log.NgayCapNhat?.ToString("dd/MM/yyyy HH:mm")
+                            </p>
+                            <p><strong>Tình trạng:</strong> @log.TinhTrang</p>
+                            <p><strong>Ghi chú:</strong> @log.GhiChu</p>
+
+                            @if (!string.IsNullOrEmpty(log.HinhAnh))
+                            {
+                                <img src="~/ImagesNhatKy/@log.HinhAnh"
+                                     class="img-fluid rounded shadow-sm"
+                                     style="max-height:200px" />
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+
+    <!-- NÚT TRỞ LẠI -->
+    <div class="text-center mt-4">
+        <a href="/LeTan/KyGui" class="btn btn-secondary px-4">
+            ← Quay lại danh sách
+        </a>
+    </div>
+</div>

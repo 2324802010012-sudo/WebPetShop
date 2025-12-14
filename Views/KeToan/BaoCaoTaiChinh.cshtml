@@ -2,72 +2,200 @@
     Layout = "~/Views/Shared/_LayoutKeToan.cshtml";
     ViewData["Title"] = "Báo cáo tài chính";
 
-    var dt = ViewBag.DoanhThu;
-    var cp = ViewBag.ChiPhi;
-    var ln = ViewBag.LoiNhuan;
+    var dt = ViewBag.DoanhThu ?? 0;
+    var cp = ViewBag.ChiPhi ?? 0;
+    var ln = ViewBag.LoiNhuan ?? 0;
+    var duBao = ViewBag.DuBao ?? 0;
 
-    var thongKe = ViewBag.ThongKe as List<dynamic>;
+    var thongKe = ViewBag.ThongKe as List<dynamic> ?? new List<dynamic>();
+
+    var chiPhiTyTrong = ViewBag.ChiPhiTyTrong ?? new { Labels = new List<string>(), Values = new List<decimal>() };
+    var doanhThuTheoDanhMuc = ViewBag.DoanhThuTheoDanhMuc ?? new { Labels = new List<string>(), Values = new List<decimal>() };
+    var topSanPham = ViewBag.TopSanPham ?? new List<dynamic>();
+
+    string qFrom = ViewContext.HttpContext.Request.Query["from"];
+    string qTo = ViewContext.HttpContext.Request.Query["to"];
+    string qMonth = ViewContext.HttpContext.Request.Query["month"];
+    string qYear = ViewContext.HttpContext.Request.Query["year"];
+
+    int currentYear = DateTime.Now.Year;
 }
 
+
+<style>
+    .kpi-card {
+        border-radius: 18px;
+        padding: 20px;
+        background: white;
+        border: 0;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        transition: .25s;
+    }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+    .kpi-title {
+        font-size: .9rem;
+        font-weight: 600;
+        color: #777;
+    }
+
+    .kpi-value {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+</style>
 <div class="container py-4">
 
     <h2 class="fw-bold text-danger mb-4">
         <i class="fa-solid fa-chart-line me-2"></i>Báo cáo tài chính
     </h2>
 
-    <!-- Tổng quan -->
-    <div class="row g-4 mb-4">
-
-        <div class="col-md-4">
-            <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid #2e7d32;">
-                <h6>Doanh thu tháng</h6>
-                <h2 class="fw-bold text-success">@dt.ToString("N0") ₫</h2>
+    <!-- ================= KPI ================= -->
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="kpi-card" style="border-left:6px solid #2e7d32;">
+                <div class="kpi-title">Doanh thu tháng</div>
+                <div class="kpi-value text-success">@dt.ToString("N0") ₫</div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid #c62828;">
-                <h6>Chi phí nhập hàng</h6>
-                <h2 class="fw-bold text-danger">@cp.ToString("N0") ₫</h2>
+        <div class="col-md-3">
+            <div class="kpi-card" style="border-left:6px solid #c62828;">
+                <div class="kpi-title">Chi phí nhập hàng</div>
+                <div class="kpi-value text-danger">@cp.ToString("N0") ₫</div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid #0277bd;">
-                <h6>Lợi nhuận</h6>
-                <h2 class="fw-bold text-primary">@ln.ToString("N0") ₫</h2>
+        <div class="col-md-3">
+            <div class="kpi-card" style="border-left:6px solid #0277bd;">
+                <div class="kpi-title">Lợi nhuận</div>
+                <div class="kpi-value text-primary">@ln.ToString("N0") ₫</div>
             </div>
         </div>
 
+        <div class="col-md-3">
+            <div class="kpi-card" style="border-left:6px solid #6a1b9a;">
+                <div class="kpi-title">Dự báo tháng sau (AI)</div>
+                <div class="kpi-value" style="color:#6a1b9a">@duBao.ToString("N0") ₫</div>
+            </div>
+        </div>
     </div>
 
-    <!-- Biểu đồ -->
-    <div class="card p-4 shadow-sm border-0 mb-4">
-        <h5 class="fw-bold mb-3">Biểu đồ doanh thu - chi phí - lợi nhuận 12 tháng</h5>
-        <canvas id="chartTC" height="120"></canvas>
+    <!-- ==================== BỘ LỌC ==================== -->
+    <!-- ================= FILTER ================= -->
+    <div class="card shadow-sm p-3 mb-4">
+        <form method="get" action="/KeToan/BaoCaoTaiChinh" class="row g-3">
+
+            <div class="col-md-3">
+                <label class="form-label">Từ ngày</label>
+                <input type="date" name="from" class="form-control" value="@qFrom" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Đến ngày</label>
+                <input type="date" name="to" class="form-control" value="@qTo" />
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Tháng</label>
+                <select name="month" class="form-select">
+                    <option value="">-- Chọn tháng --</option>
+                    @for (int monthValue = 1; monthValue <= 12; monthValue++)
+                    {
+                        <option value="@monthValue" selected="@(qMonth == monthValue.ToString())">
+                            @monthValue
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Năm</label>
+                <select name="year" class="form-select">
+                    @for (int y = currentYear - 5; y <= currentYear + 1; y++)
+                    {
+                        <option value="@y" selected="@(qYear == y.ToString())">
+                            @y
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-danger w-100">
+                    <i class="fa-solid fa-filter me-2"></i>Lọc dữ liệu
+                </button>
+            </div>
+
+        </form>
     </div>
 
+
+    <!-- Export Excel -->
+    <div class="text-end mb-3">
+        <a href="/KeToan/ExportExcel" class="btn btn-success">
+            <i class="fa-solid fa-file-excel me-2"></i> Xuất Excel
+        </a>
+    </div>
+
+
+    <!-- LINE CHART -->
+    <div class="card shadow-sm p-4 mt-4">
+        <h5 class="fw-bold mb-3">Biểu đồ doanh thu – chi phí – lợi nhuận</h5>
+        <canvas id="chartTC"></canvas>
+    </div>
+
+    <!-- PIE CHART -->
+    <div class="card shadow-sm p-4 mt-4">
+        <h5 class="fw-bold mb-3">Tỷ trọng chi phí nhập hàng</h5>
+        <canvas id="pieCP"></canvas>
+    </div>
+
+    <!-- BAR CHART -->
+    <div class="card shadow-sm p-4 mt-4">
+        <h5 class="fw-bold mb-3">Doanh thu theo danh mục</h5>
+        <canvas id="barDanhMuc"></canvas>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         var data = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(thongKe));
 
-        var labels = data.map(x => "Tháng " + x.Thang);
-        var doanhThu = data.map(x => x.DoanhThu);
-        var chiPhi = data.map(x => x.ChiPhi);
-        var loiNhuan = data.map(x => x.LoiNhuan);
-
-        new Chart(document.getElementById('chartTC'), {
-            type: 'line',
+        new Chart(document.getElementById("chartTC"), {
+            type: "line",
             data: {
-                labels: labels,
+                labels: data.map(x => "Tháng " + x.Thang),
                 datasets: [
-                    { label: "Doanh thu", data: doanhThu, borderColor: "#2e7d32", borderWidth: 3 },
-                    { label: "Chi phí", data: chiPhi, borderColor: "#c62828", borderWidth: 3 },
-                    { label: "Lợi nhuận", data: loiNhuan, borderColor: "#0277bd", borderWidth: 3 }
+                    { label: "Doanh thu", data: data.map(x => x.DoanhThu), borderColor: "#2e7d32", borderWidth: 3 },
+                    { label: "Chi phí", data: data.map(x => x.ChiPhi), borderColor: "#c62828", borderWidth: 3 },
+                    { label: "Lợi nhuận", data: data.map(x => x.LoiNhuan), borderColor: "#0277bd", borderWidth: 3 }
                 ]
             }
         });
-    </script>
 
-</div>
+        var cpLabels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(chiPhiTyTrong.Labels));
+        var cpValues = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(chiPhiTyTrong.Values));
+
+        new Chart(document.getElementById("pieCP"), {
+            type: "pie",
+            data: {
+                labels: cpLabels,
+                datasets: [{ data: cpValues, backgroundColor: ["#ff5252", "#ff4081", "#ff1744", "#f50057", "#d500f9"] }]
+            }
+        });
+
+        var dmLabels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(doanhThuTheoDanhMuc.Labels));
+        var dmValues = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(doanhThuTheoDanhMuc.Values));
+
+        new Chart(document.getElementById("barDanhMuc"), {
+            type: "bar",
+            data: {
+                labels: dmLabels,
+                datasets: [{ label: "Doanh thu", backgroundColor: "#c62828", data: dmValues }]
+            }
+        });
+    </script>

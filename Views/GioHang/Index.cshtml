@@ -1,4 +1,4 @@
-﻿@model IEnumerable<WebPetShop.Models.ChiTietGioHang>
+﻿@model WebPetShop.ViewModels.CheckoutVM
 
 @{
     ViewData["Title"] = "Giỏ hàng";
@@ -6,76 +6,351 @@
 
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
+<style>
+    
+    :root {
+        --primary: #e53935;
+        --primary-light: #ffcdd2;
+        --accent: #ffc107;
+        --green: #2e7d32;
+        --soft-shadow: 0 6px 25px rgba(0,0,0,0.08);
+        --border-soft: 2px solid rgba(255, 205, 210, 0.7);
+    }
+
+    /* ==========================
+       🛒 CONTAINER GIỎ HÀNG
+    ========================== */
+    .cart-wrapper {
+        background: #fff;
+        border-radius: 18px;
+        padding: 25px 35px;
+        box-shadow: var(--soft-shadow);
+        max-width: 950px;
+        margin: auto;
+        border: var(--border-soft);
+        animation: fadeUp 0.5s ease-out;
+    }
+
+    /* Fade xuất hiện mềm */
+    @@keyframes fadeUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    /* ==========================
+       🛍️ TIÊU ĐỀ GIỎ HÀNG
+    ========================== */
+    .cart-title-box {
+        margin-top: 20px;
+        text-align: center;
+        animation: fadeUp 0.6s ease-out;
+    }
+
+    .cart-title {
+        font-size: 32px;
+        font-weight: 900;
+        color: var(--primary);
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+        /* Icon rung nhẹ */
+        .cart-title i {
+            font-size: 34px;
+            color: var(--primary);
+            animation: cartShake 2s infinite ease-in-out;
+        }
+
+    @@keyframes cartShake {
+        0%, 100%
+
+    {
+        transform: rotate(0);
+    }
+
+    50% {
+        transform: rotate(8deg);
+    }
+
+    }
+
+    .cart-title-underline {
+        width: 200px;
+        height: 5px;
+        background: linear-gradient(90deg, #ff9e9e, #e53935, #ff9e9e);
+        border-radius: 50px;
+        margin: 12px auto 0;
+        box-shadow: 0 2px 6px rgba(229,57,53,0.4);
+    }
+
+    /* ==========================
+       📄 BẢNG GIỎ HÀNG
+    ========================== */
+    table.cart-table thead {
+        background: var(--primary-light);
+        color: var(--primary);
+        font-weight: 800;
+        border-radius: 12px;
+    }
+
+    .cart-table th {
+        padding: 15px !important;
+        font-size: 15px;
+    }
+
+    .cart-table td {
+        vertical-align: middle !important;
+        padding: 18px 12px;
+        border-bottom: 1px solid #ffe0b2;
+        transition: background 0.25s ease;
+    }
+
+    tr:hover {
+        background: #fff7e0;
+        transition: 0.25s;
+    }
+
+    /* ==========================
+       🖼️ ẢNH SẢN PHẨM
+    ========================== */
+    .cart-img {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #f3f3f3;
+        transition: transform 0.25s ease;
+    }
+
+        .cart-img:hover {
+            transform: scale(1.05);
+        }
+
+    /* ==========================
+       💸 GIÁ SP
+    ========================== */
+    .price-old {
+        color: #9e9e9e;
+        text-decoration: line-through;
+        display: block;
+        font-size: 13px;
+    }
+
+    .price-new {
+        color: var(--primary);
+        font-weight: 800;
+        font-size: 17px;
+    }
+
+    /* ==========================
+       🔢 Ô NHẬP SỐ LƯỢNG
+    ========================== */
+    input[type=number] {
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        transition: 0.25s ease;
+    }
+
+        input[type=number]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 5px rgba(229,57,53,0.5);
+        }
+
+    /* ==========================
+       🔄 Button update
+    ========================== */
+    .btn-update {
+        border-radius: 6px;
+        padding: 4px 10px;
+        border-color: var(--green);
+        color: var(--green);
+        transition: 0.25s;
+    }
+
+        .btn-update:hover {
+            background: var(--green);
+            color: #fff;
+        }
+
+    /* ==========================
+       ❌ Button delete
+    ========================== */
+    .btn-delete {
+        border-radius: 6px;
+        color: var(--primary);
+        border-color: var(--primary);
+        transition: 0.25s;
+    }
+
+        .btn-delete:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+    /* ==========================
+       🧾 BUTTON TIẾP TỤC / THANH TOÁN
+    ========================== */
+    .checkout-buttons a {
+        font-size: 16px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        transition: 0.25s;
+    }
+
+    .btn-continue {
+        background: #bdbdbd;
+        color: white;
+    }
+
+        .btn-continue:hover {
+            background: #9e9e9e;
+        }
+
+    .btn-checkout {
+        background: var(--accent);
+        color: #000;
+        font-weight: 800;
+        box-shadow: 0 4px 10px rgba(255,193,7,0.4);
+    }
+
+        .btn-checkout:hover {
+            background: #ffb300;
+            box-shadow: 0 5px 14px rgba(255,193,7,0.6);
+        }
+
+
+</style>
+
 <div class="container py-5">
-    <h2 class="fw-bold text-center text-primary mb-4">
-        <i class="fa-solid fa-cart-shopping me-2"></i> Giỏ hàng của bạn
-    </h2>
 
-    @if (!Model.Any())
-    {
-        <div class="alert alert-info text-center">
-            Giỏ hàng của bạn đang trống!
-            <a href="/SanPham" class="btn btn-primary btn-sm ms-2">Mua sắm ngay</a>
+    <div class="cart-wrapper">
+
+        <div class="cart-title-box text-center mb-4">
+            <div class="cart-title">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span>Giỏ hàng của bạn</span>
+            </div>
+            <div class="cart-title-underline"></div>
         </div>
-    }
-    else
-    {
-        <table class="table table-hover align-middle shadow-sm">
-            <thead class="table-primary">
-                <tr class="text-center">
-                    <th>Hình ảnh</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Giá</th>
-                    <th width="130px">SL</th>
-                    <th>Tổng</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    var total = (item.SoLuong ?? 1) * item.MaSpNavigation.Gia;
+
+
+        @if (Model.GioHang == null || !Model.GioHang.Any())
+        {
+            <div class="alert alert-info text-center">
+                Giỏ hàng của bạn đang trống!
+                <a href="/SanPham" class="btn btn-primary btn-sm ms-2">Mua sắm ngay</a>
+            </div>
+        }
+        else
+        {
+            <table class="table cart-table table-hover align-middle">
+                <thead>
                     <tr class="text-center">
-                        <td>
-                            <img src="~/ImagesWWeb/@item.MaSpNavigation.HinhAnh"
-                                 class="rounded" style="width:70px;height:70px;object-fit:cover" />
-                        </td>
-                        <td>@item.MaSpNavigation.TenSp</td>
-                        <td class="text-danger fw-bold">@item.MaSpNavigation.Gia.ToString("N0") ₫</td>
-                        <td>
-                            <form method="post" action="/GioHang/Update" class="d-flex justify-content-center">
-                                <input type="hidden" name="maCtgh" value="@item.MaCtgh" />
-                                <input type="number" min="1" name="soLuong" value="@(item.SoLuong ?? 1)"
-                                       class="form-control form-control-sm text-center"
-                                       style="width:60px" />
-                                <button class="btn btn-sm btn-outline-success ms-2">
-                                    <i class="fa-solid fa-check"></i>
-                                </button>
-                            </form>
-                        </td>
-                        <td class="fw-bold text-success">@total.ToString("N0") ₫</td>
-                        <td>
-                            <a href="/GioHang/Remove/@item.MaCtgh"
-                               class="btn btn-sm btn-outline-danger"
-                               onclick="return confirm('Xóa sản phẩm này?');">
-                                <i class="fa-solid fa-trash"></i>
-                            </a>
-                        </td>
+                        <th>Hình ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Giá</th>
+                        <th width="130px">SL</th>
+                        <th>Tổng</th>
+                        <th></th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
 
-        <div class="text-end mt-3">
-            <a href="/SanPham" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Tiếp tục mua sắm
-            </a>
+                <tbody>
+                    @foreach (var item in Model.GioHang)
+                    {
+                        var giaBan = item.GiaSauGiam;
+                        var giaGoc = item.GiaGoc;
+                        var total = (item.SoLuong ?? 1) * giaBan;
 
-            <a href="/GioHang/Checkout" class="btn btn-warning fw-bold">
-                <i class="fa-solid fa-credit-card"></i> Thanh toán
-            </a>
-        </div>
-    }
+                        <tr class="text-center">
+
+                            <!-- Hình ảnh -->
+                            <td>
+                                <img src="~/ImagesWWeb/@item.MaSpNavigation.HinhAnh"
+                                     class="cart-img" />
+                            </td>
+
+                            <!-- Tên SP -->
+                            <td class="fw-semibold">@item.MaSpNavigation.TenSp</td>
+
+                            <!-- Giá -->
+                            <td>
+                                @if (giaGoc > giaBan)
+                                {
+                                    <span class="text-muted text-decoration-line-through d-block">
+                                        @giaGoc.ToString("N0") ₫
+                                    </span>
+                                    <span class="text-danger fw-bold">
+                                        @giaBan.ToString("N0") ₫
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger fw-bold">
+                                        @giaBan.ToString("N0") ₫
+                                    </span>
+                                }
+                            </td>
+
+                            <!-- Số lượng -->
+                            <td>
+                                <form method="post" action="/GioHang/Update" class="d-flex justify-content-center">
+                                    <input type="hidden" name="maCtgh" value="@item.MaCtgh" />
+
+                                    <input type="number"
+                                           min="1"
+                                           name="soLuong"
+                                           value="@(item.SoLuong ?? 1)"
+                                           class="form-control form-control-sm text-center"
+                                           style="width:60px" />
+
+                                    <button class="btn btn-sm btn-outline-success btn-update ms-2">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                </form>
+                            </td>
+
+                            <!-- Thành tiền -->
+                            <td class="fw-bold text-success">@total.ToString("N0") ₫</td>
+
+                            <!-- Xóa -->
+                            <td>
+                                <a href="/GioHang/Remove/@item.MaCtgh"
+                                   class="btn btn-sm btn-outline-danger btn-delete"
+                                   onclick="return confirm('Xóa sản phẩm này?');">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="text-end mt-4 checkout-buttons">
+                <a href="/SanPham" class="btn btn-secondary me-2">
+                    <i class="fa-solid fa-arrow-left"></i> Tiếp tục mua sắm
+                </a>
+
+                <a href="/GioHang/Checkout" class="btn btn-warning fw-bold">
+                    <i class="fa-solid fa-credit-card"></i> Thanh toán
+                </a>
+            </div>
+        }
+
+    </div>
+
 </div>
-
-

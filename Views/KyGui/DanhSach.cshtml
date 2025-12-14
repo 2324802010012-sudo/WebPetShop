@@ -1,50 +1,89 @@
-﻿@model IEnumerable<WebPetShop.Models.KyGuiThuCung>
+﻿@model IEnumerable<KyGuiThuCung>
+
 @{
-    ViewData["Title"] = "Danh sách ký gửi";
+    ViewData["Title"] = "Danh sách thú đang ký gửi";
 }
 
-<div class="container py-4">
-    <h3 class="fw-bold text-danger mb-3"><i class="fa-solid fa-paw me-2"></i>Danh sách thú đang ký gửi</h3>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-danger display-5">
+            DANH SÁCH THÚ ĐANG KÝ GỬI TẠI SHOP
+        </h2>
+        <p class="text-muted lead">Quản lý và theo dõi tình trạng ký gửi của khách hàng</p>
+    </div>
 
     @if (!Model.Any())
     {
-        <div class="alert alert-info">Chưa có thú nào đang ký gửi.</div>
+        <div class="alert alert-info text-center rounded-4 shadow-sm py-5">
+            <i class="fas fa-dog fa-3x mb-3 text-primary"></i>
+            <h4>Chưa có thú cưng nào đang ký gửi</h4>
+            <p class="mb-0">Khi có khách ký gửi, danh sách sẽ hiện ở đây nhé!</p>
+        </div>
     }
     else
     {
-        <table class="table table-bordered align-middle shadow-sm">
-            <thead class="table-light">
-                <tr>
-                    <th>#</th>
-                    <th>Tên thú cưng</th>
-                    <th>Chủ sở hữu</th>
-                    <th>Ngày gửi</th>
-                    <th>Ngày nhận</th>
-                    <th>Trạng thái</th>
-                    <th>Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
+        <div class="table-responsive shadow-lg rounded-4 overflow-hidden">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-danger text-white">
                     <tr>
-                        <td>@item.MaKyGui</td>
-                        <td>@item.TenThuCung</td>
-                        <td>@item.MaKhNavigation?.HoTen</td>
-                        <td>@item.NgayGui?.ToString("dd/MM/yyyy")</td>
-                        <td>@item.NgayHetHan?.ToString("dd/MM/yyyy")</td>
-                        <td><span class="badge bg-warning text-dark">@item.TrangThai</span></td>
-                        <td>
-                            <a class="btn btn-outline-primary btn-sm" href="/KyGui/TheoDoi/@item.MaKyGui">
-                                <i class="fa-solid fa-eye"></i> Xem
-                            </a>
-                            <a class="btn btn-outline-success btn-sm" href="/KyGui/TraThu/@item.MaKyGui">
-                                <i class="fa-solid fa-hand-holding-heart"></i> Trả thú
-                            </a>
-                        </td>
+                        <th class="text-center">#</th>
+                        <th>Tên thú cưng</th>
+                        <th>Chủ sở hữu</th>
+                        <th>SĐT</th>
+                        <th>Ngày gửi</th>
+                        <th>Ngày nhận dự kiến</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var badgeClass = item.TrangThai switch
+                        {
+                            "Đang ký gửi" => "bg-warning text-dark",
+                            "Hoàn tất" => "bg-success",
+                            "Đã hủy" => "bg-danger",
+                            "Trả thú" => "bg-info",
+                            _ => "bg-secondary"
+                        };
+                        <tr class="table-light">
+                            <td class="text-center fw-bold">@item.MaKyGui</td>
+                            <td>
+                                <strong>@item.TenThuCung</strong><br />
+                                <small class="text-muted">@item.GiongLoai</small>
+                            </td>
+                            <td>
+                                <strong>@item.MaKhNavigation?.HoTen</strong>
+                            </td>
+                            <td>@item.MaKhNavigation?.SoDienThoai</td>
+                            <td>@item.NgayGui?.ToString("dd/MM/yyyy")</td>
+                            <td>@item.NgayHetHan?.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <span class="badge rounded-pill @badgeClass px-3 py-2 fw-bold">
+                                    @item.TrangThai
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="ChiTiet" asp-route-id="@item.MaKyGui" class="btn btn-outline-primary btn-sm rounded-pill me-1" title="Theo dõi & Nhật ký">
+                                    Theo dõi
+                                </a>
+                                <a asp-action="TraThu" asp-route-id="@item.MaKyGui" class="btn btn-outline-success btn-sm rounded-pill" title="Trả thú cưng">
+                                    Trả thú
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
+
+    <div class="text-center mt-4">
+        <a asp-action="Index" asp-controller="Home" class="btn btn-secondary rounded-pill px-4">
+            Về trang chủ
+        </a>
+    </div>
 </div>

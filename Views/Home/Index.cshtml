@@ -1,6 +1,8 @@
 ﻿@{
     ViewData["Title"] = "Trang chủ - PetShop";
+    var kmList = ViewBag.KhuyenMai as List<WebPetShop.Models.KhuyenMai>;
 }
+
 
 <!-- 🖼️ BANNER SLIDER (PetShop Style Chuẩn) -->
 <div id="mainSlider" class="carousel slide shadow-sm" data-bs-ride="carousel" data-bs-interval="4000">
@@ -213,74 +215,39 @@
 
 
 <!-- ⚡ FLASH SALE -->
-<!-- ⚡ FLASH SALE -->
 <section id="flashsale" class="container py-5 text-center">
     <h2 class="fw-bold text-danger mb-4">⚡ Flash Sale Hôm Nay</h2>
     <div class="row justify-content-center g-4">
+        @if (kmList != null && kmList.Any())
+        {
+            foreach (var km in kmList)
+            {
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <img src="~/ImagesWWeb/@km.SanPham.HinhAnh" class="card-img-top" />
+                        <div class="card-body">
+                            <h6 class="card-title">@km.SanPham.TenSp</h6>
+                            <p class="text-danger fw-bold">
+                                @String.Format("{0:N0}", km.SanPham.Gia - (km.SanPham.Gia * km.PhanTramGiam / 100)) đ
+                                <span class="text-decoration-line-through text-secondary fs-6">
+                                    @String.Format("{0:N0}", km.SanPham.Gia) đ
+                                </span>
 
-        <!-- 1. Pedigree -->
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <img src="~/ImagesWWeb/Thucanchopedigree.jpg" class="card-img-top" />
-                <div class="card-body">
-                    <h6 class="card-title">Thức ăn cho chó Pedigree</h6>
-                    <p class="text-danger fw-bold">
-                        150.000đ
-                        <span class="text-decoration-line-through text-secondary fs-6">180.000đ</span>
-                    </p>
 
-                    <!-- MUA NGAY - ĐÚNG -->
-                    <a href="/GioHang/MuaNgay?id=1&soLuong=1"
-                       class="btn btn-danger btn-sm rounded-pill px-3">
-                        Mua ngay
-                    </a>
-
+                            </p>
+                            <a href="/GioHang/MuaNgay?id=@km.SanPham.MaSp&soLuong=1"
+                               class="btn btn-danger btn-sm rounded-pill px-3">
+                                Mua ngay
+                            </a>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- 2. Vòng cổ kèm chuông -->
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <img src="~/ImagesWWeb/vongcokemchuong_.jpg" class="card-img-top" />
-                <div class="card-body">
-                    <h6 class="card-title">Vòng cổ thú cưng kèm chuông</h6>
-                    <p class="text-danger fw-bold">
-                        80.000đ
-                        <span class="text-decoration-line-through text-secondary fs-6">100.000đ</span>
-                    </p>
-
-                    <!-- MUA NGAY - ĐÚNG -->
-                    <a href="/GioHang/MuaNgay?id=6&soLuong=1"
-                       class="btn btn-danger btn-sm rounded-pill px-3">
-                        Mua ngay
-                    </a>
-
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. Ổ ngủ thú cưng -->
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <img src="~/ImagesWWeb/ongu.jpg" class="card-img-top" />
-                <div class="card-body">
-                    <h6 class="card-title">Ổ ngủ thú cưng dễ thương</h6>
-                    <p class="text-danger fw-bold">
-                        350.000đ
-                        <span class="text-decoration-line-through text-secondary fs-6">390.000đ</span>
-                    </p>
-
-                    <!-- MUA NGAY - ĐÚNG -->
-                    <a href="/GioHang/MuaNgay?id=16&soLuong=1"
-                       class="btn btn-danger btn-sm rounded-pill px-3">
-                        Mua ngay
-                    </a>
-
-                </div>
-            </div>
-        </div>
-
+            }
+        }
+        else
+        {
+            <p>Hiện không có khuyến mãi nào.</p>
+        }
     </div>
 </section>
 
@@ -295,7 +262,7 @@
         <!-- 🧴 Sản phẩm 1 -->
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden position-relative">
-                <div class="countdown-timer" data-endtime="2025-11-03T23:59:59"></div>
+                <div class="countdown-timer" data-endtime="2025-12-03T23:59:59"></div>
                 <img src="~/ImagesWWeb/sp-hot1.jpg" class="card-img-top" />
                 <div class="card-body text-center">
                     <h6 class="fw-semibold">Sữa tắm thú cưng hương hoa</h6>
@@ -314,7 +281,7 @@
         <!-- 🦴 Sản phẩm 2 -->
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden position-relative">
-                <div class="countdown-timer" data-endtime="2025-11-04T20:00:00"></div>
+                <div class="countdown-timer" data-endtime="2025-12-04T20:00:00"></div>
                 <img src="~/ImagesWWeb/sp-hot2.jpg" class="card-img-top" />
                 <div class="card-body text-center">
                     <h6 class="fw-semibold">Bánh thưởng cho mèo vị cá ngừ</h6>
@@ -332,7 +299,7 @@
         <!-- 🧸 Sản phẩm 3 -->
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden position-relative">
-                <div class="countdown-timer" data-endtime="2025-11-02T21:30:00"></div>
+                <div class="countdown-timer" data-endtime="2025-12-02T21:30:00"></div>
                 <img src="~/ImagesWWeb/sp-hot3.png" class="card-img-top" />
                 <div class="card-body text-center">
                     <h6 class="fw-semibold">Đồ chơi dây kéo cho chó</h6>
@@ -636,6 +603,47 @@
             box-shadow: 0 6px 15px rgba(217, 54, 54, 0.3);
         }
         </style>
+<!-- ⭐⭐⭐ LỊCH SỬ KÝ GỬI CỦA BẠN ⭐⭐⭐ -->
+@if (ViewBag.LichSuKyGui != null && ((List<WebPetShop.Models.KyGuiThuCung>)ViewBag.LichSuKyGui).Any())
+{
+    <section class="container py-5">
+        <h2 class="fw-bold text-danger mb-4">🐾 Lịch sử ký gửi của bạn</h2>
+
+        <div class="row g-4">
+            @foreach (var item in (List<WebPetShop.Models.KyGuiThuCung>)ViewBag.LichSuKyGui)
+            {
+                <div class="col-md-4">
+                    <div class="card shadow-sm rounded-4 p-3 border-0 history-card">
+
+                        <h5 class="fw-bold text-primary">@item.TenThuCung</h5>
+
+                        <p class="mb-1"><b>Ngày gửi:</b> @item.NgayGui?.ToString("dd/MM/yyyy")</p>
+                        <p class="mb-1"><b>Ngày nhận:</b> @item.NgayHetHan?.ToString("dd/MM/yyyy")</p>
+
+                        <span class="badge bg-danger mb-2">@item.TrangThai</span>
+
+                        <a href="/DichVu/ChiTiet?id=@item.MaKyGui"
+                           class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                            Xem chi tiết
+                        </a>
+
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+<style>
+    .history-card {
+        transition: all 0.3s ease;
+    }
+
+        .history-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(217, 54, 54, 0.25);
+        }
+</style>
+
 <!-- 🏡 DỊCH VỤ NHẬN NUÔI THÚ CƯNG (NỀN TRẮNG HIỆN ĐẠI) -->
 <section class="adopt-section py-5 bg-white">
     <div class="container">

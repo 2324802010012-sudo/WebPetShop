@@ -9,40 +9,83 @@
         <i class="fa-solid fa-pen-to-square me-2"></i> Chỉnh sửa sản phẩm
     </h3>
 
-    <form asp-action="ChinhSua" asp-controller="Kho" method="post" enctype="multipart/form-data" class="card p-4 shadow-sm border-0">
+    <!-- Thông báo -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <form asp-action="ChinhSua" asp-controller="Kho"
+          method="post" class="card p-4 shadow-sm border-0">
+
         @Html.AntiForgeryToken()
+
+        <!-- Hidden ID -->
         <input type="hidden" asp-for="MaSp" />
 
         <div class="row g-3">
+
+            <!-- Tên SP -->
             <div class="col-md-6">
                 <label class="form-label fw-semibold">Tên sản phẩm</label>
                 <input asp-for="TenSp" class="form-control" required />
+                <span asp-validation-for="TenSp" class="text-danger"></span>
             </div>
 
+            <!-- Giá -->
             <div class="col-md-6">
                 <label class="form-label fw-semibold">Giá bán</label>
-                <input asp-for="Gia" class="form-control" type="number" step="1000" min="0" />
+
+                <!-- DÙNG TEXT để tránh lỗi decimal -->
+                <input asp-for="Gia"
+                       class="form-control"
+                       type="text"
+                       value="@Model.Gia.ToString("0",
+                       System.Globalization.CultureInfo.InvariantCulture)"
+                       required />
+
+                <span asp-validation-for="Gia" class="text-danger"></span>
             </div>
 
+            <!-- Danh mục -->
             <div class="col-md-6">
                 <label class="form-label fw-semibold">Danh mục</label>
-                <select asp-for="MaDanhMuc" class="form-select"
-                        asp-items="@(new SelectList(ViewBag.DanhMucs, "MaDanhMuc", "TenDanhMuc"))"></select>
+
+                <select asp-for="MaDanhMuc"
+                        class="form-select"
+                        asp-items="@(new SelectList(ViewBag.DanhMucs, "MaDanhMuc", "TenDanhMuc", Model.MaDanhMuc))">
+                </select>
+
+                <span asp-validation-for="MaDanhMuc" class="text-danger"></span>
             </div>
 
+            <!-- Số lượng -->
             <div class="col-md-6">
                 <label class="form-label fw-semibold">Số lượng tồn</label>
-                <input asp-for="SoLuongTon" class="form-control" type="number" min="0" />
+                <input asp-for="SoLuongTon" class="form-control" type="number" min="0" required />
+                <span asp-validation-for="SoLuongTon" class="text-danger"></span>
             </div>
+
         </div>
 
+        <!-- Buttons -->
         <div class="mt-4 d-flex justify-content-between">
             <a asp-action="HangHoa" class="btn btn-outline-secondary">
                 <i class="fa-solid fa-arrow-left"></i> Quay lại
             </a>
+
             <button type="submit" class="btn btn-danger px-4 fw-semibold">
                 <i class="fa-solid fa-save"></i> Lưu thay đổi
             </button>
         </div>
     </form>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

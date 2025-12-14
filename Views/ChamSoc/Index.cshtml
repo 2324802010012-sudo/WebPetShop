@@ -1,40 +1,73 @@
 ﻿@model IEnumerable<WebPetShop.Models.KyGuiThuCung>
+
 @{
     ViewData["Title"] = "Danh sách ký gửi";
+    Layout = "_ChamSocLayout";
+
 }
 
 <div class="container py-4">
+
     <h2 class="fw-bold text-danger mb-4">
         <i class="fa-solid fa-paw me-2"></i> Thú cưng đang ký gửi
     </h2>
 
-    <table class="table table-bordered table-hover shadow-sm bg-white">
-        <thead class="table-danger">
-            <tr>
-                <th>Khách hàng</th>
-                <th>Tên thú cưng</th>
-                <th>Giống</th>
-                <th>Tình trạng</th>
-                <th>Ngày gửi</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center py-4 rounded-3 shadow-sm">
+            <i class="fa-solid fa-cat fa-3x mb-3"></i>
+            <h5>Hiện chưa có thú cưng nào đang ký gửi.</h5>
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover shadow-sm bg-white">
+            <thead class="table-danger text-center">
                 <tr>
-                    <td>@item.MaKhNavigation?.HoTen</td>
-                    <td>@item.TenThuCung</td>
-                    <td>@item.GiongLoai</td>
-                    <td><span class="badge bg-success">@item.TrangThai</span></td>
-                    <td>@item.NgayGui?.ToString("dd/MM/yyyy")</td>
-                    <td>
-                        <a href="/ChamSoc/ChiTiet/@item.MaKyGui" class="btn btn-sm btn-danger">
-                            <i class="fa-solid fa-eye"></i> Xem
-                        </a>
-                    </td>
+                    <th>Khách hàng</th>
+                    <th>Tên thú cưng</th>
+                    <th>Giống</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày gửi</th>
+                    <th style="width:120px"></th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="text-center">
+                        <td class="fw-bold">@item.MaKhNavigation?.HoTen</td>
+
+                        <td class="fw-bold text-primary">@item.TenThuCung</td>
+
+                        <td>@item.GiongLoai</td>
+
+                        <td>
+                            @if (item.TrangThaiDon == "DangKyGui")
+                            {
+                                <span class="badge bg-primary">Đang ký gửi</span>
+                            }
+                            else if (item.TrangThaiDon == "ChoXacNhan")
+                            {
+                                <span class="badge bg-warning text-dark">Chờ lễ tân nhận</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">@item.TrangThaiDon</span>
+                            }
+                        </td>
+
+                        <td>@item.NgayGui?.ToString("dd/MM/yyyy")</td>
+
+                        <td>
+                            <a href="/ChamSoc/ChiTiet/@item.MaKyGui"
+                               class="btn btn-sm btn-danger w-100">
+                                <i class="fa-solid fa-eye"></i> Xem
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 </div>

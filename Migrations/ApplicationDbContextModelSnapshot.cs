@@ -277,7 +277,9 @@ namespace WebPetShop.Migrations
                         .HasColumnName("MaSP");
 
                     b.Property<int>("SoLuong")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
 
                     b.HasKey("MaCtpx")
                         .HasName("PK__ChiTietPhieuXuat");
@@ -289,7 +291,7 @@ namespace WebPetShop.Migrations
                     b.ToTable("ChiTietPhieuXuat", (string)null);
                 });
 
-            modelBuilder.Entity("WebPetShop.Models.DanhGium", b =>
+            modelBuilder.Entity("WebPetShop.Models.DanhGia", b =>
                 {
                     b.Property<int>("MaDanhGia")
                         .ValueGeneratedOnAdd()
@@ -300,6 +302,9 @@ namespace WebPetShop.Migrations
                     b.Property<int?>("Diem")
                         .HasColumnType("int");
 
+                    b.Property<string>("HinhAnh")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("MaNguoiDung")
                         .HasColumnType("int");
 
@@ -309,21 +314,20 @@ namespace WebPetShop.Migrations
 
                     b.Property<DateTime?>("NgayDanhGia")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime2")
                         .HasDefaultValueSql("(getdate())");
 
                     b.Property<string>("NoiDung")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.HasKey("MaDanhGia")
-                        .HasName("PK__DanhGia__AA9515BF53F49DC4");
+                    b.HasKey("MaDanhGia");
 
                     b.HasIndex("MaNguoiDung");
 
                     b.HasIndex("MaSp");
 
-                    b.ToTable("DanhGia");
+                    b.ToTable("DanhGia", (string)null);
                 });
 
             modelBuilder.Entity("WebPetShop.Models.DanhMuc", b =>
@@ -409,6 +413,10 @@ namespace WebPetShop.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("MaHTTT")
+                        .HasColumnType("int")
+                        .HasColumnName("MaHTTT");
+
                     b.Property<int?>("MaKm")
                         .HasColumnType("int")
                         .HasColumnName("MaKM");
@@ -419,7 +427,7 @@ namespace WebPetShop.Migrations
                     b.Property<int?>("MaPhi")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MaTttt")
+                    b.Property<int?>("MaTTTT")
                         .HasColumnType("int")
                         .HasColumnName("MaTTTT");
 
@@ -456,13 +464,13 @@ namespace WebPetShop.Migrations
                     b.HasKey("MaDh")
                         .HasName("PK__DonHang__27258661E6A07298");
 
+                    b.HasIndex("MaHTTT");
+
                     b.HasIndex("MaKm");
 
                     b.HasIndex("MaNguoiDung");
 
                     b.HasIndex("MaPhi");
-
-                    b.HasIndex("MaTttt");
 
                     b.ToTable("DonHang", null, t =>
                         {
@@ -541,6 +549,30 @@ namespace WebPetShop.Migrations
                     b.HasIndex("MaNguoiDung");
 
                     b.ToTable("GioHang", (string)null);
+                });
+
+            modelBuilder.Entity("WebPetShop.Models.HinhThucThanhToanThucTe", b =>
+                {
+                    b.Property<int>("MaHTTT")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("MaHTTT");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaHTTT"));
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("TenHinhThuc")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("MaHTTT")
+                        .HasName("PK_HinhThucThanhToanThucTe");
+
+                    b.ToTable("HinhThucThanhToanThucTe", (string)null);
                 });
 
             modelBuilder.Entity("WebPetShop.Models.HoaDon", b =>
@@ -641,18 +673,20 @@ namespace WebPetShop.Migrations
                 {
                     b.Property<int>("MaKm")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("MaKM");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaKm"));
 
                     b.Property<decimal?>("GiaTriToiDa")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("MaCode")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<int?>("MaSP")
+                        .HasColumnType("int");
 
                     b.Property<string>("MoTa")
                         .HasMaxLength(200)
@@ -677,11 +711,12 @@ namespace WebPetShop.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
-                    b.HasKey("MaKm")
-                        .HasName("PK__KhuyenMa__2725CF15441787FD");
+                    b.HasKey("MaKm");
 
-                    b.HasIndex(new[] { "MaCode" }, "UQ__KhuyenMa__152C7C5C95B7F5B4")
+                    b.HasIndex("MaCode")
                         .IsUnique();
+
+                    b.HasIndex("MaSP");
 
                     b.ToTable("KhuyenMai", (string)null);
                 });
@@ -702,6 +737,16 @@ namespace WebPetShop.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("HinhThucThanhToan")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("LoaiThuCung")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<int>("MaKh")
                         .HasColumnType("int")
                         .HasColumnName("MaKH");
@@ -714,6 +759,9 @@ namespace WebPetShop.Migrations
                     b.Property<DateOnly?>("NgayHetHan")
                         .HasColumnType("date");
 
+                    b.Property<DateTime?>("NgayThanhToan")
+                        .HasColumnType("datetime2");
+
                     b.Property<decimal?>("PhiKyGui")
                         .HasColumnType("decimal(18, 2)");
 
@@ -722,11 +770,22 @@ namespace WebPetShop.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<decimal>("TongTien")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("TrangThai")
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasDefaultValue("Đang ký gửi");
+
+                    b.Property<string>("TrangThaiDon")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TrangThaiThanhToan")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("Tuoi")
                         .HasColumnType("int");
@@ -1116,29 +1175,24 @@ namespace WebPetShop.Migrations
                         .HasColumnName("MaDH");
 
                     b.Property<string>("MaGiaoDich")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("NgayThanhToan")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("PhuongThuc")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("SoTien")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("TrangThai")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("MaTttt")
-                        .HasName("PK__ThanhToa__44843A5D0FA5E91A");
+                    b.HasKey("MaTttt");
 
-                    b.HasIndex("MaDh");
+                    b.HasIndex("MaDh")
+                        .IsUnique();
 
                     b.ToTable("ThanhToanTrucTuyen", (string)null);
                 });
@@ -1216,6 +1270,36 @@ namespace WebPetShop.Migrations
                     b.ToTable((string)null);
 
                     b.ToView("v_DanhSachThuCungNhanNuoi", (string)null);
+                });
+
+            modelBuilder.Entity("WebPetShop.Models.YeuCauNhanNuoi", b =>
+                {
+                    b.Property<int>("MaYeuCau")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaYeuCau"));
+
+                    b.Property<int>("MaBaiDang")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaNguoiDung")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("NgayYeuCau")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("MaYeuCau");
+
+                    b.HasIndex("MaBaiDang");
+
+                    b.HasIndex("MaNguoiDung");
+
+                    b.ToTable("YeuCauNhanNuoi");
                 });
 
             modelBuilder.Entity("WebPetShop.Models.YeuThich", b =>
@@ -1363,18 +1447,18 @@ namespace WebPetShop.Migrations
                     b.Navigation("MaSpNavigation");
                 });
 
-            modelBuilder.Entity("WebPetShop.Models.DanhGium", b =>
+            modelBuilder.Entity("WebPetShop.Models.DanhGia", b =>
                 {
                     b.HasOne("WebPetShop.Models.NguoiDung", "MaNguoiDungNavigation")
                         .WithMany("DanhGia")
                         .HasForeignKey("MaNguoiDung")
                         .IsRequired()
-                        .HasConstraintName("FK__DanhGia__MaNguoi__2CF2ADDF");
+                        .HasConstraintName("FK_DanhGia_NguoiDung");
 
                     b.HasOne("WebPetShop.Models.SanPham", "MaSpNavigation")
                         .WithMany("DanhGia")
                         .HasForeignKey("MaSp")
-                        .HasConstraintName("FK__DanhGia__MaSP__2DE6D218");
+                        .HasConstraintName("FK_DanhGia_SanPham");
 
                     b.Navigation("MaNguoiDungNavigation");
 
@@ -1402,34 +1486,31 @@ namespace WebPetShop.Migrations
 
             modelBuilder.Entity("WebPetShop.Models.DonHang", b =>
                 {
+                    b.HasOne("WebPetShop.Models.HinhThucThanhToanThucTe", "HinhThucThanhToanThucTeNavigation")
+                        .WithMany("DonHangs")
+                        .HasForeignKey("MaHTTT")
+                        .HasConstraintName("FK_DonHang_HTThanhToanThucTe");
+
                     b.HasOne("WebPetShop.Models.KhuyenMai", "MaKmNavigation")
                         .WithMany("DonHangs")
-                        .HasForeignKey("MaKm")
-                        .HasConstraintName("FK__DonHang__MaKM__6754599E");
+                        .HasForeignKey("MaKm");
 
                     b.HasOne("WebPetShop.Models.NguoiDung", "MaNguoiDungNavigation")
                         .WithMany("DonHangs")
                         .HasForeignKey("MaNguoiDung")
-                        .IsRequired()
-                        .HasConstraintName("FK__DonHang__MaNguoi__66603565");
+                        .IsRequired();
 
                     b.HasOne("WebPetShop.Models.PhiGiaoHang", "MaPhiNavigation")
                         .WithMany("DonHangs")
-                        .HasForeignKey("MaPhi")
-                        .HasConstraintName("FK__DonHang__MaPhi__68487DD7");
+                        .HasForeignKey("MaPhi");
 
-                    b.HasOne("WebPetShop.Models.ThanhToanTrucTuyen", "MaTtttNavigation")
-                        .WithMany("DonHangs")
-                        .HasForeignKey("MaTttt")
-                        .HasConstraintName("FK_DonHang_ThanhToanTrucTuyen");
+                    b.Navigation("HinhThucThanhToanThucTeNavigation");
 
                     b.Navigation("MaKmNavigation");
 
                     b.Navigation("MaNguoiDungNavigation");
 
                     b.Navigation("MaPhiNavigation");
-
-                    b.Navigation("MaTtttNavigation");
                 });
 
             modelBuilder.Entity("WebPetShop.Models.GiaoHang", b =>
@@ -1510,6 +1591,16 @@ namespace WebPetShop.Migrations
                     b.Navigation("MaSpNavigation");
 
                     b.Navigation("NguoiThucHienNavigation");
+                });
+
+            modelBuilder.Entity("WebPetShop.Models.KhuyenMai", b =>
+                {
+                    b.HasOne("WebPetShop.Models.SanPham", "SanPham")
+                        .WithMany("KhuyenMais")
+                        .HasForeignKey("MaSP")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("SanPham");
                 });
 
             modelBuilder.Entity("WebPetShop.Models.KyGuiThuCung", b =>
@@ -1618,10 +1709,11 @@ namespace WebPetShop.Migrations
             modelBuilder.Entity("WebPetShop.Models.ThanhToanTrucTuyen", b =>
                 {
                     b.HasOne("WebPetShop.Models.DonHang", "MaDhNavigation")
-                        .WithMany("ThanhToanTrucTuyens")
-                        .HasForeignKey("MaDh")
+                        .WithOne("ThanhToanTrucTuyenNavigation")
+                        .HasForeignKey("WebPetShop.Models.ThanhToanTrucTuyen", "MaDh")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK__ThanhToanT__MaDH__6FE99F9F");
+                        .HasConstraintName("FK_DonHang_ThanhToanTrucTuyen");
 
                     b.Navigation("MaDhNavigation");
                 });
@@ -1635,6 +1727,25 @@ namespace WebPetShop.Migrations
                         .HasConstraintName("FK__ThuCungNh__MaKyG__0D7A0286");
 
                     b.Navigation("MaKyGuiNavigation");
+                });
+
+            modelBuilder.Entity("WebPetShop.Models.YeuCauNhanNuoi", b =>
+                {
+                    b.HasOne("WebPetShop.Models.BaiDangNhanNuoi", "BaiDangNavigation")
+                        .WithMany()
+                        .HasForeignKey("MaBaiDang")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WebPetShop.Models.NguoiDung", "NguoiDungNavigation")
+                        .WithMany()
+                        .HasForeignKey("MaNguoiDung")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BaiDangNavigation");
+
+                    b.Navigation("NguoiDungNavigation");
                 });
 
             modelBuilder.Entity("WebPetShop.Models.YeuThich", b =>
@@ -1673,12 +1784,17 @@ namespace WebPetShop.Migrations
 
                     b.Navigation("PhieuXuats");
 
-                    b.Navigation("ThanhToanTrucTuyens");
+                    b.Navigation("ThanhToanTrucTuyenNavigation");
                 });
 
             modelBuilder.Entity("WebPetShop.Models.GioHang", b =>
                 {
                     b.Navigation("ChiTietGioHangs");
+                });
+
+            modelBuilder.Entity("WebPetShop.Models.HinhThucThanhToanThucTe", b =>
+                {
+                    b.Navigation("DonHangs");
                 });
 
             modelBuilder.Entity("WebPetShop.Models.KhuyenMai", b =>
@@ -1766,12 +1882,9 @@ namespace WebPetShop.Migrations
 
                     b.Navigation("KhoHangs");
 
-                    b.Navigation("YeuThiches");
-                });
+                    b.Navigation("KhuyenMais");
 
-            modelBuilder.Entity("WebPetShop.Models.ThanhToanTrucTuyen", b =>
-                {
-                    b.Navigation("DonHangs");
+                    b.Navigation("YeuThiches");
                 });
 
             modelBuilder.Entity("WebPetShop.Models.ThuCungNhanNuoi", b =>

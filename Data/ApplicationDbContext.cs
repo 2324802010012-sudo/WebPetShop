@@ -28,7 +28,7 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<ChiTietPhieuNhap> ChiTietPhieuNhaps { get; set; }
 
-    public virtual DbSet<DanhGium> DanhGia { get; set; }
+    public DbSet<DanhGia> DanhGia { get; set; }
 
     public virtual DbSet<DanhMuc> DanhMucs { get; set; }
 
@@ -76,6 +76,9 @@ public partial class ApplicationDbContext : DbContext
     public DbSet<ChiTietPhieuXuat> ChiTietPhieuXuats { get; set; }
 
     public DbSet<HinhThucThanhToanThucTe> HinhThucThanhToanThucTes { get; set; }
+    public DbSet<YeuCauNhanNuoi> YeuCauNhanNuois { get; set; } = null!;
+
+
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -206,26 +209,30 @@ public partial class ApplicationDbContext : DbContext
                 .HasForeignKey(d => d.MaSp)
                 .HasConstraintName("FK__ChiTietPhi__MaSP__00200768");
         });
-
-        modelBuilder.Entity<DanhGium>(entity =>
+        modelBuilder.Entity<DanhGia>(entity =>
         {
-            entity.HasKey(e => e.MaDanhGia).HasName("PK__DanhGia__AA9515BF53F49DC4");
+            entity.ToTable("DanhGia");
+
+            entity.HasKey(e => e.MaDanhGia);
 
             entity.Property(e => e.MaSp).HasColumnName("MaSP");
-            entity.Property(e => e.NgayDanhGia)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
+            entity.Property(e => e.NgayDanhGia).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.NoiDung).HasMaxLength(500);
 
-            entity.HasOne(d => d.MaNguoiDungNavigation).WithMany(p => p.DanhGia)
-                .HasForeignKey(d => d.MaNguoiDung)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__DanhGia__MaNguoi__2CF2ADDF");
+            // 🔥 FIX QUAN TRỌNG: khai báo đúng FK
+            entity.HasOne(d => d.MaNguoiDungNavigation)
+                  .WithMany(p => p.DanhGia)
+                  .HasForeignKey(d => d.MaNguoiDung)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_DanhGia_NguoiDung");
 
-            entity.HasOne(d => d.MaSpNavigation).WithMany(p => p.DanhGia)
-                .HasForeignKey(d => d.MaSp)
-                .HasConstraintName("FK__DanhGia__MaSP__2DE6D218");
+            entity.HasOne(d => d.MaSpNavigation)
+                  .WithMany(p => p.DanhGia)
+                  .HasForeignKey(d => d.MaSp)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_DanhGia_SanPham");
         });
+
 
         modelBuilder.Entity<DanhMuc>(entity =>
         {
@@ -447,18 +454,20 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<KhuyenMai>(entity =>
         {
-            entity.HasKey(e => e.MaKm).HasName("PK__KhuyenMa__2725CF15441787FD");
-
+            entity.HasKey(e => e.MaKm);
             entity.ToTable("KhuyenMai");
-
-            entity.HasIndex(e => e.MaCode, "UQ__KhuyenMa__152C7C5C95B7F5B4").IsUnique();
-
-            entity.Property(e => e.MaKm).HasColumnName("MaKM");
-            entity.Property(e => e.GiaTriToiDa).HasColumnType("decimal(18, 2)");
+            entity.HasIndex(e => e.MaCode).IsUnique();
+            entity.Property(e => e.GiaTriToiDa).HasColumnType("decimal(18,2)");
             entity.Property(e => e.MaCode).HasMaxLength(20);
             entity.Property(e => e.MoTa).HasMaxLength(200);
             entity.Property(e => e.SoLanSuDungToiDa).HasDefaultValue(1);
             entity.Property(e => e.TrangThai).HasDefaultValue(true);
+
+            // 🔹 Quan hệ với SanPham
+            entity.HasOne(k => k.SanPham)
+                  .WithMany(s => s.KhuyenMais)
+                  .HasForeignKey(k => k.MaSP)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<KyGuiThuCung>(entity =>

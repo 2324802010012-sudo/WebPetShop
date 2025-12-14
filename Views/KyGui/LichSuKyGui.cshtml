@@ -1,90 +1,161 @@
 ﻿@model IEnumerable<WebPetShop.Models.KyGuiThuCung>
+
 @{
     ViewData["Title"] = "Lịch sử ký gửi";
+
+    // ==== TÍNH ĐƠN VỪA GIA HẠN (XỬ LÝ LOGIC TRƯỚC HTML ĐỂ TRÁNH LỖI RAZOR) ====
+    KyGuiThuCung? donVuaGiaHan = null;
+    int? soNgayThem = null;
+
+    foreach (var x in Model.Where(m => m.NgayGui.HasValue && m.NgayHetHan.HasValue))
+    {
+        var ngayGui = x.NgayGui.Value.ToDateTime(TimeOnly.MinValue);
+        var ngayHetHan = x.NgayHetHan.Value.ToDateTime(TimeOnly.MinValue);
+        var soNgayHienTai = (ngayHetHan - ngayGui).Days;
+
+        if (soNgayHienTai > 40 && (DateTime.Today - ngayHetHan.Date).Days <= 3)
+        {
+            donVuaGiaHan = x;
+            soNgayThem = soNgayHienTai;
+            break;
+        }
+    }
 }
 
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
 <div class="container py-5">
-    <h2 class="fw-bold text-danger text-center mb-4">
-        🐾 LỊCH SỬ KÝ GỬI CỦA BẠN
-    </h2>
-
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success text-center">@TempData["Success"]</div>
-    }
-
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger text-center">@TempData["Error"]</div>
-    }
+    <div class="text-center mb-5">
+        <h2 class="text-danger fw-bold display-5">
+            LỊCH SỬ KÝ GỬI CỦA BẠN
+        </h2>
+    </div>
 
     @if (!Model.Any())
     {
-        <div class="alert alert-info text-center">
-            🐶 Bạn chưa có lịch sử ký gửi nào.
-            <a href="/DichVu/KyGui" class="btn btn-danger btn-sm ms-2">
-                <i class="fa-solid fa-plus me-1"></i> Đặt ngay
+        <div class="text-center py-5 bg-light rounded-4">
+            <i class="fas fa-heart-broken fa-5x text-muted mb-4"></i>
+            <h4 class="text-muted">Bạn chưa ký gửi thú cưng nào</h4>
+            <a asp-controller="DichVu" asp-action="DatKyGui"
+               class="btn btn-danger btn-lg rounded-pill px-5 mt-3">
+                Ký gửi ngay bây giờ
             </a>
         </div>
     }
     else
     {
-        foreach (var item in Model)
+        @* ==== HIỂN THỊ THÔNG BÁO ĐƠN GIA HẠN ==== *@
+        @if (donVuaGiaHan != null)
         {
-            <div class="card mb-4 border-0 shadow-sm rounded-4">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <div>
-                        <b>🐕 @item.TenThuCung</b> — <span class="text-muted">@item.GiongLoai</span>
-                    </div>
-                    @{
-                        string badge = item.TrangThai switch
-                        {
-                            "Hoàn tất" => "bg-success",
-                            "Đang ký gửi" => "bg-warning text-dark",
-                            "Đã hủy" => "bg-danger",
-                            _ => "bg-secondary"
-                        };
-                    }
-                    <span class="badge rounded-pill @badge px-3 py-2">@item.TrangThai</span>
-                </div>
-
-                <div class="card-body">
-                    <div class="row mb-2">
-                        <div class="col-md-6">
-                            <i class="fa-regular fa-calendar me-1"></i>
-                            <b>Ngày gửi:</b> @item.NgayGui?.ToString("dd/MM/yyyy")
-                        </div>
-                        <div class="col-md-6">
-                            <i class="fa-regular fa-clock me-1"></i>
-                            <b>Ngày nhận dự kiến:</b> @item.NgayHetHan?.ToString("dd/MM/yyyy")
-                        </div>
-                    </div>
-                    <div>
-                        <b>Phí ký gửi:</b> <span class="text-danger fw-bold">@((item.PhiKyGui ?? 0).ToString("N0")) ₫</span>
-                    </div>
-                    @if (!string.IsNullOrEmpty(item.GhiChu))
+            <div class="alert alert-success border-0 rounded-4 shadow-lg mb-5 text-center animate__animated animate__bounceIn">
+                <i class="fas fa-bell fa-3x text-success mb-3 d-block"></i>
+                <h4 class="fw-bold text-success">
+                    Đơn ký gửi của <span class="text-danger">@donVuaGiaHan.TenThuCung</span>
+                    đã được <span class="text-primary">GIA HẠN</span> thành công!
+                </h4>
+                <p class="fs-5 mb-0">
+                    Ngày nhận lại mới:
+                    <strong class="text-danger">@donVuaGiaHan.NgayHetHan?.ToString("dd/MM/yyyy")</strong>
+                    @if (soNgayThem.HasValue)
                     {
-                        <div class="mt-2"><b>Ghi chú:</b> @item.GhiChu</div>
+                        <span class="text-success fw-bold"> (+@soNgayThem ngày)</span>
                     }
-                </div>
-
-                <div class="card-footer text-end bg-white">
-                    <a href="/DichVu/ChiTiet/@item.MaKyGui" class="btn btn-outline-danger btn-sm rounded-pill px-3 me-2">
-                        <i class="fa-solid fa-eye me-1"></i> Chi tiết
-                    </a>
-
-                    @if (item.TrangThai == "Đang ký gửi")
-                    {
-                        <form method="post" asp-action="HuyKyGui" asp-route-id="@item.MaKyGui" class="d-inline">
-                            <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill">
-                                <i class="fa-solid fa-xmark me-1"></i> Hủy
-                            </button>
-                        </form>
-                    }
-                </div>
+                </p>
             </div>
         }
+
+        <!-- Danh sách -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var item in Model.OrderByDescending(x => x.MaKyGui))
+            {
+                var trangThai = item.TrangThaiDon ?? "ChoXacNhan";
+                var badgeClass = trangThai switch
+                {
+                    "ChoXacNhan" => "bg-warning text-dark",
+                    "DangChamSoc" => "bg-primary text-white",
+                    "HoanThanh" => "bg-success text-white",
+                    _ => "bg-secondary text-white"
+                };
+                var badgeText = trangThai switch
+                {
+                    "ChoXacNhan" => "Chờ xác nhận thanh toán",
+                    "DangChamSoc" => "Đang ký gửi",
+                    "HoanThanh" => "Đã hoàn thành",
+                    _ => "Không xác định"
+                };
+
+                bool vuaGiaHan = false;
+                if (item.NgayGui.HasValue && item.NgayHetHan.HasValue)
+                {
+                    var ngayGui = item.NgayGui.Value.ToDateTime(TimeOnly.MinValue);
+                    var ngayHetHan = item.NgayHetHan.Value.ToDateTime(TimeOnly.MinValue);
+                    var soNgay = (ngayHetHan - ngayGui).Days;
+                    vuaGiaHan = soNgay > 40 && (DateTime.Today - ngayHetHan.Date).Days <= 3;
+                }
+
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 hover-shadow @(vuaGiaHan ? "border-success border-4" : "") position-relative">
+                        @if (vuaGiaHan)
+                        {
+                            <div class="position-absolute top-0 end-0 bg-success text-white px-3 py-2 rounded-start fw-bold small">
+                                Mới gia hạn
+                            </div>
+                        }
+
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-danger fw-bold">@item.TenThuCung</h5>
+                            <p class="text-muted small">
+                                <i class="fas fa-paw"></i> @item.LoaiThuCung – @(item.GiongLoai ?? "Không ghi rõ")
+                            </p>
+
+                            <div class="mt-3">
+                                <p class="mb-1"><strong>Ngày gửi:</strong> <span>@item.NgayGui?.ToString("dd/MM/yyyy")</span></p>
+                                <p class="mb-1">
+                                    <strong>Nhận lại:</strong>
+                                    <span class="text-danger fw-bold">@item.NgayHetHan?.ToString("dd/MM/yyyy")</span>
+                                    @if (vuaGiaHan)
+                                    {
+                                        <span class="text-success small ms-2">(đã gia hạn)</span>
+                                    }
+                                </p>
+                            <p class="mb-1">
+    <strong>Tổng tiền:</strong>
+    <span class="text-success fw-bold">@item.TongTien.ToString("N0") ₫</span>
+</p>
+
+                            </div>
+
+                            <div class="mt-4">
+                                <span class="badge rounded-pill @badgeClass px-4 py-3 fs-6 fw-bold">
+                                    @badgeText
+                                </span>
+                            </div>
+
+                            <div class="mt-4">
+                                <a asp-action="ChiTietKhach" asp-route-id="@item.MaKyGui"
+                                   class="btn btn-outline-primary rounded-pill px-4">
+                                    Xem chi tiết
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
     }
 </div>
+
+<style>
+    .hover-shadow:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(220, 53, 69, 0.25) !important;
+        transition: all 0.3s ease;
+    }
+</style>
+
+<script>
+    setInterval(function () {
+        location.reload();
+    }, 12000);
+</script>

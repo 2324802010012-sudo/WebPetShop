@@ -2,29 +2,109 @@
     ViewData["Title"] = "Dịch vụ Nhận nuôi thú cưng";
 }
 
-<div class="container py-5">
-    <h2 class="text-center fw-bold text-danger mb-4">
-        🏡 Dịch vụ Nhận nuôi thú cưng
-    </h2>
-    <p class="text-center text-muted mb-5">
-        PetShop kết nối những thú cưng đáng yêu đang cần mái ấm mới 💖.<br />
-        Hãy trở thành người bạn đồng hành và mang đến cho chúng một cuộc sống hạnh phúc hơn!
-    </p>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-    <div class="row align-items-center">
-        <div class="col-md-6 text-center">
-            <img src="~/images/adopt_pet.png" alt="Nhận nuôi thú cưng" class="img-fluid rounded-4 shadow-sm" />
+<section class="adopt-hero py-5">
+    <div class="container py-4">
+
+        <!-- TIÊU ĐỀ -->
+        <div class="text-center mb-5">
+            <h1 class="fw-bold text-danger display-5">
+                🏡 Dịch vụ <span class="text-dark">Nhận nuôi thú cưng</span>
+            </h1>
+            <p class="text-muted fs-5 mt-3">
+                PetShop kết nối những thú cưng đáng yêu đang cần mái ấm mới 💖
+                <br />
+                Hãy mở lòng để đem đến cho các bé một cuộc sống hạnh phúc hơn!
+            </p>
         </div>
-        <div class="col-md-6">
-            <ul class="list-unstyled fs-5">
-                <li>🐾 Cập nhật danh sách thú cưng cần nhận nuôi</li>
-                <li>📋 Đăng ký nhận nuôi trực tuyến</li>
-                <li>💌 Thông tin xác minh an toàn, minh bạch</li>
-                <li>❤️ Tư vấn chăm sóc thú cưng sau khi nhận nuôi</li>
-            </ul>
-            <a href="/NhanNuoi/DanhSach" class="btn btn-danger btn-lg mt-3">
-                <i class="fa-solid fa-paw me-2"></i> Xem thú cưng đang chờ nhận nuôi
-            </a>
+
+        <!-- HERO LAYOUT -->
+        <div class="row align-items-center gap-lg-0 gap-4 adopt-box shadow-lg rounded-4 p-4">
+
+            <!-- HÌNH -->
+            <div class="col-lg-6 text-center">
+                <img src="~/ImagesWWeb/bannernhannuoi.jpg"
+                     class="img-fluid hero-img shadow rounded-4"
+                     alt="Nhận nuôi thú cưng" />
+            </div>
+
+            <!-- TEXT -->
+            <div class="col-lg-6">
+                <div class="p-3">
+
+                    <h3 class="fw-bold text-danger mb-3">
+                        Vì sao bạn nên nhận nuôi tại <span class="text-dark">PetShop?</span>
+                    </h3>
+
+                    <ul class="list-unstyled fs-5 text-muted mb-4 feature-list">
+                        <li>🐾 Danh sách thú cưng được cập nhật liên tục</li>
+                        <li>📝 Đăng ký nhận nuôi trực tuyến nhanh chóng</li>
+                        <li>🔐 Quy trình xác minh minh bạch – an toàn</li>
+                        <li>❤️ Tư vấn chăm sóc thú cưng sau khi nhận nuôi</li>
+                    </ul>
+
+                    <a href="/NhanNuoi/DanhSachNhanNuoi"
+                       class="btn btn-adopt px-4 py-2 btn-lg rounded-pill">
+                        <i class="fa-solid fa-heart me-2"></i> Khám phá thú cưng đang chờ nhận nuôi
+                    </a>
+                </div>
+            </div>
         </div>
+
     </div>
-</div>
+</section>
+
+<style>
+    /* NỀN TỔNG */
+    .adopt-hero {
+        background: linear-gradient(to bottom, #fff, #ffecec);
+        min-height: 100vh;
+    }
+
+    /* HERO BOX */
+    .adopt-box {
+        background: #ffffffd9;
+        backdrop-filter: blur(4px);
+        border: 1px solid #ffe2e2;
+    }
+
+    /* ẢNH */
+    .hero-img {
+        border-radius: 20px;
+        transform: scale(1.03);
+        transition: all 0.35s ease;
+    }
+
+        .hero-img:hover {
+            transform: scale(1.06);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+    /* NÚT XEM DANH SÁCH */
+    .btn-adopt {
+        background: linear-gradient(to right, #ff6f91, #ff4757);
+        color: white;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        transition: 0.25s ease;
+        border: none;
+    }
+
+        .btn-adopt:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(255, 71, 87, 0.4);
+            color: #fff;
+        }
+
+    /* LIST ICON */
+    .feature-list li {
+        margin-bottom: 10px;
+    }
+
+        .feature-list li::before {
+            content: "✨ ";
+            color: #ff6f91;
+            font-weight: bold;
+        }
+</style>

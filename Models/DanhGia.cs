@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace WebPetShop.Models;
 
-public partial class DanhGium
+public partial class DanhGia
 {
     public int MaDanhGia { get; set; }
 
@@ -16,8 +16,8 @@ public partial class DanhGium
     public int? Diem { get; set; }
 
     public DateTime? NgayDanhGia { get; set; }
+    public virtual NguoiDung MaNguoiDungNavigation { get; set; }
+    public virtual SanPham MaSpNavigation { get; set; }
+    public string? HinhAnh { get; set; }
 
-    public virtual NguoiDung MaNguoiDungNavigation { get; set; } = null!;
-
-    public virtual SanPham? MaSpNavigation { get; set; }
 }

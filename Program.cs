@@ -22,8 +22,8 @@ builder.Services.AddSession(options =>
 
 // ✅ Cấu hình DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 // ✅ Thêm MVC
 builder.Services.AddControllersWithViews();
 

@@ -81,22 +81,26 @@ public class GiaoHangController : Controller
     public IActionResult CapNhatTrangThai(int id, string trangThai, int? thanhToanThucTe)
     {
         var don = _context.DonHangs
-            .Include(d => d.HinhThucThanhToanThucTeNavigation)
             .FirstOrDefault(d => d.MaDh == id);
 
         if (don == null) return NotFound();
 
         string trangThaiCu = don.TrangThai;
+
+        // Cập nhật trạng thái mới
         don.TrangThai = trangThai;
 
-        // =====================================================
-        // XỬ LÝ THANH TOÁN COD KHI GIAO HÀNG HOÀN TẤT
-        // =====================================================
+        // Đánh dấu EF biết entity đã bị thay đổi
+        _context.Entry(don).State = EntityState.Modified;
+
+        // ==========================
+        // XỬ LÝ COD KHI HOÀN TẤT
+        // ==========================
         if (don.PhuongThucThanhToan == "COD" && trangThai == "Hoàn tất")
         {
             if (thanhToanThucTe == null)
             {
-                TempData["Error"] = "Bạn phải chọn hình thức thu tiền COD!";
+                TempData["Error"] = "Bạn phải chọn hình thức thu COD!";
                 return RedirectToAction("CapNhatTrangThai", new { id });
             }
 
@@ -106,17 +110,17 @@ public class GiaoHangController : Controller
             TaoHoaDonTuDong(don, hinhThuc);
         }
 
-        // =====================================================
-        // THANH TOÁN ONLINE – TỰ TẠO HÓA ĐƠN KHI HOÀN TẤT
-        // =====================================================
+        // ==========================
+        // THANH TOÁN ONLINE
+        // ==========================
         if (don.PhuongThucThanhToan == "Online" && trangThai == "Hoàn tất")
         {
             TaoHoaDonTuDong(don, "Online");
         }
 
-        // =====================================================
-        // LƯU LỊCH SỬ TRẠNG THÁI
-        // =====================================================
+        // ==========================
+        // LƯU LỊCH SỬ
+        // ==========================
         _context.LichSuTrangThaiDonHangs.Add(new LichSuTrangThaiDonHang
         {
             MaDh = don.MaDh,
@@ -128,21 +132,33 @@ public class GiaoHangController : Controller
 
         _context.SaveChanges();
 
-        TempData["Success"] = "Cập nhật trạng thái thành công!";
+        TempData["Success"] = "Cập nhật thành công!";
         return RedirectToAction("DanhSachGiaoHang");
     }
+
 
     // ===================== HÀM TẠO HÓA ĐƠN TỰ ĐỘNG =====================
     private void TaoHoaDonTuDong(DonHang don, string hinhThuc)
     {
-        bool daCo = _context.HoaDons.Any(h => h.MaDh == don.MaDh);
-        if (daCo) return; // Không tạo trùng hóa đơn
+        // 1️⃣ Kiểm tra đã có hóa đơn hay chưa
+        if (_context.HoaDons.Any(h => h.MaDh == don.MaDh))
+            return;
 
+        // 2️⃣ Tính tổng tiền từ chi tiết đơn hàng
+        decimal tongTien = _context.ChiTietDonHangs
+            .Where(ct => ct.MaDh == don.MaDh)
+            .Sum(ct => ct.SoLuong * ct.DonGia);
+
+        // 3️⃣ Nếu bằng 0 (đơn hàng rỗng?), fallback từ DonHang
+        if (tongTien == 0)
+            tongTien = don.TongTien ?? 0;
+
+        // 4️⃣ Tạo hóa đơn
         var hd = new HoaDon
         {
             MaDh = don.MaDh,
-            MaKeToan = 2, // hoặc lấy Session
-            SoTien = don.TongTien ?? 0,
+            MaKeToan = HttpContext.Session.GetInt32("UserId") ?? 2,
+            SoTien = tongTien,
             HinhThuc = hinhThuc,
             NgayLap = DateTime.Now,
             GhiChu = "Tự tạo khi giao hàng hoàn tất"
